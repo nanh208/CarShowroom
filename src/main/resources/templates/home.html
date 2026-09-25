@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Ares Store Supercars</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+  <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+  <style>
+    .dashboard-container {
+      width: 100%;
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      padding: 16px 24px;
+      border-radius: 16px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 24px;
+    }
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .avatar-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: white;
+    }
+    .user-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .verification-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      margin-top: 3px;
+    }
+    .badge-google {
+      background: rgba(66, 133, 244, 0.2);
+      color: #93c5fd;
+      border: 1px solid rgba(66, 133, 244, 0.4);
+    }
+    .badge-phone {
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .car-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+    .car-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .car-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 30px rgba(0, 0, 0, 0.5);
+    }
+    .car-thumb {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      background: #1e293b;
+    }
+    .car-body {
+      padding: 18px;
+    }
+    .car-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 6px;
+    }
+    .car-price {
+      font-size: 15px;
+      font-weight: 600;
+      color: #38bdf8;
+    }
+    .car-specs {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 8px;
+      line-height: 1.5;
+    }
+    .btn-logout {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      padding: 8px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.35);
+      color: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard-container">
+    <!-- Top Header -->
+    <div class="top-bar">
+      <div class="user-profile">
+        <a th:href="@{/home}">
+          <img th:src="@{/images/logo.png}" alt="Ares Store" style="height: 38px;">
+        </a>
+        <div>
+          <div class="user-name" th:text="${user != null ? user.username : 'Ares Member'}">Ares Member</div>
+          <!-- Verification badge based on Activity diagram -->
+          <div th:if="${user != null and user.verifiedType == 'GOOGLE'}" class="verification-badge badge-google">
+            ✓ Verified with Gmail (Google Base)
+          </div>
+          <div th:if="${user != null and user.verifiedType == 'PHONE'}" class="verification-badge badge-phone">
+            ✓ Verified with Phone (SMS Base)
+          </div>
+          <div th:if="${user == null or user.verifiedType == null or user.verifiedType == 'STANDARD'}" class="verification-badge badge-google">
+            ✓ Verified Account
+          </div>
+        </div>
+      </div>
+
+      <a th:href="@{/logout}" class="btn-logout">Đăng xuất</a>
+    </div>
+
+    <!-- Showroom Featured Supercars -->
+    <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 16px; color: #f8fafc;">Showroom Siêu Xe Ares</h2>
+    <div class="car-grid">
+      <!-- Pagani Huayra R -->
+      <div class="car-card">
+        <img th:src="@{/images/bg-pagani.jpg}" alt="Pagani Huayra R" class="car-thumb">
+        <div class="car-body">
+          <div class="car-title">Pagani Huayra R</div>
+          <div class="car-price">$3,100,000</div>
+          <div class="car-specs">V12 N/A 6.0L • 850 HP • 9,000 RPM • Track Hypercar</div>
+        </div>
+      </div>
+
+      <!-- Ferrari Daytona SP3 -->
+      <div class="car-card">
+        <div class="car-thumb" style="background: linear-gradient(135deg, #7f1d1d, #1e293b); display: flex; align-items: center; justify-content: center; font-size: 40px;">🏎️</div>
+        <div class="car-body">
+          <div class="car-title">Ferrari Daytona SP3</div>
+          <div class="car-price">$2,250,000</div>
+          <div class="car-specs">V12 6.5L • 840 HP • Icona Series • Carbon Monocoque</div>
+        </div>
+      </div>
+
+      <!-- McLaren Senna -->
+      <div class="car-card">
+        <div class="car-thumb" style="background: linear-gradient(135deg, #1e3a8a, #0f172a); display: flex; align-items: center; justify-content: center; font-size: 40px;">🏁</div>
+        <div class="car-body">
+          <div class="car-title">McLaren Senna GTR</div>
+          <div class="car-price">$1,650,000</div>
+          <div class="car-specs">V8 Twin-Turbo 4.0L • 825 HP • 1,000 kg Downforce</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script th:src="@{/js/auth.js?v=2.0}"></script>
+</body>
+</html>

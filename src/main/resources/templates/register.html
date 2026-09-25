@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Ares Store</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+  <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
+<body class="no-light-fx">
+
+  <div class="auth-wrapper">
+    <!-- Ares Store Brand Logo -->
+    <a th:href="@{/login}" class="brand-header">
+      <img th:src="@{/images/logo.png}" alt="Ares Store Logo" class="brand-logo-img">
+    </a>
+
+    <!-- Page Title -->
+    <h1 class="auth-heading">Register</h1>
+
+    <!-- Glassmorphic Card -->
+    <div class="auth-card card-wide">
+
+
+      <!-- Register Form -->
+      <form id="registerForm" th:action="@{/register}" method="post">
+        
+        <!-- Tên người dùng -->
+        <div class="form-group">
+          <label class="form-label" for="username">Tên người dùng</label>
+          <input type="text" id="username" name="username" class="form-control" required autocomplete="username">
+        </div>
+
+
+        <!-- Giới tính -->
+        <div class="form-group">
+          <label class="form-label">Giới tính</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="gender" value="Nam" checked>
+              <span>Nam</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="gender" value="Nữ">
+              <span>Nữ</span>
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="gender" value="Tuỳ chỉnh">
+              <span>Tuỳ chỉnh</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Email hoặc số điện thoại -->
+        <div class="form-group">
+          <label class="form-label" for="emailOrPhone">Email hoặc số điện thoại</label>
+          <input type="text" id="emailOrPhone" name="emailOrPhone" class="form-control" required autocomplete="email">
+        </div>
+
+        <!-- Mật khẩu -->
+        <div class="form-group">
+          <label class="form-label" for="password">Mật khẩu</label>
+          <input type="password" id="password" name="password" class="form-control" required autocomplete="new-password">
+        </div>
+
+        <!-- Mật khẩu nhập lại -->
+        <div class="form-group">
+          <label class="form-label" for="confirmPassword">Mật khẩu nhập lại</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required autocomplete="new-password">
+        </div>
+
+        <!-- Mã xác nhận with Resend button & 110s countdown -->
+        <div class="form-group">
+          <label class="form-label" for="verificationCode">Mã xác nhận</label>
+          <div class="code-input-container">
+            <input type="text" id="verificationCode" name="verificationCode" class="form-control" required placeholder="Nhập mã 6 chữ số">
+            <div id="registerTimerIndicator" class="timer-indicator">110s</div>
+            <button type="button" id="btnResendRegister" class="btn-resend">Gửi lại</button>
+          </div>
+        </div>
+
+        <!-- Checkbox agreement -->
+        <div class="checkbox-agreement">
+          <input type="checkbox" id="termsAgreement" name="termsAgreement" required>
+          <label for="termsAgreement">
+            Tôi đồng ý với <a href="javascript:void(0)" onclick="showToast({title: 'Chính sách bảo mật', message: 'Hệ thống bảo vệ dữ liệu người dùng tuyệt đối an toàn.', type: 'info'})">chính sách bảo mật</a> và <a href="javascript:void(0)" onclick="showToast({title: 'Điều khoản dịch vụ', message: 'Chào mừng bạn đến với hệ thống Ares Store Car Showroom.', type: 'info'})">điều khoản dịch vụ</a>
+          </label>
+        </div>
+
+        <!-- Register Button -->
+        <button type="submit" class="btn-primary">Register</button>
+
+        <!-- Back to Login -->
+        <div class="card-footer-nav">
+          <span>Đã có tài khoản?</span>
+          <a th:href="@{/login}">Đăng nhập</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script th:src="@{/js/auth.js?v=2.0}"></script>
+</body>
+</html>
