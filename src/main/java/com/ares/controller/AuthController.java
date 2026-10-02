@@ -27,10 +27,7 @@ public class AuthController {
 
     @GetMapping("/")
     public String index(HttpSession session) {
-        if (session.getAttribute("currentUser") != null) {
-            return "redirect:/home";
-        }
-        return "redirect:/login";
+        return "redirect:/home";
     }
 
     @GetMapping("/login")
@@ -97,14 +94,6 @@ public class AuthController {
     @GetMapping("/home")
     public String homePage(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            // Default demo user if accessed directly
-            currentUser = userService.findByUsername("demo_user").orElseGet(() -> {
-                User demo = new User("Ares Customer", "password", "customer@ares.vn", "0901234567");
-                demo.setVerifiedType("GOOGLE");
-                return demo;
-            });
-        }
         model.addAttribute("user", currentUser);
         return "home";
     }
