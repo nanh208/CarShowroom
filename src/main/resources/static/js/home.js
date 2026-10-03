@@ -106,16 +106,40 @@ function initCategories() {
 }
 
 /* ==========================================================================
-   4. GIỎ HÀNG VÀ MODAL XEM NHANH (SHOWROOM LIGHTBOX)
+   4. GIỎ HÀNG VÀ MODAL XEM NHANH (KẾT NỐI REST API)
    ========================================================================== */
 let cartItemCount = 0;
 let currentModalQty = 1;
+let currentCarId = 1;
 
-function initCartCounter() {
+async function initCartCounter() {
   const cartBtn = document.getElementById('cartOpenBtn');
+  
+  // Nạp số lượng giỏ hàng thực tế từ REST API
+  try {
+    const res = await fetch('/api/cart');
+    if (res.ok) {
+      const result = await res.json();
+      if (result.data && typeof result.data.totalQuantity === 'number') {
+        cartItemCount = result.data.totalQuantity;
+        updateCartDisplay();
+      }
+    }
+  } catch (e) {
+    console.log('Cart API init fallback to client memory');
+  }
+
   if (cartBtn) {
-    cartBtn.addEventListener('click', () => {
-      alert(`Giỏ hàng của bạn đang có ${cartItemCount} sản phẩm.`);
+    cartBtn.addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/cart');
+        const result = await res.json();
+        const count = (result.data && result.data.totalQuantity) || cartItemCount;
+        const total = (result.data && result.data.formattedTotalPrice) || '0₫';
+        alert(`🛒 Giỏ hàng Ares Store:\n- Số lượng: ${count} sản phẩm\n- Tổng tiền: ${total}`);
+      } catch (e) {
+        alert(`Giỏ hàng của bạn đang có ${cartItemCount} sản phẩm.`);
+      }
     });
   }
 }
@@ -134,12 +158,12 @@ window.changeModalQty = function(delta) {
   if (qtyEl) qtyEl.textContent = currentModalQty;
 };
 
-// Mở modal thông tin xe
-window.openCarModal = function(title, price, img, scale, material, feature, category) {
+// Mở modal thông tin xe (Hỗ trợ nạp trực tiếp hoặc qua ID từ API)
+window.openCarModal = function(title, price, img, scale, material, feature, category, id) {
   const modal = document.getElementById('productModal');
   if (!modal) return;
 
-  // Reset số lượng
+  currentCarId = id || 1;
   currentModalQty = 1;
   const qtyEl = document.getElementById('modalQtyDisplay');
   if (qtyEl) qtyEl.textContent = '1';
@@ -189,7 +213,7 @@ window.openCarModal = function(title, price, img, scale, material, feature, cate
   }
 
   modal.classList.add('active');
-  document.body.style.overflow = 'hidden'; // Khóa cuộn trang khi mở modal
+  document.body.style.overflow = 'hidden';
 };
 
 // Đóng modal
@@ -197,15 +221,33 @@ window.closeCarModal = function() {
   const modal = document.getElementById('productModal');
   if (modal) {
     modal.classList.remove('active');
-    document.body.style.overflow = ''; // Mở lại cuộn trang
+    document.body.style.overflow = '';
   }
 };
 
-// Thêm vào giỏ từ modal
-window.addToCartFromModal = function() {
-  cartItemCount += currentModalQty;
-  updateCartDisplay();
+// Thêm vào giỏ từ modal qua REST API POST /api/cart/items
+window.addToCartFromModal = async function() {
   const currentTitle = document.getElementById('modalCarTitle') ? document.getElementById('modalCarTitle').textContent : 'sản phẩm';
+  
+  try {
+    const res = await fetch('/api/cart/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ carId: currentCarId, quantity: currentModalQty })
+    });
+    const result = await res.json();
+    if (res.ok && result.data && typeof result.data.totalQuantity === 'number') {
+      cartItemCount = result.data.totalQuantity;
+      updateCartDisplay();
+    } else {
+      cartItemCount += currentModalQty;
+      updateCartDisplay();
+    }
+  } catch (err) {
+    cartItemCount += currentModalQty;
+    updateCartDisplay();
+  }
+
   closeCarModal();
   alert(`Đã thêm ${currentModalQty}x "${currentTitle}" vào giỏ hàng thành công!`);
 };
