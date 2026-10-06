@@ -81,10 +81,12 @@ public class CarApiController {
     @GetMapping("/promotions")
     public ResponseEntity<ApiResponse> getPromotions() {
         Map<String, Object> promo = new HashMap<>();
-        promo.put("title", "Mid-Autumn Festival Sale");
-        promo.put("subtitle", "Sale up to 40% OFF");
+        promo.put("title", "Mid-Autumn");
+        promo.put("subtitle", "Festival Sale");
+        promo.put("discount", "40% Off");
         promo.put("heroBanner", "/images/cars/huracan-banner-exact.png");
-        promo.put("saleCarImage", "/images/cars/huracan-dark.png");
+        promo.put("saleBanner", "/images/cars/mid-autumn-banner-hires.png");
+        promo.put("saleCarImage", "/images/cars/rc-1.jpg");
         return ResponseEntity.ok(ApiResponse.ok("Thông tin chương trình khuyến mãi", promo));
     }
 }
