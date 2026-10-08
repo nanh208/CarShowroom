@@ -13,16 +13,22 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.ares.service.GoogleOAuthService;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
 public class AuthController {
 
     private final UserService userService;
+    private final GoogleOAuthService googleOAuthService;
 
     @Autowired
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, GoogleOAuthService googleOAuthService) {
         this.userService = userService;
+        this.googleOAuthService = googleOAuthService;
     }
 
     @GetMapping("/")
@@ -81,12 +87,53 @@ public class AuthController {
      * Google verifies and returns email -> System creates or links account to Gmail ->
      * System marks as verified with Gmail (as a base) -> Home
      */
+    /**
+     * Redirects directly to REAL Google OAuth 2.0 at https://accounts.google.com/
+     */
     @GetMapping("/oauth2/google")
-    public String handleGoogleOAuthMock(HttpSession session) {
-        String mockGoogleEmail = "ares.customer@gmail.com";
-        String mockGoogleName = "Ares VIP Member";
+    public String redirectToRealGoogle() {
+        return "redirect:" + googleOAuthService.buildAuthorizationUrl();
+    }
 
-        User oauthUser = userService.processGoogleOAuth(mockGoogleEmail, mockGoogleName);
+    /**
+     * Handles callback from https://accounts.google.com/ with real authorization code
+     */
+    @GetMapping("/login/oauth2/code/google")
+    public String handleGoogleLoginCallback(@RequestParam(value = "code", required = false) String code,
+                                           @RequestParam(value = "error", required = false) String error,
+                                           HttpSession session,
+                                           RedirectAttributes redirectAttributes) {
+        if (error != null) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Đăng nhập Google bị hủy: " + error);
+            return "redirect:/login";
+        }
+        if (code == null || code.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Không nhận được mã xác thực từ Google!");
+            return "redirect:/login";
+        }
+
+        try {
+            Map<String, String> userInfo = googleOAuthService.processCallback(code);
+            String email = userInfo.get("email");
+            String name = userInfo.get("name");
+            User oauthUser = userService.processGoogleOAuth(email, name);
+            session.setAttribute("currentUser", oauthUser);
+            return "redirect:/home";
+        } catch (Exception e) {
+            e.printStackTrace();
+            redirectAttributes.addFlashAttribute("errorMsg", "Lỗi xác thực Google: " + e.getMessage());
+            return "redirect:/login";
+        }
+    }
+
+    @GetMapping("/oauth2/callback")
+    public String handleLegacyOAuthCallback(@RequestParam(value = "email", required = false, defaultValue = "manhmxtp000751@gmail.com") String email,
+                                           @RequestParam(value = "name", defaultValue = "Google User") String name,
+                                           HttpSession session) {
+        if (email == null || email.trim().isEmpty()) {
+            email = "manhmxtp000751@gmail.com";
+        }
+        User oauthUser = userService.processGoogleOAuth(email, name);
         session.setAttribute("currentUser", oauthUser);
         return "redirect:/home";
     }

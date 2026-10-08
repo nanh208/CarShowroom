@@ -44,6 +44,27 @@ function showToast({ title, message, type = 'info', duration = 5000 }) {
   }, duration);
 }
 
+// Toggle password visibility (show/hide)
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  const eyeSlash = btn.querySelector('.eye-slash');
+  const eyeOpen = btn.querySelector('.eye-open');
+
+  if (input.type === 'password') {
+    input.type = 'text';
+    if (eyeSlash) eyeSlash.style.display = 'none';
+    if (eyeOpen) eyeOpen.style.display = 'block';
+    btn.setAttribute('aria-label', 'Ẩn mật khẩu');
+  } else {
+    input.type = 'password';
+    if (eyeSlash) eyeSlash.style.display = 'block';
+    if (eyeOpen) eyeOpen.style.display = 'none';
+    btn.setAttribute('aria-label', 'Hiện mật khẩu');
+  }
+}
+
 // Timer Controller - Đếm ngược trong phiên hiện tại, reset ngay khi reload trang
 class CountdownTimer {
   constructor(buttonId, indicatorId, initialSeconds) {
