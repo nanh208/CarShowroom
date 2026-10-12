@@ -195,6 +195,60 @@ document.addEventListener('DOMContentLoaded', () => {
   sessionStorage.removeItem('ares_cooldown_register');
   sessionStorage.removeItem('ares_cooldown_forgot');
 
+  // 0. LOGIN FORM (API POST /api/auth/login)
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const username = usernameInput ? usernameInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
+
+      if (!username || !password) {
+        showToast({
+          title: 'Thiếu thông tin',
+          message: 'Vui lòng nhập đầy đủ Tên đăng nhập và Mật khẩu!',
+          type: 'warning'
+        });
+        return;
+      }
+
+      const submitBtn = loginForm.querySelector('button[type="submit"]');
+      const originalText = submitBtn ? submitBtn.textContent : 'Login';
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Đang đăng nhập...';
+      }
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username, password: password })
+        });
+        const resData = await res.json();
+
+        if (res.ok && resData.success) {
+          window.location.href = '/home';
+        } else {
+          showToast({
+            title: 'Đăng nhập không thành công',
+            message: resData.message || 'Tên đăng nhập hoặc mật khẩu không chính xác!',
+            type: 'error'
+          });
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }
+      } catch (err) {
+        console.error('API login failed, fallback to form submit:', err);
+        loginForm.submit();
+      }
+    });
+  }
+
   // 1. REGISTER PAGE
   const registerForm = document.getElementById('registerForm');
   const btnResendRegister = document.getElementById('btnResendRegister');
