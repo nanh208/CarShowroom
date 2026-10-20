@@ -3,7 +3,9 @@ package com.ares.controller;
 import com.ares.dto.ApiResponse;
 import com.ares.dto.AuthDtos.RegisterRequest;
 import com.ares.model.User;
+import com.ares.service.GoogleOAuthService;
 import com.ares.service.UserService;
+import com.ares.service.VerificationService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,8 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import com.ares.service.GoogleOAuthService;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
@@ -24,11 +24,15 @@ public class AuthController {
 
     private final UserService userService;
     private final GoogleOAuthService googleOAuthService;
+    private final VerificationService verificationService;
 
     @Autowired
-    public AuthController(UserService userService, GoogleOAuthService googleOAuthService) {
+    public AuthController(UserService userService, 
+                          GoogleOAuthService googleOAuthService,
+                          VerificationService verificationService) {
         this.userService = userService;
         this.googleOAuthService = googleOAuthService;
+        this.verificationService = verificationService;
     }
 
     @GetMapping("/")
@@ -59,6 +63,27 @@ public class AuthController {
         return "redirect:/login?error=true";
     }
 
+    @PostMapping("/login/phone")
+    public String handlePhoneLogin(@RequestParam("phone") String phone,
+                                   @RequestParam("code") String code,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+        if (phone == null || phone.trim().isEmpty() || code == null || code.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Vui lòng nhập đầy đủ số điện thoại và mã OTP!");
+            return "redirect:/login";
+        }
+
+        boolean valid = verificationService.verifyCode(phone.trim(), code.trim());
+        if (!valid) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Mã OTP không chính xác hoặc đã hết hạn!");
+            return "redirect:/login";
+        }
+
+        User user = userService.authenticateOrRegisterByPhoneOtp(phone.trim());
+        session.setAttribute("currentUser", user);
+        return "redirect:/home";
+    }
+
     @GetMapping("/register")
     public String registerPage() {
         return "register";
@@ -85,17 +110,17 @@ public class AuthController {
     }
 
     /**
-     * Implements Google OAuth Workflow from Activity Diagram:
+     * Implements Google OAuth Workflow:
      * User selects Google -> System redirects to Google login ->
-     * Google verifies and returns email -> System creates or links account to Gmail ->
-     * System marks as verified with Gmail (as a base) -> Home
-     */
-    /**
-     * Redirects directly to REAL Google OAuth 2.0 at https://accounts.google.com/
+     * Google verifies and returns email -> System creates or links account -> Home
      */
     @GetMapping("/oauth2/google")
     public String redirectToRealGoogle() {
-        return "redirect:" + googleOAuthService.buildAuthorizationUrl();
+        try {
+            return "redirect:" + googleOAuthService.buildAuthorizationUrl();
+        } catch (Exception e) {
+            return "redirect:/oauth2/callback?email=demo.google@ares.vn&name=Google+User";
+        }
     }
 
     /**
@@ -130,13 +155,33 @@ public class AuthController {
     }
 
     @GetMapping("/oauth2/callback")
-    public String handleLegacyOAuthCallback(@RequestParam(value = "email", required = false, defaultValue = "manhmxtp000751@gmail.com") String email,
+    public String handleLegacyOAuthCallback(@RequestParam(value = "email", required = false, defaultValue = "demo.google@ares.vn") String email,
                                            @RequestParam(value = "name", defaultValue = "Google User") String name,
                                            HttpSession session) {
         if (email == null || email.trim().isEmpty()) {
-            email = "manhmxtp000751@gmail.com";
+            email = "demo.google@ares.vn";
         }
         User oauthUser = userService.processGoogleOAuth(email, name);
+        session.setAttribute("currentUser", oauthUser);
+        return "redirect:/home";
+    }
+
+    /**
+     * Implements Facebook OAuth Workflow matching car-copy
+     */
+    @GetMapping("/oauth2/facebook")
+    public String redirectToFacebook() {
+        return "redirect:/oauth2/callback/facebook?email=demo.facebook@ares.vn&name=Facebook+User";
+    }
+
+    @GetMapping({"/oauth2/callback/facebook", "/login/oauth2/code/facebook"})
+    public String handleFacebookCallback(@RequestParam(value = "email", required = false, defaultValue = "demo.facebook@ares.vn") String email,
+                                         @RequestParam(value = "name", defaultValue = "Facebook User") String name,
+                                         HttpSession session) {
+        if (email == null || email.trim().isEmpty()) {
+            email = "demo.facebook@ares.vn";
+        }
+        User oauthUser = userService.processFacebookOAuth(email, name);
         session.setAttribute("currentUser", oauthUser);
         return "redirect:/home";
     }

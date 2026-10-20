@@ -75,15 +75,18 @@ public class UserService {
     }
 
     /**
-     * Authenticates user with username/email and password.
+     * Authenticates user with username, email, or phone number and password.
      */
-    public Optional<User> authenticate(String usernameOrEmail, String password) {
-        if (usernameOrEmail == null || password == null) return Optional.empty();
+    public Optional<User> authenticate(String usernameOrEmailOrPhone, String password) {
+        if (usernameOrEmailOrPhone == null || password == null) return Optional.empty();
 
-        String trimmed = usernameOrEmail.trim();
+        String trimmed = usernameOrEmailOrPhone.trim();
         Optional<User> userOpt = userRepository.findByUsername(trimmed);
         if (userOpt.isEmpty() && trimmed.contains("@")) {
             userOpt = userRepository.findByEmail(trimmed.toLowerCase());
+        }
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByPhone(trimmed);
         }
 
         if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
@@ -91,6 +94,27 @@ public class UserService {
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Authenticates or creates user via Phone OTP login matching car-copy behavior.
+     */
+    @Transactional
+    public User authenticateOrRegisterByPhoneOtp(String phone) {
+        String cleanPhone = phone.trim();
+        return userRepository.findByPhone(cleanPhone).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setPhone(cleanPhone);
+            String suffix = cleanPhone.length() >= 4 ? cleanPhone.substring(cleanPhone.length() - 4) : cleanPhone;
+            String generatedUsername = "user_" + suffix + "_" + (System.currentTimeMillis() % 1000);
+            if (userRepository.existsByUsername(generatedUsername)) {
+                generatedUsername += "_" + (System.currentTimeMillis() % 100);
+            }
+            newUser.setUsername(generatedUsername);
+            newUser.setPassword("PHONE_AUTH_" + System.currentTimeMillis());
+            newUser.setVerifiedType("PHONE");
+            return userRepository.save(newUser);
+        });
     }
 
     /**
@@ -154,6 +178,35 @@ public class UserService {
             newUser.setUsername(generatedUsername);
             newUser.setPassword("OAUTH_" + System.currentTimeMillis());
             newUser.setVerifiedType("GOOGLE");
+            return userRepository.save(newUser);
+        });
+    }
+
+    /**
+     * OAuth Facebook simulation: System creates or links account to Facebook identity.
+     */
+    @Transactional
+    public User processFacebookOAuth(String emailOrId, String displayName) {
+        String identifier = emailOrId.toLowerCase().trim();
+        Optional<User> userOpt = identifier.contains("@") 
+                ? userRepository.findByEmail(identifier) 
+                : userRepository.findByUsername("fb_" + identifier);
+        return userOpt.orElseGet(() -> {
+            User newUser = new User();
+            if (identifier.contains("@")) {
+                newUser.setEmail(identifier);
+            }
+            String baseUsername = displayName != null && !displayName.isBlank()
+                    ? displayName.toLowerCase().replaceAll("[^a-z0-9]", "")
+                    : "fb_user";
+            if (baseUsername.isBlank()) baseUsername = "fb_user";
+            String gen = baseUsername;
+            if (userRepository.existsByUsername(gen)) {
+                gen += "_" + (System.currentTimeMillis() % 1000);
+            }
+            newUser.setUsername(gen);
+            newUser.setPassword("FB_OAUTH_" + System.currentTimeMillis());
+            newUser.setVerifiedType("FACEBOOK");
             return userRepository.save(newUser);
         });
     }

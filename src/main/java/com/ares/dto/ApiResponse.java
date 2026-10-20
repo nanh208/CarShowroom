@@ -19,12 +19,24 @@ public class ApiResponse {
         this.code = code;
     }
 
+    public ApiResponse(boolean success, String message, Object data) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+    }
+
     public static ApiResponse ok(String message) {
         return new ApiResponse(true, message);
     }
 
     public static ApiResponse ok(String message, String code) {
         return new ApiResponse(true, message, code);
+    }
+
+    public static ApiResponse ok(String message, Object data) {
+        ApiResponse res = new ApiResponse(true, message);
+        res.setData(data);
+        return res;
     }
 
     public static ApiResponse error(String message) {

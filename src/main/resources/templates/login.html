@@ -11,19 +11,23 @@
 
   <div class="auth-wrapper">
     <!-- Ares Store Brand Logo -->
-    <a th:href="@{/login}" class="brand-header">
+    <a th:href="@{/home}" class="brand-header" title="Quay về trang chủ Ares Store">
       <img th:src="@{/images/logo.png}" alt="Ares Store Logo" class="brand-logo-img">
     </a>
 
     <!-- Page Title -->
-    <h1 class="auth-heading">Login</h1>
+    <h1 class="auth-heading">Đăng nhập</h1>
+    <p class="auth-subtitle">Chào mừng trở lại với Ares Store</p>
 
     <!-- Glassmorphic Card -->
     <div class="auth-card">
 
-      <!-- Feedback Alerts -->
+      <!-- Server Feedback Alerts -->
       <div th:if="${param.error}" class="alert alert-danger">
         <span>Tên đăng nhập hoặc mật khẩu không chính xác!</span>
+      </div>
+      <div th:if="${errorMsg}" class="alert alert-danger">
+        <span th:text="${errorMsg}"></span>
       </div>
       <div th:if="${param.registered}" class="alert alert-success">
         <span>Đăng ký thành công! Hãy đăng nhập ngay.</span>
@@ -35,62 +39,126 @@
         <span>Bạn đã đăng xuất an toàn.</span>
       </div>
 
-      <!-- Login Form -->
-      <form th:action="@{/login}" method="post" id="loginForm">
-        <!-- Username -->
-        <div class="form-group">
-          <label class="form-label" for="username">Username</label>
-          <input type="text" id="username" name="username" class="form-control" required autocomplete="username">
-        </div>
+      <!-- Dynamic Client Alert -->
+      <div id="clientErrorAlert" class="alert alert-danger" style="display: none;">
+        <span id="clientErrorMessage"></span>
+      </div>
 
-        <!-- Password -->
-        <div class="form-group">
-          <label class="form-label" for="password">Password</label>
-          <div class="password-input-wrapper">
-            <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password">
-            <button type="button" class="btn-toggle-password" onclick="togglePasswordVisibility('password', this)" aria-label="Hiện/ẩn mật khẩu">
-              <svg class="eye-icon eye-slash" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
-                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
-                <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
-                <line x1="2" y1="2" x2="22" y2="22"></line>
-              </svg>
-              <svg class="eye-icon eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
-              </svg>
-            </button>
+      <!-- MODE 1: Email / Username Login Form -->
+      <div id="emailLoginPane" class="mode-pane active">
+        <form th:action="@{/login}" method="post" id="loginForm">
+          <!-- Username / Email -->
+          <div class="form-group">
+            <label class="form-label" for="username">Tên đăng nhập hoặc Email</label>
+            <input type="text" id="username" name="username" class="form-control" required autocomplete="username" placeholder="Nhập username hoặc email">
           </div>
-        </div>
 
-        <!-- Links Row: Forgot password? & Register -->
-        <div class="links-row">
-          <a th:href="@{/forgot-password}" class="auth-link">Forgot password?</a>
-          <a th:href="@{/register}" class="auth-link">Register</a>
-        </div>
+          <!-- Password -->
+          <div class="form-group">
+            <label class="form-label" for="password">Mật khẩu</label>
+            <div class="password-input-wrapper">
+              <input type="password" id="password" name="password" class="form-control" required autocomplete="current-password" placeholder="Nhập mật khẩu">
+              <button type="button" class="btn-toggle-password" onclick="togglePasswordVisibility('password', this)" aria-label="Hiện/ẩn mật khẩu">
+                <svg class="eye-icon eye-slash" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path>
+                  <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path>
+                  <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path>
+                  <line x1="2" y1="2" x2="22" y2="22"></line>
+                </svg>
+                <svg class="eye-icon eye-open" style="display: none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
 
-        <!-- Login Button -->
-        <button type="submit" class="btn-primary">Login</button>
+          <!-- Links Row: Forgot password? & Register -->
+          <div class="links-row">
+            <a th:href="@{/forgot-password}" class="auth-link">Quên mật khẩu?</a>
+            <a th:href="@{/register}" class="auth-link">Đăng ký</a>
+          </div>
 
-        <!-- Divider Or -->
-        <div class="auth-divider">Or</div>
+          <!-- Login Button -->
+          <button type="submit" class="btn-primary" id="btnEmailLogin">Đăng nhập</button>
 
-        <!-- Sign in with OAuth -->
-        <a th:href="@{/oauth2/google}" class="btn-oauth">
-          <svg class="oauth-icon" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-          </svg>
-          Sign in with OAuth
-        </a>
-      </form>
+          <!-- Divider Or -->
+          <div class="auth-divider"><span>hoặc tiếp tục với</span></div>
+
+          <!-- Social Buttons: Google & Facebook (matching car-copy) -->
+          <div class="social-grid">
+            <a th:href="@{/oauth2/google}" class="btn-social-card btn-google" id="btnGoogleOAuth" title="Đăng nhập qua tài khoản Google">
+              <svg class="oauth-icon" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              Google
+            </a>
+
+            <a th:href="@{/oauth2/facebook}" class="btn-social-card btn-facebook" id="btnFacebookOAuth" title="Đăng nhập qua tài khoản Facebook">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+              </svg>
+              Facebook
+            </a>
+          </div>
+
+          <!-- Switch to Phone OTP Login Mode -->
+          <button type="button" class="btn-switch-mode" id="btnSwitchToPhone">
+            📱 Đăng nhập bằng số điện thoại
+          </button>
+        </form>
+      </div>
+
+      <!-- MODE 2: Phone OTP Login Pane (matching car-copy PhoneLogin.vue) -->
+      <div id="phoneLoginPane" class="mode-pane">
+        <form id="phoneLoginForm" onsubmit="return false;">
+          <!-- Step 1: Input Phone Number -->
+          <div id="phoneStep1">
+            <div class="form-group">
+              <label class="form-label" for="plPhone">Số điện thoại</label>
+              <input type="tel" id="plPhone" name="phone" class="form-control" placeholder="09xx xxx xxx" inputmode="tel" autocomplete="tel">
+            </div>
+            <button type="button" class="btn-primary" id="btnSendPhoneOtp">Gửi mã OTP</button>
+          </div>
+
+          <!-- Step 2: Input OTP Code -->
+          <div id="phoneStep2" style="display: none;">
+            <p class="phone-otp-info">
+              Mã OTP 6 số đã gửi tới <strong id="maskedPhoneDisplay"></strong>. Hiệu lực 5 phút.
+            </p>
+            <div class="form-group">
+              <label class="form-label" for="plCode">Mã OTP</label>
+              <input type="text" id="plCode" name="code" class="form-control otp-input-large" maxlength="6" inputmode="numeric" placeholder="••••••" autocomplete="one-time-code">
+            </div>
+            <button type="button" class="btn-primary" id="btnVerifyPhoneOtp">Xác nhận & đăng nhập</button>
+            <div class="phone-actions-row">
+              <button type="button" class="btn-link-action" id="btnChangePhoneNumber">Đổi số</button>
+              <button type="button" class="btn-link-action" id="btnResendPhoneOtp" disabled>Gửi lại mã (<span id="otpCooldownVal">60s</span>)</button>
+            </div>
+          </div>
+
+          <!-- Switch back to Email Login -->
+          <button type="button" class="btn-switch-back" id="btnSwitchToEmail">
+            ← Đăng nhập bằng email / mật khẩu
+          </button>
+        </form>
+      </div>
+
+      <!-- Card Footer -->
+      <div class="auth-card-footer">
+        Chưa có tài khoản? <a th:href="@{/register}">Đăng ký ngay</a>
+      </div>
 
     </div>
+
+    <!-- Back to Home -->
+    <a th:href="@{/home}" class="back-home-link">← Quay về trang chủ</a>
   </div>
 
   <div id="toast-container" class="toast-container"></div>
-  <script th:src="@{/js/auth.js?v=3.0}"></script>
+  <script th:src="@{/js/auth.js?v=4.0}"></script>
 </body>
 </html>
