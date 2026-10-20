@@ -29,6 +29,10 @@ public class ApiResponse {
         return new ApiResponse(true, message);
     }
 
+    public static ApiResponse ok(String message, Object data) {
+        return new ApiResponse(true, message, data);
+    }
+
     public static ApiResponse ok(String message, String code) {
         return new ApiResponse(true, message, code);
     }

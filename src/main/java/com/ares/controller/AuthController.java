@@ -37,10 +37,7 @@ public class AuthController {
 
     @GetMapping("/")
     public String index(HttpSession session) {
-        if (session.getAttribute("currentUser") != null) {
-            return "redirect:/home";
-        }
-        return "redirect:/login";
+        return "redirect:/home";
     }
 
     @GetMapping("/login")
@@ -189,9 +186,6 @@ public class AuthController {
     @GetMapping("/home")
     public String homePage(HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("currentUser");
-        if (currentUser == null) {
-            return "redirect:/login";
-        }
         model.addAttribute("user", currentUser);
         return "home";
     }
