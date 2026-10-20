@@ -2,6 +2,7 @@ package com.ares.controller;
 
 import com.ares.dto.ApiResponse;
 import com.ares.dto.AuthDtos.LoginRequest;
+import com.ares.dto.AuthDtos.PhoneLoginRequest;
 import com.ares.dto.AuthDtos.RegisterRequest;
 import com.ares.dto.AuthDtos.ResetPasswordRequest;
 import com.ares.dto.AuthDtos.SendCodeRequest;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -99,16 +101,17 @@ public class AuthApiController {
     }
 
     /**
-     * Endpoint for user login via JSON API.
+     * Endpoint for user login via JSON API (Username, Email, or Phone).
      */
     @PostMapping("/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest req, HttpSession session) {
-        if (req.getUsername() == null || req.getUsername().trim().isEmpty() ||
+        String loginId = req.getUsername();
+        if (loginId == null || loginId.trim().isEmpty() ||
             req.getPassword() == null || req.getPassword().isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Vui lòng nhập tên đăng nhập và mật khẩu!"));
         }
 
-        Optional<User> userOpt = userService.authenticate(req.getUsername(), req.getPassword());
+        Optional<User> userOpt = userService.authenticate(loginId, req.getPassword());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             session.setAttribute("currentUser", user);
@@ -117,6 +120,39 @@ public class AuthApiController {
         } else {
             return ResponseEntity.status(401).body(ApiResponse.error("Tên đăng nhập hoặc mật khẩu không chính xác!"));
         }
+    }
+
+    /**
+     * Endpoint for Phone OTP login (matching car-copy PhoneLogin.vue feature).
+     */
+    @PostMapping("/phone-login")
+    public ResponseEntity<ApiResponse> phoneLogin(@RequestBody PhoneLoginRequest req, HttpSession session) {
+        if (req.getPhone() == null || req.getPhone().trim().isEmpty() ||
+            req.getCode() == null || req.getCode().trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Vui lòng nhập đầy đủ số điện thoại và mã OTP!"));
+        }
+
+        String phone = req.getPhone().trim();
+        boolean valid = verificationService.verifyCode(phone, req.getCode());
+        if (!valid) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Mã OTP không chính xác hoặc đã hết hạn!"));
+        }
+
+        User user = userService.authenticateOrRegisterByPhoneOtp(phone);
+        session.setAttribute("currentUser", user);
+        return ResponseEntity.ok(ApiResponse.ok("Đăng nhập thành công!", new UserDto(user)));
+    }
+
+    /**
+     * Return available auth providers (matching car-copy /auth/providers).
+     */
+    @GetMapping("/providers")
+    public ResponseEntity<Map<String, Object>> providers() {
+        return ResponseEntity.ok(Map.of(
+            "google", true,
+            "facebook", true,
+            "phone", true
+        ));
     }
 
     /**

@@ -37,6 +37,12 @@ public class ApiResponse {
         return new ApiResponse(true, message, code);
     }
 
+    public static ApiResponse ok(String message, Object data) {
+        ApiResponse res = new ApiResponse(true, message);
+        res.setData(data);
+        return res;
+    }
+
     public static ApiResponse error(String message) {
         return new ApiResponse(false, message);
     }
