@@ -1,19 +1,37 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Montserrat:wght@700;800;900&family=Playfair+Display:ital,wght@1,700;1,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Oswald:wght@500;600;700&family=Chakra+Petch:wght@500;600;700;800&display=swap');
+
+/* ==========================================================================
+   ARES TOYS & CAR SHOWROOM — GIAO DIỆN RACING POSTER 2.0 (CHUẨN CARSHOWROOM-COPY)
+   ========================================================================== */
 
 :root {
-  --primary-gold: #b38848;
-  --primary-gold-dark: #9a7238;
-  --primary-gold-light: #cfa868;
-  --nav-bg: #aa8144;
-  --nav-border: #916b32;
-  --bg-page: #ffffff;
-  --bg-card-gray: #eaedf0;
-  --border-gray: #d5d9df;
-  --text-dark: #1f2937;
-  --text-muted: #6b7280;
-  --max-content-width: 870px;
-  --radius-sm: 5px;
-  --radius-md: 6px;
+  --v2-orange: #f05a1a;
+  --v2-cream: #f3efe6;
+  --v2-ink: #111111;
+  --bronze: #f05a1a;
+  --bronze-2: #d94a0e;
+  --bronze-3: #b33a08;
+  --bronze-soft: #fde6da;
+  --primary: #f05a1a;
+  --primary-hover: #d94a0e;
+  --primary-active: #b33a08;
+  --accent: #f05a1a;
+  --danger: #e53935;
+  --success: #2e7d32;
+  --warning: #f5b800;
+  --bg: #f3efe6;
+  --bg-2: #ebe5d8;
+  --surface: #ffffff;
+  --tile: #e6e0d3;
+  --tile-2: #d8d1c2;
+  --card: #ffffff;
+  --border: #ddd5c6;
+  --text: #111111;
+  --text-2: #2c2c2c;
+  --muted: #6b665d;
+  --radius: 0px;
+  --head: 'Oswald', 'Be Vietnam Pro', sans-serif;
+  --font-main: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 * {
@@ -24,794 +42,1394 @@
 
 html {
   scroll-behavior: smooth;
+  font-size: 15px;
 }
 
 body {
-  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #1e1e1e;
-  color: var(--text-dark);
-  line-height: 1.5;
+  font-family: var(--font-main);
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-}
-
-/* ==========================================================================
-   KHUNG NGOÀI CONCEPT 2 (NỀN ĐEN XÁM, NHÃN CONCEPT 2, THƯỚC ĐO 1440PX)
-   ========================================================================== */
-.artboard-outer-frame {
-  width: 100%;
-  min-height: 100vh;
-  background-color: #1e1e1e;
-  display: flex;
-  flex-direction: column;
-}
-
-.artboard-title-bar {
-  width: 100%;
-  max-width: 1540px;
-  margin: 0 auto;
-  padding: 16px 28px 10px;
-}
-
-.concept-label {
-  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-  font-size: 24px;
-  font-weight: 500;
-  color: #ffffff;
-  letter-spacing: -0.2px;
-}
-
-.artboard-canvas-row {
-  width: 100%;
-  max-width: 1540px;
-  margin: 0 auto;
-  display: flex;
-  align-items: stretch;
-  justify-content: center;
-  gap: 16px;
-  padding-bottom: 40px;
-}
-
-/* KHUNG TRẮNG 1440PX CHUẨN DESIGN ARTBOARD */
-.canvas-1440-artboard {
-  width: 100%;
-  max-width: 1440px;
-  background-color: #ffffff;
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.45);
-  display: flex;
-  flex-direction: column;
-  position: relative;
   min-height: 100vh;
 }
 
-/* Thước đo 1440 px bên phải */
-.dimension-ruler {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  flex-shrink: 0;
-  color: #a0a5ad;
-  user-select: none;
+a {
+  color: var(--v2-ink);
+  text-decoration: none;
+  transition: color 0.15s;
 }
 
-.ruler-line {
-  flex-grow: 1;
-  width: 1px;
-  background: rgba(255, 255, 255, 0.25);
+a:hover {
+  color: var(--v2-orange);
 }
 
-.ruler-text {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: #e2e8f0;
-  padding: 12px 0;
-  white-space: nowrap;
-  letter-spacing: 0.5px;
+img {
+  max-width: 100%;
+  display: block;
 }
 
-/* VÙNG NỘI DUNG SHOWROOM CĂN GIỮA (~870PX) */
-.inner-showroom-content {
+h1, h2 {
+  font-family: 'Anton', 'Oswald', sans-serif;
+  font-style: italic;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1.1;
+}
+
+h3, h4 {
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.container {
   width: 100%;
-  max-width: var(--max-content-width);
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 22px 14px 20px;
-  flex-grow: 1;
+  padding: 0 32px;
 }
 
-/* ==========================================================================
-   1. HEADER & NAVBAR (LOGO KHÔNG VIỀN + THANH VÀNG ĐỒNG)
-   ========================================================================== */
-.showroom-header {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
-}
-
-.brand-logo-unit {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  flex-shrink: 0;
-  height: 38px;
-  cursor: pointer;
-}
-
-.brand-logo-img {
-  height: 28px;
-  width: auto;
-  object-fit: contain;
-}
-
-.brand-logo-text {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  color: #8c642e;
-  letter-spacing: 0.2px;
-  white-space: nowrap;
-}
-
-.golden-nav-bar {
-  flex-grow: 1;
-  height: 36px;
-  background: linear-gradient(180deg, #b58d4e 0%, #a2793d 100%);
-  border: 1px solid var(--nav-border);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-.nav-links-list {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.nav-tab {
-  color: #ffffff;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: opacity 0.2s ease;
-  cursor: pointer;
-}
-
-.nav-tab:hover {
-  opacity: 0.85;
-}
-
-.nav-tab.active {
-  color: #ffffff;
-  font-weight: 700;
-  border-bottom: 2px solid #ffffff;
-  padding-bottom: 1px;
-}
-
-.nav-utilities {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-.nav-tool-btn {
-  background: none;
-  border: none;
-  color: #ffffff;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px;
-  transition: opacity 0.2s ease;
-}
-
-.nav-tool-btn:hover {
-  opacity: 0.8;
-}
-
-.cart-trigger-btn {
-  background: rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  padding: 3px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #ffffff;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.user-auth-box {
-  display: inline-flex;
-  align-items: center;
-}
-
-.account-btn {
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  text-decoration: none;
-  padding: 2px;
-  transition: transform 0.2s ease;
-}
-
-.account-btn:hover {
-  transform: scale(1.08);
-}
-
-.user-logged-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 3px;
-  padding: 2px 7px;
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.user-logout-link {
-  color: #fecaca;
-  margin-left: 3px;
-  text-decoration: none;
-  font-size: 10px;
-  cursor: pointer;
-}
-
-/* THANH TÌM KIẾM API */
-.search-api-bar {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: var(--radius-sm);
-  padding: 6px 12px;
-  margin-bottom: 12px;
-}
-
-.search-api-bar input {
-  flex-grow: 1;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-size: 13px;
-  color: var(--text-dark);
-}
-
-.search-api-bar button {
-  background: var(--primary-gold-dark);
-  color: #ffffff;
-  border: none;
-  border-radius: 3px;
-  padding: 4px 12px;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.search-api-bar button#searchCloseBtn {
-  background: transparent;
-  color: #64748b;
-  font-size: 18px;
-  padding: 0 4px;
-}
-
-/* ==========================================================================
-   2. HERO HURACAN BANNER & 5 DOTS
-   ========================================================================== */
-.hero-huracan-section {
-  width: 100%;
-  margin-bottom: 12px;
-}
-
-.huracan-card {
-  width: 100%;
-  background-color: #000000;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.huracan-banner-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-}
-
-.hero-dots-row {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 7px;
-}
-
-.concept-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: #cbd5e1;
-  transition: all 0.2s ease;
-}
-
-.concept-dot.active {
-  background-color: #64748b;
-  transform: scale(1.1);
-}
-
-/* Category Mega Panel (khi click Danh Mục) */
-.category-mega-panel {
-  width: 100%;
-  background: linear-gradient(135deg, #a2793d 0%, #8c642e 100%);
-  border-radius: var(--radius-md);
-  padding: 18px 24px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 12px;
-  color: #ffffff;
-}
-
-.cat-panel-left h3 {
-  font-size: 20px;
-  font-weight: 800;
-  color: #ffffff;
-}
-
-.cat-panel-cards {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-grow: 1;
-  justify-content: center;
-}
-
-.cat-preview-card {
-  width: 150px;
-  background: #ffffff;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  text-decoration: none;
-  color: #1f2937;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  transition: transform 0.2s ease;
-}
-
-.cat-preview-card:hover {
-  transform: translateY(-2px);
-}
-
-.cat-preview-thumb {
-  width: 100%;
-  height: 80px;
-  background: #000000;
-  overflow: hidden;
-}
-
-.cat-preview-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.cat-preview-name {
-  padding: 6px;
-  font-size: 11.5px;
-  font-weight: 700;
-  text-align: center;
-}
-
-.cat-view-all-btn {
-  color: #ffffff;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 700;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  padding: 6px 12px;
-  border-radius: 4px;
-}
-
-/* ==========================================================================
-   3. PROMO BANNER: MID-AUTUMN FESTIVAL SALE
-   ========================================================================== */
-.promo-sale-section {
-  width: 100%;
-  margin-bottom: 14px;
-}
-
-.promo-banner-wrapper {
-  width: 100%;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(9, 19, 44, 0.12);
-  background-color: #0b1739;
-}
-
-.promo-banner-exact-img {
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: cover;
-}
-
-/* ==========================================================================
-   4. SHOWROOM SECTIONS & HEADINGS
-   ========================================================================== */
-.showroom-section {
-  width: 100%;
-  margin-bottom: 16px;
-}
-
-.section-heading {
-  font-size: 14px;
-  font-weight: 700;
-  color: #374151;
-  margin-bottom: 7px;
-  letter-spacing: -0.1px;
-}
-
-/* CATEGORIES 5 CỘT TRÒN ĐẸP */
-.categories-buttons-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
-}
-
-.cat-rect-btn {
-  background: #eaedf0;
-  border: 1px solid #d5d9df;
-  border-radius: var(--radius-sm);
-  height: 32px;
-  padding: 0 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.cat-rect-btn:hover,
-.cat-rect-btn.active {
-  background: #dfe3e8;
-  border-color: #b0b7c3;
-}
-
-.cat-rect-btn span {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: #4b5563;
-}
-
-.cat-rect-btn svg {
-  width: 14px;
-  height: 14px;
-  color: #6b7280;
-  flex-shrink: 0;
-}
-
-/* ==========================================================================
-   5. PRODUCT 3-CARD ROWS (BEST SELLERS, RC HIGHLIGHTS, MODEL HIGHLIGHTS)
-   ========================================================================== */
-.cards-3-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 9px;
-}
-
-.concept-car-card {
-  background: #000000;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-  aspect-ratio: 125 / 39;
-  position: relative;
-  cursor: pointer;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.concept-car-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.concept-car-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-/* ==========================================================================
-   6. CUSTOMER REVIEWS (3 CỘT THEO ĐÚNG CONCEPT 2)
-   ========================================================================== */
-.reviews-3-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 9px;
-}
-
-.concept-review-card {
-  background: #eaedf0;
-  border: 1px solid #d5d9df;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.concept-review-photo {
-  width: 100%;
-  height: 72px;
-  background-color: #000000;
-  overflow: hidden;
-}
-
-.concept-review-photo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.concept-review-content {
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
-}
-
-.concept-review-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-.concept-reviewer-name {
-  font-size: 11px;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.concept-reviewer-stars {
-  font-size: 10px;
-  color: #eab308;
-  letter-spacing: 0.5px;
-}
-
-.concept-review-text {
-  font-size: 9.5px;
-  line-height: 1.45;
-  color: #4b5563;
-  margin-bottom: 6px;
-}
-
-.concept-review-date {
-  font-size: 8.5px;
-  color: #9ca3af;
-  margin-top: auto;
-}
-
-/* ==========================================================================
-   7. FOOTER (TRẢI DÀI FULL KHUNG 1440PX)
-   ========================================================================== */
-.showroom-footer {
-  width: 100%;
-  background-color: #d2d5d9;
-  border-top: 1px solid #c4c8cd;
-  padding: 20px 0 16px;
-  margin-top: 16px;
-}
-
-.footer-container {
-  width: 100%;
-  max-width: var(--max-content-width);
+.v2wrap {
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 0 14px;
+  padding: 0 32px;
 }
 
-.footer-row-top {
-  display: flex;
+/* NÚT THỂ THAO GÓC VUÔNG CHUẨN V2 */
+.btn {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #bcc1c8;
-}
-
-.footer-logo-box {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.footer-logo-img {
-  height: 24px;
-  width: auto;
-}
-
-.footer-logo-name {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  color: #8c642e;
-}
-
-.footer-links {
-  display: flex;
-  align-items: center;
-  list-style: none;
-  gap: 16px;
-}
-
-.footer-links a {
-  color: #4b5563;
-  text-decoration: none;
-  font-size: 11px;
-  font-weight: 500;
-  transition: color 0.2s ease;
-}
-
-.footer-links a:hover {
-  color: #111827;
-  text-decoration: underline;
-}
-
-.footer-row-bottom {
-  padding-top: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 9.5px;
-  color: #6b7280;
-}
-
-.footer-disclaimer a,
-.footer-repo a {
-  color: #4b5563;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 0 !important;
+  background: var(--v2-orange);
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 0.88rem;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
   text-decoration: none;
 }
 
-.footer-disclaimer a:hover,
-.footer-repo a:hover {
-  text-decoration: underline;
+.btn:hover {
+  background: var(--v2-ink);
+  color: #fff;
+}
+
+.btn.v2-black {
+  background: var(--v2-ink);
+}
+
+.btn.v2-black:hover {
+  background: var(--v2-orange);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--v2-ink);
+  border: 1.5px solid var(--v2-ink);
+}
+
+.btn-outline:hover {
+  background: var(--v2-ink);
+  color: #fff;
 }
 
 /* ==========================================================================
-   8. MODAL CHI TIẾT SẢN PHẨM & GIỎ HÀNG
+   1. HEADER 2.0 (THANH TRẮNG PHẲNG, LOGO ARES TOYS, CHỮ OSWALD)
    ========================================================================== */
-.modal-overlay {
+.hdr {
   position: fixed;
   top: 0;
   left: 0;
+  right: 0;
+  z-index: 100;
+  height: 64px;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e7e1d4;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.hdr .wrap {
   width: 100%;
-  height: 100%;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 9999;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.hdr .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #111;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.hdr .logo img {
+  height: 34px;
+  width: auto;
+}
+
+.hdr .logo b {
+  color: var(--v2-orange);
+}
+
+.hdr .menu {
+  display: flex;
+  align-items: center;
+  height: 64px;
+  gap: 8px;
+  list-style: none;
+  margin-left: 20px;
+}
+
+.hdr .menu a {
+  position: relative;
+  color: #111;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  opacity: 1;
+  padding: 0 12px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: color 0.15s;
+}
+
+.hdr .menu a:hover {
+  background: none;
+  color: var(--v2-orange);
+}
+
+.hdr .menu a.on {
+  font-weight: 700;
+  color: var(--v2-orange);
+}
+
+.hdr .menu a.on::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  height: 3px;
+  border-radius: 0;
+  background: var(--v2-orange);
+}
+
+/* Tools bên phải Header */
+.hdr .tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hdr .search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd5c6;
+  background: #faf8f3;
+  border-radius: 0;
+  height: 36px;
+}
+
+.hdr .search input {
+  width: 190px;
+  padding: 0 10px 0 10px;
+  background: none;
+  color: #111;
+  border: none;
+  outline: none;
+  font-size: 0.85rem;
+  font-family: var(--font-main);
+}
+
+.hdr .search input::placeholder {
+  color: #8a857b;
+}
+
+.hdr .search .ib {
+  background: none;
+  border: none;
+  color: #111;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  opacity: 0;
+  cursor: pointer;
+}
+
+.hdr .cartpill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid #ddd5c6;
+  background: transparent;
+  color: #111;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.hdr .cartpill:hover {
+  background: #f3efe6;
+  border-color: #111;
+}
+
+.hdr .cartpill span {
+  background: #111;
+  color: #fff;
+  padding: 2px 7px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.hdr .avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 0;
+  background: #111;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.hdr .avatar:hover {
+  background: var(--v2-orange);
+}
+
+/* ==========================================================================
+   2. HERO 2.0 (RACING POSTER VỚI XE CUT-OUT, WATERMARK 1:64, SPEED STREAKS)
+   ========================================================================== */
+.v2hero {
+  position: relative;
+  padding-top: 64px;
+  background: var(--v2-cream);
+  overflow: hidden;
+  border-bottom: 2px solid #111;
+}
+
+/* Khối cam chéo đè nền & sọc đen thể thao */
+.hpanel {
+  position: absolute;
+  z-index: 0;
+  top: 64px;
+  bottom: 0;
+  right: 0;
+  width: max(40%, calc(50% - 620px + 490px));
+  background: var(--v2-orange);
+  clip-path: polygon(34% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.hstripe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 21%;
+  width: 32px;
+  background: #111;
+  transform: skewX(-21deg);
+}
+
+.series {
+  position: absolute;
+  right: 32px;
+  top: 26px;
+  color: #fff;
+  font: 600 0.68rem/1.4 'Oswald', sans-serif;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  text-align: right;
+}
+
+.series b {
+  display: block;
+  font: italic 400 2.2rem/1.1 'Anton', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.grid-hero {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 5fr 7fr;
+  align-items: center;
+  min-height: 560px;
+}
+
+.copy {
+  position: relative;
+  z-index: 3;
+  padding: 48px 0 56px;
+}
+
+.kick {
+  display: block;
+  font: 600 0.75rem/1 'Oswald', sans-serif;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  color: #222;
+  margin-bottom: 18px;
+}
+
+.copy h1 {
+  font-size: clamp(3.4rem, 5.8vw, 5.2rem);
+  margin: 0;
+}
+
+.copy h1 span {
+  display: block;
+  line-height: 1.04;
+}
+
+.copy h1 span.or {
+  color: var(--v2-orange);
+}
+
+.copy p {
+  max-width: 440px;
+  margin: 20px 0 28px;
+  color: #2b2b2b;
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.cta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.cta .btn {
+  height: 48px;
+  padding: 0 24px;
+}
+
+.cta .btn b {
+  margin-left: 8px;
+  font-size: 1.15rem;
+}
+
+.stats {
+  display: flex;
+  gap: clamp(18px, 3vw, 40px);
+  margin: 36px 0 0;
+  padding-top: 20px;
+  border-top: 2px solid #111;
+  flex-wrap: wrap;
+}
+
+.stats div {
+  margin: 0;
+}
+
+.stats dt {
+  font: italic 400 clamp(1.8rem, 3.2vw, 2.5rem)/1 'Anton', sans-serif;
+  color: #111;
+}
+
+.stats dd {
+  margin: 4px 0 0;
+  font: 600 0.72rem 'Oswald', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #555;
+}
+
+/* Sân khấu Stage trưng bày xe cut-out */
+.stage {
+  position: relative;
+  height: 560px;
+}
+
+.tag-top {
+  position: absolute;
+  left: 0;
+  top: 40px;
+  z-index: 1;
+  font: 600 0.65rem/1.6 'Oswald', sans-serif;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #333;
+}
+
+.big {
+  position: absolute;
+  left: 18%;
+  top: 10px;
+  z-index: 0;
+  font: italic 400 clamp(8.5rem, 13vw, 14rem)/1 'Anton', sans-serif;
+  color: transparent;
+  -webkit-text-stroke: 2px rgba(17, 17, 17, 0.85);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
   pointer-events: none;
-  transition: opacity 0.25s ease;
+}
+
+.car {
+  position: absolute;
+  z-index: 2;
+  left: 8%;
+  right: -4%;
+  bottom: 84px;
+  display: block;
+  text-decoration: none;
+  animation: drive 0.9s cubic-bezier(0.16, 0.84, 0.24, 1) 0.15s both;
+}
+
+.car img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 22px 18px rgba(0, 0, 0, 0.35)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  transition: transform 0.3s ease;
+}
+
+.car:hover img {
+  transform: scale(1.03);
+}
+
+.note {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 16px 10px 16px;
+  background: #fff;
+  border-left: 5px solid var(--v2-orange);
+  color: #111;
+  max-width: 270px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  text-decoration: none;
+}
+
+.note b {
+  font: 600 0.86rem/1.3 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.note span {
+  font-size: 0.74rem;
+  color: #555;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.note .pr {
+  font: italic 400 1.35rem/1.1 'Anton', sans-serif;
+  color: var(--v2-orange);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.script {
+  position: absolute;
+  z-index: 3;
+  right: 0;
+  bottom: 34px;
+  font: italic 600 1.25rem/1 Georgia, 'Times New Roman', serif;
+  color: #fff;
+  white-space: nowrap;
+}
+
+@keyframes drive {
+  from {
+    opacity: 0;
+    transform: translateX(25%) skewX(-6deg);
+    filter: blur(3px);
+  }
+  60% {
+    filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ==========================================================================
+   3. TICKER BAR ĐEN SỌC CARO THỂ THAO
+   ========================================================================== */
+.ticker {
+  background: #111;
+  color: #eee;
+  border-bottom: 2px solid #222;
+}
+
+.tk {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 56px;
+}
+
+.flow {
+  font: 500 0.7rem 'Oswald', sans-serif;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: #9a9a9a;
+  white-space: nowrap;
+}
+
+.checker.sm {
+  width: 40px;
+  height: 14px;
+  flex-shrink: 0;
+  background: conic-gradient(#fff 25%, transparent 0 50%, #fff 0 75%, transparent 0) 0 0/7px 7px;
+  transform: skewX(-20deg);
+}
+
+.badges {
+  list-style: none;
+  display: flex;
+  gap: 36px;
+  margin-left: auto;
+}
+
+.badges li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badges svg {
+  color: var(--v2-orange);
+}
+
+/* ==========================================================================
+   4. SECTION: CHỌN GU. CHỌN XE. (CARDS VÁT CHÉO SLANTED)
+   ========================================================================== */
+.pick {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 32px;
+  padding-top: 56px;
+  padding-bottom: 32px;
+  align-items: stretch;
+}
+
+.pick-copy {
+  align-self: center;
+}
+
+.pick-copy h2 {
+  font-size: clamp(2.4rem, 3.6vw, 3.4rem);
+  margin: 0;
+}
+
+.pick-copy h2 span.or {
+  color: var(--v2-orange);
+}
+
+.pick-copy p {
+  font-size: 0.96rem;
+  color: #333;
+  margin: 18px 0 24px;
+}
+
+.checker {
+  display: block;
+  width: 56px;
+  height: 20px;
+  background: conic-gradient(#111 25%, transparent 0 50%, #111 0 75%, transparent 0) 0 0/10px 10px;
+  transform: skewX(-20deg);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 140px;
+  gap: 0;
+  height: 420px;
+}
+
+.ccard {
+  position: relative;
+  margin-right: -26px;
+  overflow: hidden;
+  color: #fff;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  clip-path: polygon(26px 0, 100% 0, calc(100% - 26px) 100%, 0 100%);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ccard + .ccard, .deal {
+  margin-left: 8px;
+}
+
+.ccard img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease-out;
+}
+
+.ccard:hover img {
+  transform: scale(1.08);
+}
+
+.ccard::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 0%, transparent 40%, rgba(0,0,0,0.55) 65%, rgba(0,0,0,0.92) 100%);
+}
+
+.num, .arr, .cc-bot {
+  position: relative;
+  z-index: 1;
+}
+
+.num {
+  position: absolute;
+  top: 18px;
+  left: 40px;
+  font: italic 400 1.6rem/1 'Anton', sans-serif;
+  color: #fff;
+  background: var(--v2-orange);
+  padding: 6px 12px 4px;
+  transform: skewX(-12deg);
+}
+
+.ccard > .arr {
+  position: absolute;
+  top: 18px;
+  right: 40px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  background: #111;
+  color: #fff;
+  font-size: 1.2rem;
+  transition: background-color 0.15s;
+}
+
+.ccard:hover > .arr {
+  background: var(--v2-orange);
+}
+
+.cc-bot {
+  margin-top: auto;
+  padding: 0 44px 24px 30px;
+}
+
+.cc-bot h3 {
+  font: italic 600 1.6rem/1.2 'Oswald', sans-serif;
+  color: #fff;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.cc-bot .sub {
+  display: block;
+  font: 500 0.68rem/1.5 'Oswald', sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ddd;
+  margin: 4px 0 10px;
+}
+
+.cc-bot .nm {
+  display: block;
+  font: 500 0.82rem/1.35 var(--font-main);
+  color: #f2f2f2;
+  margin-bottom: 4px;
+}
+
+.cc-bot b {
+  font: italic 400 1.9rem/1.05 'Anton', sans-serif;
+  color: var(--v2-orange);
+}
+
+.deal {
+  position: relative;
+  background: var(--v2-orange);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 26px 18px 22px 30px;
+  clip-path: polygon(26px 0, 100% 0, 100% 100%, 0 100%);
+  text-decoration: none;
+  transition: background-color 0.15s ease-out;
+}
+
+.deal:hover {
+  background: #d94a0e;
+  color: #fff;
+}
+
+.deal b {
+  font: italic 400 2.3rem/1 'Anton', sans-serif;
+  text-transform: uppercase;
+}
+
+.deal strong {
+  font: italic 400 2.8rem/1 'Anton', sans-serif;
+}
+
+.deal small {
+  font: 600 0.72rem/1.5 'Oswald', sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.deal .arr {
+  margin: auto 0 0;
+  font-size: 1.4rem;
+}
+
+/* ==========================================================================
+   5. SECTIONS CHUNG: FLASH SALE, BÁN CHẠY, RC, MODEL
+   ========================================================================== */
+.block {
+  margin-top: 56px;
+}
+
+.bh {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 18px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #111;
+}
+
+.bh h2 {
+  font-size: 2.1rem;
+  margin: 0;
+  color: #111;
+  display: flex;
+  align-items: center;
+}
+
+.bh h2::before {
+  content: '';
+  display: inline-block;
+  width: 26px;
+  height: 12px;
+  margin-right: 12px;
+  vertical-align: middle;
+  background: conic-gradient(#111 25%, transparent 0 50%, #111 0 75%, transparent 0) 0 0/6px 6px;
+  transform: skewX(-20deg);
+}
+
+.bh a {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #111;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.bh a:hover {
+  color: var(--v2-orange);
+}
+
+.bh .cd {
+  font-family: 'Oswald', sans-serif;
+  font-style: normal;
+  text-transform: none;
+  font-size: 0.95rem;
+  color: var(--v2-orange);
+  margin-left: 12px;
+  font-weight: 600;
+}
+
+.livedot {
+  margin-left: 12px;
+  font: 700 0.65rem/1 'Oswald', sans-serif;
+  letter-spacing: 0.14em;
+  color: #fff;
+  background: var(--v2-orange);
+  padding: 4px 8px;
+  vertical-align: middle;
+}
+
+/* Lưới thẻ sản phẩm phong cách racing */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.tile {
+  position: relative;
+  display: block;
+  border-radius: 0 !important;
+  overflow: hidden;
+  background: #1a1a1a;
+  aspect-ratio: 4/3;
+  color: #fff;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.tile img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.92);
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.tile:hover img {
+  filter: brightness(1);
+  transform: scale(1.05);
+}
+
+.tile .off, .tile .live {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: var(--v2-orange);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 0 !important;
+  transform: skewX(-10deg);
+  font-family: 'Oswald', sans-serif;
+  z-index: 2;
+}
+
+.tile .live {
+  background: var(--v2-ink);
+}
+
+.tile .live.LIVE {
+  background: var(--v2-orange);
+}
+
+.tile .cap {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 48px 18px 16px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.tile .cap span {
+  font: 600 1.1rem/1.3 'Oswald', sans-serif;
+  letter-spacing: 0.02em;
+  color: #ffffff;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tile .cap small {
+  font: italic 400 1.45rem/1.1 'Anton', sans-serif;
+  color: var(--v2-orange);
+  opacity: 1;
+  letter-spacing: 0.02em;
+}
+
+/* ==========================================================================
+   6. BỘ SƯU TẬP THEO CHỦ ĐỀ & SẮP RA MẮT
+   ========================================================================== */
+.cols {
+  padding-top: 56px;
+}
+
+.ch {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  justify-content: space-between;
+  border-bottom: 2px solid #111;
+  padding-bottom: 10px;
+}
+
+.crow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.col {
+  position: relative;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  background: #111;
+  color: #fff;
+  display: block;
+  text-decoration: none;
+}
+
+.col img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.72;
+  transition: transform 0.3s;
+}
+
+.col:hover img {
+  transform: scale(1.06);
+}
+
+.col div {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 16px;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,0.9));
+  border-bottom: 5px solid var(--v2-orange);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.col small {
+  font: 600 0.68rem 'Oswald', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #ccc;
+}
+
+.col b {
+  font: italic 400 1.6rem/1.05 'Anton', sans-serif;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.col em {
+  font-style: normal;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--v2-orange);
+}
+
+/* Đặt trước (Upcoming) */
+.upc {
+  padding: 56px 0 8px;
+}
+
+.up-in {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  background: #111;
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+.up-in::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  background: repeating-linear-gradient(0deg, #fff 0 10px, #111 10px 20px);
+}
+
+.up-copy {
+  padding: 48px 48px 48px 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.up-copy h2 {
+  color: #fff;
+  font-size: clamp(2rem, 3.4vw, 2.8rem);
+  margin: 0;
+}
+
+.up-copy p {
+  color: #ccc;
+  margin: 0;
+  max-width: 440px;
+}
+
+.cdn {
+  display: flex;
+  gap: 28px;
+}
+
+.cdn b {
+  display: block;
+  font: italic 400 2.5rem/1 'Anton', sans-serif;
+  color: var(--v2-orange);
+}
+
+.cdn small {
+  font: 600 0.72rem 'Oswald', sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #aaa;
+}
+
+.up-in img {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   7. CUSTOMER REVIEWS SECTION
+   ========================================================================== */
+.rev {
+  position: relative;
+  display: block;
+  border-radius: 0 !important;
+  overflow: hidden;
+  background: #ffffff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  text-decoration: none;
+}
+
+.rimg {
+  height: 140px;
+  background: #222;
+  overflow: hidden;
+}
+
+.rimg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.rbody {
+  padding: 16px 18px 18px;
+}
+
+.rh {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.rh b {
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.1rem;
+  color: #111;
+  text-transform: uppercase;
+}
+
+.rate {
+  background: var(--v2-cream);
+  border-radius: 0 !important;
+  padding: 3px 10px;
+  color: var(--v2-orange);
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.rbody p {
+  font-size: 0.88rem;
+  color: #4a4a4f;
+  line-height: 1.5;
+  min-height: 3.2em;
+  font-style: italic;
+}
+
+.rbody small {
+  display: block;
+  margin-top: 10px;
+  color: #8a8a8f;
+  font-size: 0.76rem;
+  border-top: 1px solid #eee;
+  padding-top: 8px;
+}
+
+/* ==========================================================================
+   8. FOOTER 2.0 (ĐEN, SỌC CARO TRÊN CÙNG, CHỮ ANTON/OSWALD)
+   ========================================================================== */
+.ftr {
+  background: #111;
+  color: #bbb;
+  position: relative;
+  padding-top: 18px;
+  margin-top: 64px;
+}
+
+.ftr::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 14px;
+  background: conic-gradient(#111 25%, #f3efe6 0 50%, #111 0 75%, #f3efe6 0) 0 0/14px 14px;
+}
+
+.ftr .in {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.ftr .news {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid #2c2c2c;
+  flex-wrap: wrap;
+}
+
+.ftr .news b {
+  color: #fff;
+  font-family: 'Anton', sans-serif;
+  font-style: italic;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: 1.6rem;
+  letter-spacing: 0.02em;
+}
+
+.ftr .news span {
+  font-size: 0.88rem;
+  color: #999;
+}
+
+.ftr .news form {
+  display: flex;
+  gap: 8px;
+  flex: 0 1 440px;
+}
+
+.ftr .news input {
+  background: #1d1d1d;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 0 !important;
+  flex: 1;
+  height: 42px;
+  padding: 0 16px;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.ftr .news input:focus {
+  border-color: var(--v2-orange);
+}
+
+.ftr .main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+  padding: 36px 0 20px;
+  flex-wrap: wrap;
+}
+
+.ftr .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.5rem;
+  color: #fff;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+
+.ftr .logo b {
+  color: var(--v2-orange);
+}
+
+.ftr nav {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.ftr a {
+  color: #ddd;
+  font-size: 0.88rem;
+  text-decoration: none;
+}
+
+.ftr a:hover {
+  color: var(--v2-orange);
+}
+
+.ftr .bottom {
+  border-top: 1px solid #222;
+  padding: 20px 0 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #777;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   9. MODALS (PRODUCT DETAILS & CART)
+   ========================================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s;
 }
 
 .modal-overlay.active {
   opacity: 1;
-  pointer-events: auto;
+  visibility: visible;
 }
 
 .modal-box {
   background: #ffffff;
-  border-radius: 10px;
+  border-radius: 0 !important;
+  border-top: 6px solid var(--v2-orange);
   width: 100%;
   max-width: 820px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
   display: grid;
   grid-template-columns: 1fr 1.1fr;
-  overflow: hidden;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.35);
   position: relative;
-  transform: translateY(20px);
-  transition: transform 0.25s ease;
-}
-
-.modal-overlay.active .modal-box {
-  transform: translateY(0);
 }
 
 .modal-close-btn {
   position: absolute;
-  top: 10px;
+  top: 12px;
   right: 14px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  font-size: 20px;
+  width: 34px;
+  height: 34px;
+  background: #111;
+  border: none;
+  color: #ffffff;
+  font-size: 1.3rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #64748b;
   cursor: pointer;
   z-index: 10;
-  transition: all 0.2s ease;
 }
 
 .modal-close-btn:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: var(--v2-orange);
 }
 
 .modal-media {
-  background: #000000;
-  position: relative;
+  background: #111;
+  padding: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 16px;
 }
 
 .modal-media img {
-  max-width: 100%;
-  max-height: 340px;
+  width: 100%;
+  max-height: 360px;
   object-fit: contain;
 }
 
-.modal-media-badge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  background: rgba(181, 141, 78, 0.9);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 4px;
-}
-
 .modal-info {
-  padding: 24px;
+  padding: 28px 24px;
   display: flex;
   flex-direction: column;
 }
 
 .modal-category-tag {
-  font-size: 11px;
+  color: var(--v2-orange);
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.82rem;
   font-weight: 700;
-  color: var(--primary-gold-dark);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.1em;
   margin-bottom: 4px;
 }
 
 .modal-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: #0f172a;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #111;
+  line-height: 1.2;
   margin-bottom: 8px;
 }
 
@@ -819,228 +1437,210 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 0.85rem;
+  color: #4b5563;
   margin-bottom: 12px;
-}
-
-.modal-rating-stars {
-  color: #eab308;
-  font-size: 13px;
-}
-
-.modal-rating-text {
-  font-size: 11.5px;
-  color: #64748b;
 }
 
 .modal-price-row {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  margin-bottom: 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f1f5f9;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .modal-price {
-  font-size: 20px;
-  font-weight: 800;
-  color: #b58d4e;
+  font-family: 'Anton', sans-serif;
+  font-style: italic;
+  font-size: 2rem;
+  color: var(--v2-orange);
 }
 
 .modal-price-old {
-  font-size: 13px;
-  color: #94a3b8;
+  font-size: 0.95rem;
+  color: var(--muted);
   text-decoration: line-through;
 }
 
 .modal-price-discount {
-  background: #fee2e2;
-  color: #ef4444;
-  font-size: 11px;
+  background: var(--v2-orange);
+  color: #ffffff;
+  font-family: 'Oswald', sans-serif;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
+  padding: 2px 7px;
+  transform: skewX(-10deg);
 }
 
 .modal-specs-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  background: #f8fafc;
-  padding: 10px 12px;
-  border-radius: 6px;
-  margin-bottom: 12px;
-}
-
-.modal-spec-item {
-  display: flex;
-  flex-direction: column;
-  font-size: 11px;
+  gap: 8px 14px;
+  padding: 12px;
+  background: var(--v2-cream);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+  font-size: 0.85rem;
 }
 
 .modal-spec-label {
-  color: #64748b;
-  font-weight: 500;
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-family: 'Oswald', sans-serif;
 }
 
 .modal-spec-value {
-  color: #1e293b;
-  font-weight: 700;
+  font-weight: 600;
+  color: #111;
 }
 
 .modal-description {
-  font-size: 11.5px;
-  color: #475569;
+  font-size: 0.88rem;
+  color: #333;
   line-height: 1.5;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .modal-action-row {
   display: flex;
-  align-items: center;
   gap: 12px;
+  align-items: center;
   margin-top: auto;
 }
 
 .modal-qty-control {
   display: inline-flex;
   align-items: center;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  overflow: hidden;
+  border: 1.5px solid #111;
+  background: #fff;
 }
 
 .modal-qty-btn {
-  background: #f1f5f9;
+  background: var(--v2-cream);
   border: none;
-  width: 30px;
-  height: 32px;
+  width: 38px;
+  height: 42px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 1.1rem;
   font-weight: 700;
-  color: #334155;
 }
 
 .modal-qty-num {
-  padding: 0 10px;
-  font-size: 12px;
+  width: 40px;
+  text-align: center;
   font-weight: 700;
+  font-family: 'Oswald', sans-serif;
 }
 
 .modal-btn-add {
-  flex-grow: 1;
-  background: linear-gradient(180deg, #b58d4e 0%, #a2793d 100%);
+  flex: 1;
+  height: 42px;
+  background: var(--v2-orange);
   color: #ffffff;
   border: none;
-  border-radius: 4px;
-  height: 32px;
-  font-size: 12px;
+  font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  display: inline-flex;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
+  gap: 8px;
+  transition: background-color 0.15s;
 }
 
 .modal-btn-add:hover {
-  opacity: 0.9;
+  background: var(--v2-ink);
 }
 
-.modal-trust-badges {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid #f1f5f9;
-  font-size: 10.5px;
-  color: #64748b;
-}
-
-/* CART MODAL */
+/* Cart Modal */
 .cart-modal-box {
   display: flex;
   flex-direction: column;
-  max-width: 500px;
-  padding: 22px;
+  max-width: 520px;
+  padding: 24px;
 }
 
 .cart-modal-title {
-  font-size: 16px;
-  font-weight: 800;
-  color: #0f172a;
-  margin-bottom: 14px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 1.4rem;
+  margin-bottom: 18px;
+  border-bottom: 2px solid #111;
+  padding-bottom: 12px;
 }
 
 .cart-items-list {
-  max-height: 280px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  margin-bottom: 16px;
+  gap: 12px;
+  max-height: 320px;
+  overflow-y: auto;
+  margin-bottom: 18px;
 }
 
 .cart-item-row {
   display: flex;
-  align-items: center;
   gap: 12px;
-  padding: 8px;
-  background: #f8fafc;
-  border-radius: 6px;
+  align-items: center;
+  padding: 10px;
+  background: var(--v2-cream);
+  border: 1px solid var(--border);
 }
 
-.cart-item-img {
-  width: 50px;
-  height: 35px;
+.cart-item-thumb {
+  width: 64px;
+  height: 44px;
   object-fit: cover;
-  border-radius: 3px;
-  background: #000;
+  background: #111;
 }
 
 .cart-item-details {
-  flex-grow: 1;
+  flex: 1;
 }
 
-.cart-item-name {
-  font-size: 12px;
+.cart-item-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.cart-item-price {
+  font-size: 0.85rem;
+  color: var(--v2-orange);
+  font-family: 'Oswald', sans-serif;
   font-weight: 700;
-  color: #1e293b;
 }
 
-.cart-item-sub {
-  font-size: 11px;
-  color: #64748b;
-}
-
-.cart-item-del-btn {
-  background: none;
+.cart-item-remove {
   border: none;
-  color: #ef4444;
-  font-size: 16px;
+  background: none;
+  color: var(--danger);
   cursor: pointer;
-  padding: 4px;
+  font-size: 1.2rem;
+  padding: 4px 8px;
 }
 
 .cart-footer-summary {
-  border-top: 1px solid #e2e8f0;
-  padding-top: 12px;
+  border-top: 2px solid #111;
+  padding-top: 14px;
 }
 
 .cart-total-row {
   display: flex;
   justify-content: space-between;
-  font-size: 14px;
+  font-size: 1.2rem;
   font-weight: 700;
-  color: #0f172a;
   margin-bottom: 14px;
+  font-family: 'Oswald', sans-serif;
 }
 
 .cart-total-val {
-  color: #b58d4e;
-  font-size: 16px;
+  color: var(--v2-orange);
+  font-family: 'Anton', sans-serif;
+  font-style: italic;
+  font-size: 1.6rem;
 }
 
 .cart-modal-actions {
@@ -1049,59 +1649,166 @@ body {
 }
 
 .cart-btn-clear {
-  flex: 1;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 4px;
-  padding: 7px;
-  font-size: 12px;
+  padding: 12px 18px;
+  border: 1.5px solid #111;
+  background: #ffffff;
+  font-family: 'Oswald', sans-serif;
   font-weight: 600;
+  text-transform: uppercase;
   cursor: pointer;
 }
 
 .cart-btn-checkout {
-  flex: 2;
-  background: #16a34a;
-  color: #ffffff;
+  flex: 1;
+  padding: 12px;
   border: none;
-  border-radius: 4px;
-  padding: 7px;
-  font-size: 12px;
+  background: var(--v2-orange);
+  color: #ffffff;
+  font-family: 'Oswald', sans-serif;
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   cursor: pointer;
 }
 
+.cart-btn-checkout:hover {
+  background: var(--v2-ink);
+}
+
+/* Toast */
+.toast-notice {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #111;
+  color: #ffffff;
+  padding: 12px 22px;
+  font-family: 'Oswald', sans-serif;
+  letter-spacing: 0.04em;
+  font-size: 0.95rem;
+  border-left: 4px solid var(--v2-orange);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transform: translateY(100px);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
+}
+
+.toast-notice.show {
+  transform: translateY(0);
+  opacity: 1;
+}
+
 /* ==========================================================================
-   9. RESPONSIVE MEDIA QUERIES
+   10. RESPONSIVE
    ========================================================================== */
-@media (max-width: 1540px) {
-  .dimension-ruler {
+@media (max-width: 1200px) {
+  .pick {
+    grid-template-columns: 220px 1fr;
+    gap: 20px;
+  }
+  .cards {
+    grid-template-columns: 1fr 1fr 1fr 110px;
+  }
+  .cc-bot h3 {
+    font-size: 1.25rem;
+  }
+  .cc-bot b {
+    font-size: 1.5rem;
+  }
+  .num {
+    left: 34px;
+  }
+  .ccard > .arr {
+    right: 34px;
+  }
+  .cc-bot .sub {
     display: none;
+  }
+  .deal {
+    padding: 22px 10px 18px 28px;
+  }
+  .deal b {
+    font-size: 1.6rem;
+  }
+  .deal strong {
+    font-size: 1.85rem;
+  }
+  .tag-top {
+    display: none;
+  }
+  .big {
+    left: 4%;
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1000px) {
+  .grid-hero {
+    grid-template-columns: 1fr;
+  }
+  .stage {
+    height: 420px;
+  }
+  .car {
+    bottom: 60px;
+  }
+  .crow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .pick {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .hdr .menu {
+    display: none;
+  }
+  .grid-3, .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    height: auto;
+  }
+  .ccard {
+    min-height: 280px;
+    margin: 0 !important;
+    clip-path: none;
+  }
+  .deal {
+    margin: 0;
+    clip-path: none;
+    min-height: 140px;
+  }
+  .badges {
+    display: none;
+  }
+  .up-in {
+    grid-template-columns: 1fr;
+  }
+  .up-in img {
+    min-height: 0;
+    aspect-ratio: 16/10;
+    order: -1;
+  }
   .modal-box {
     grid-template-columns: 1fr;
-    max-height: 90vh;
-    overflow-y: auto;
   }
-  .categories-buttons-row {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .cards-3-row {
+}
+
+@media (max-width: 599px) {
+  .grid-3, .grid-4 {
     grid-template-columns: 1fr;
   }
-  .reviews-3-row {
+  .cards {
     grid-template-columns: 1fr;
   }
-  .footer-row-top {
-    flex-direction: column;
-    gap: 12px;
-    align-items: flex-start;
-  }
-  .footer-links {
-    flex-wrap: wrap;
-    gap: 10px;
+  .ccard {
+    min-height: 220px;
   }
 }
