@@ -124,9 +124,9 @@ async function loadCategoriesApi() {
     };
 
     container.innerHTML = categories.map((cat, idx) => `
-      <button class="cat-rect-btn ${idx === 0 ? 'active' : ''}" data-cat="${cat.id}" onclick="filterCategoryApi('${cat.id}', this)">
+      <button class="cat-rect-btn ${idx === 0 ? 'active' : ''}" data-cat="${cat.code}" onclick="filterCategoryApi('${cat.code}', this)">
         <span>${cat.name}</span>
-        ${iconMap[cat.id] || iconMap['RC_CARS']}
+        ${iconMap[cat.code] || iconMap['RC_CARS']}
       </button>
     `).join('');
 
