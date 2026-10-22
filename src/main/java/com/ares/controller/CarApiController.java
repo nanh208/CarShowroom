@@ -5,6 +5,7 @@ import com.ares.dto.ShopDtos.CategoryDto;
 import com.ares.dto.ShopDtos.ReviewDto;
 import com.ares.model.Car;
 import com.ares.service.CarService;
+import com.ares.service.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,10 +21,12 @@ import java.util.Optional;
 public class CarApiController {
 
     private final CarService carService;
+    private final CategoryService categoryService;
 
     @Autowired
-    public CarApiController(CarService carService) {
+    public CarApiController(CarService carService, CategoryService categoryService) {
         this.carService = carService;
+        this.categoryService = categoryService;
     }
 
     /**
@@ -60,7 +63,7 @@ public class CarApiController {
      */
     @GetMapping("/categories")
     public ResponseEntity<ApiResponse> getCategories() {
-        List<CategoryDto> categories = carService.getCategories();
+        List<CategoryDto> categories = categoryService.getCategories();
         return ResponseEntity.ok(ApiResponse.ok("Danh sách danh mục sản phẩm", categories));
     }
 
