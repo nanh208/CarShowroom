@@ -29,12 +29,15 @@ public class AccountApiController {
 
     public static class ProfileUpdateRequest {
         private String phone;
+        private String avatarUrl;
         private Integer birthDay;
         private Integer birthMonth;
         private String gender;
 
         public String getPhone() { return phone; }
         public void setPhone(String phone) { this.phone = phone; }
+        public String getAvatarUrl() { return avatarUrl; }
+        public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
         public Integer getBirthDay() { return birthDay; }
         public void setBirthDay(Integer birthDay) { this.birthDay = birthDay; }
         public Integer getBirthMonth() { return birthMonth; }
@@ -71,6 +74,14 @@ public class AccountApiController {
                 return ResponseEntity.badRequest().body(ApiResponse.error("Số điện thoại đã được sử dụng!"));
             }
             user.setPhone(phone.isEmpty() ? null : phone);
+        }
+
+        if (request.getAvatarUrl() != null) {
+            String avatarUrl = request.getAvatarUrl().trim();
+            if (avatarUrl.length() > 2048) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Đường dẫn ảnh đại diện quá dài"));
+            }
+            user.setAvatarUrl(avatarUrl.isEmpty() ? null : avatarUrl);
         }
 
         Integer day = request.getBirthDay();
