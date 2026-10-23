@@ -106,26 +106,16 @@ public class CarService {
     }
 
     public List<Car> getAllCars(String section, String category, String search) {
-        return getAllCars(section, category, search, null, null, null);
-    }
-
-    public List<Car> getAllCars(String section, String category, String search,
-                                Long minPrice, Long maxPrice, Boolean inStock) {
-        return carRepository.findByFilters(
-                normalizeCode(section),
-                normalizeCode(category),
-                normalizeSearch(search),
-                minPrice,
-                maxPrice,
-                inStock);
-    }
-
-    private String normalizeCode(String value) {
-        return value == null || value.isBlank() ? null : value.trim().toUpperCase();
-    }
-
-    private String normalizeSearch(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
+        if (search != null && !search.trim().isEmpty()) {
+            return carRepository.findByNameContainingIgnoreCase(search.trim());
+        }
+        if (section != null && !section.trim().isEmpty()) {
+            return carRepository.findBySection(section.trim().toUpperCase());
+        }
+        if (category != null && !category.trim().isEmpty()) {
+            return carRepository.findByCategory(category.trim().toUpperCase());
+        }
+        return carRepository.findAll();
     }
 
     public Optional<Car> getCarById(Long id) {
