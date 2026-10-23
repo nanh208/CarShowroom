@@ -91,6 +91,7 @@ public class AuthDtos {
         private String username;
         private String email;
         private String phone;
+        private String avatarUrl;
         private Integer birthDay;
         private Integer birthMonth;
         private String gender;
@@ -104,6 +105,7 @@ public class AuthDtos {
                 this.username = user.getUsername();
                 this.email = user.getEmail();
                 this.phone = user.getPhone();
+                this.avatarUrl = user.getAvatarUrl();
                 this.birthDay = user.getBirthDay();
                 this.birthMonth = user.getBirthMonth();
                 this.gender = user.getGender();
@@ -119,6 +121,8 @@ public class AuthDtos {
         public void setEmail(String email) { this.email = email; }
         public String getPhone() { return phone; }
         public void setPhone(String phone) { this.phone = phone; }
+        public String getAvatarUrl() { return avatarUrl; }
+        public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
         public Integer getBirthDay() { return birthDay; }
         public void setBirthDay(Integer birthDay) { this.birthDay = birthDay; }
         public Integer getBirthMonth() { return birthMonth; }
