@@ -28,15 +28,22 @@ public class CarApiController {
 
     /**
      * GET /api/cars
-     * Filter by section (BEST_SELLER, RC_HIGHLIGHTS, MODEL_HIGHLIGHTS)
-     * or category (RC_CARS, MODEL_CARS) or keyword search
+     * Combine section/category/search filters with price bounds and stock status.
      */
     @GetMapping("/cars")
     public ResponseEntity<ApiResponse> getCars(
             @RequestParam(required = false) String section,
             @RequestParam(required = false) String category,
-            @RequestParam(required = false) String search) {
-        List<Car> cars = carService.getAllCars(section, category, search);
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long minPrice,
+            @RequestParam(required = false) Long maxPrice,
+            @RequestParam(required = false) Boolean inStock) {
+        if ((minPrice != null && minPrice < 0) || (maxPrice != null && maxPrice < 0)
+                || (minPrice != null && maxPrice != null && minPrice > maxPrice)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Khoảng giá không hợp lệ!"));
+        }
+
+        List<Car> cars = carService.getAllCars(section, category, search, minPrice, maxPrice, inStock);
         return ResponseEntity.ok(ApiResponse.ok("Danh sách siêu xe mô hình", cars));
     }
 
