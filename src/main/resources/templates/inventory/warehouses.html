@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản lý kho bãi - Ares Store</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+  <style>
+    body { justify-content: flex-start; }
+    .page { width: min(1180px, 100%); margin: 0 auto; }
+    .top, .panel, .warehouse-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 22px; margin-bottom: 18px; backdrop-filter: blur(16px); }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+    .top h1 { font-size:24px; margin-bottom:5px; }
+    .top p, .muted { color:#94a3b8; font-size:13px; }
+    a { color:#7dd3fc; text-decoration:none; }
+    .warehouse-grid, .forms { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; }
+    .warehouse-card small { color:#94a3b8; }
+    .warehouse-card strong { display:block; font-size:24px; margin:8px 0; }
+    .forms .panel { margin:0; }
+    h2 { font-size:17px; margin-bottom:15px; }
+    label { display:block; color:#cbd5e1; font-size:12px; margin:11px 0 5px; }
+    input, select { width:100%; height:40px; border-radius:8px; border:1px solid #475569; padding:0 10px; color:#0f172a; background:#f1f5f9; font:inherit; }
+    button { margin-top:14px; border:0; border-radius:8px; padding:10px 15px; background:#0284c7; color:white; font-weight:700; cursor:pointer; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; min-width:620px; }
+    th, td { text-align:left; padding:11px 10px; border-bottom:1px solid rgba(255,255,255,.08); font-size:13px; }
+    th { color:#94a3b8; font-weight:600; }
+    .notice { padding:12px 14px; border-radius:9px; margin-bottom:15px; }
+    .ok { color:#a7f3d0; background:rgba(16,185,129,.13); }
+    .err { color:#fecaca; background:rgba(239,68,68,.13); }
+    @media(max-width:600px){ body{padding:14px 10px}.top,.panel,.warehouse-card{padding:16px}.top h1{font-size:20px} }
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="top">
+    <div><h1>📦 Quản lý kho bãi</h1><p>Theo dõi tồn theo chi nhánh, điều chỉnh và điều chuyển hàng.</p></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/home}">Trang chủ</a> &nbsp; <a th:href="@{/logout}">Đăng xuất</a></div>
+  </header>
+
+  <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
+  <div th:if="${errorMessage}" class="notice err" th:text="${errorMessage}"></div>
+
+  <section class="warehouse-grid" aria-label="Tổng quan kho">
+    <article class="warehouse-card" th:each="warehouse : ${warehouses}">
+      <small th:text="${warehouse.code}">HCM</small>
+      <strong th:text="${totals[warehouse.id]}">0</strong>
+      <div th:text="${warehouse.name}">Kho Tân Bình</div>
+      <small th:text="${warehouse.location}">TP. Hồ Chí Minh</small>
+    </article>
+  </section>
+
+  <section class="forms">
+    <form class="panel" th:action="@{/inventory/warehouses/items}" method="post">
+      <h2>Thêm mặt hàng</h2>
+      <label for="sku">Mã SKU</label><input id="sku" name="sku" required maxlength="50" placeholder="CAR-001">
+      <label for="name">Tên mặt hàng</label><input id="name" name="name" required maxlength="160" placeholder="Mô hình xe...">
+      <label for="category">Danh mục</label><input id="category" name="category" maxlength="100" placeholder="Mô hình 1:18">
+      <button type="submit">Thêm mặt hàng</button>
+    </form>
+    <form class="panel" th:action="@{/inventory/warehouses/adjust}" method="post">
+      <h2>Điều chỉnh tồn</h2>
+      <label for="adjust-item">Mặt hàng</label><select id="adjust-item" name="itemId" required><option value="" disabled selected>Chọn mặt hàng</option><option th:each="item : ${items}" th:value="${item.id}" th:text="|${item.sku} · ${item.name}|"></option></select>
+      <label for="adjust-warehouse">Kho</label><select id="adjust-warehouse" name="warehouseId" required><option th:each="warehouse : ${warehouses}" th:value="${warehouse.id}" th:text="|${warehouse.code} · ${warehouse.name}|"></option></select>
+      <label for="delta">Thay đổi số lượng (âm để giảm)</label><input id="delta" name="delta" type="number" required min="-100000" max="100000" placeholder="10">
+      <label for="adjust-note">Ghi chú</label><input id="adjust-note" name="note" maxlength="300" placeholder="Nhập kho / kiểm kê">
+      <button type="submit">Lưu điều chỉnh</button>
+    </form>
+    <form class="panel" th:action="@{/inventory/warehouses/transfer}" method="post">
+      <h2>Điều chuyển giữa kho</h2>
+      <label for="transfer-item">Mặt hàng</label><select id="transfer-item" name="itemId" required><option value="" disabled selected>Chọn mặt hàng</option><option th:each="item : ${items}" th:value="${item.id}" th:text="|${item.sku} · ${item.name}|"></option></select>
+      <label for="from">Kho xuất</label><select id="from" name="fromId" required><option th:each="warehouse : ${warehouses}" th:value="${warehouse.id}" th:text="|${warehouse.code} · ${warehouse.name}|"></option></select>
+      <label for="to">Kho nhận</label><select id="to" name="toId" required><option th:each="warehouse : ${warehouses}" th:value="${warehouse.id}" th:text="|${warehouse.code} · ${warehouse.name}|"></option></select>
+      <label for="quantity">Số lượng</label><input id="quantity" name="quantity" type="number" min="1" required>
+      <label for="transfer-note">Ghi chú</label><input id="transfer-note" name="note" maxlength="300">
+      <button type="submit">Điều chuyển</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Tồn kho theo mặt hàng và chi nhánh</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Mã SKU</th><th>Mặt hàng</th><th>Kho</th><th>Số lượng</th></tr></thead>
+      <tbody>
+        <tr th:each="stock : ${stocks}"><td th:text="${stock.item.sku}"></td><td th:text="${stock.item.name}"></td><td th:text="|${stock.warehouse.code} · ${stock.warehouse.name}|"></td><td th:text="${stock.quantity}"></td></tr>
+        <tr th:if="${#lists.isEmpty(stocks)}"><td colspan="4" class="muted">Chưa có số dư tồn. Thêm mặt hàng rồi điều chỉnh tồn để bắt đầu.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="panel">
+    <h2>Lịch sử nhập, xuất và điều chuyển gần đây</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Thời gian</th><th>Mặt hàng</th><th>Loại</th><th>Từ kho</th><th>Đến kho</th><th>Số lượng</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr th:each="movement : ${movements}">
+          <td th:text="${#temporals.format(movement.createdAt, 'dd/MM/yyyy HH:mm')}"></td><td th:text="${movement.item.name}"></td><td th:text="${movement.movementType}"></td>
+          <td th:text="${movement.fromWarehouse != null ? movement.fromWarehouse.code : '—'}"></td><td th:text="${movement.toWarehouse != null ? movement.toWarehouse.code : '—'}"></td><td th:text="${movement.quantity}"></td><td th:text="${movement.note != null ? movement.note : '—'}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(movements)}"><td colspan="7" class="muted">Chưa có giao dịch kho.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</main>
+</body>
+</html>
