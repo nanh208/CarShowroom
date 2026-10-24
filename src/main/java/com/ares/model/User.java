@@ -21,6 +21,8 @@ public class User {
 
     private String phone;
 
+    private String avatarUrl;
+
     private Integer birthDay;
 
     private Integer birthMonth;
@@ -82,6 +84,14 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public Integer getBirthDay() {

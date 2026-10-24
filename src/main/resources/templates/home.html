@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Concept 2 - Ares Store</title>
+  <title>ARES Toys — Cửa Hàng Xe Đồ Chơi, Mô Hình & RC Chính Hãng</title>
   
   <link rel="stylesheet" th:href="@{/css/home.css}">
   <link rel="icon" type="image/png" th:href="@{/images/logo.png}">
@@ -11,396 +11,597 @@
 <body>
 
   <!-- ====================================================================
-       KHUNG NGOÀI CONCEPT 2 (NỀN ĐEN XÁM, NHÃN CONCEPT 2, THƯỚC ĐO 1440PX)
+       1. HEADER 2.0 (THANH TRẮNG PHẲNG, LOGO ARES TOYS, CHỮ OSWALD)
        ==================================================================== -->
-  <div class="artboard-outer-frame">
-    <div class="artboard-title-bar">
-      <h1 class="concept-label">Concept 2</h1>
+  <header class="hdr" id="siteHeader">
+    <div class="wrap">
+      <!-- Logo thương hiệu Ares Toys -->
+      <a th:href="@{/home}" class="logo" title="Ares Toys">
+        <img th:src="@{/images/logo.png}" alt="Ares Logo">
+        <span><b>Ares</b> Toys</span>
+      </a>
+
+      <div class="nav-actions">
+        <span style="font-size: 14px; color: #cbd5e1;">
+          Xin chào, <strong style="color: #38bdf8;" th:text="${user.username}">Username</strong>!
+        </span>
+        <a th:href="@{/inventory/warehouses}" class="btn-testdrive" style="width:auto;padding:9px 16px;margin:0;text-decoration:none">📦 Quản lý kho</a>
+        <a th:href="@{/logout}" class="btn-nav-logout">
+          <span>🚪</span> Đăng xuất
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ====================================================================
+       2. HERO 2.0 (RACING POSTER VỚI XE CUT-OUT, WATERMARK 1:64)
+       ==================================================================== -->
+  <section class="v2hero">
+    <!-- Khối cam vát chéo thể thao & sọc cờ đen -->
+    <div class="hpanel" aria-hidden="true">
+      <i class="hstripe"></i>
+      <span class="series">Collector series<b>2026</b></span>
     </div>
 
-    <div class="artboard-canvas-row">
-      
-      <!-- ================================================================
-           ARTBOARD SHOWROOM 1440PX CHÍNH XÁC THEO THIẾT KẾ
-           ================================================================ -->
-      <main class="canvas-1440-artboard">
+    <div class="v2wrap grid-hero">
+      <!-- Cột tiêu đề trái -->
+      <div class="copy">
+        <span class="kick">Ares Toys</span>
+        <h1><span>Nhỏ tỉ lệ.</span><span class="or">Lớn đam mê.</span></h1>
+        <p>Thế giới xe mô hình và RC chính hãng dành cho những người thật sự đam mê.</p>
+        <div class="cta">
+          <a href="#pickSection" class="btn v2-black">Khám phá bộ sưu tập <b aria-hidden="true">›</b></a>
+          <a href="#flashSaleSection" class="btn btn-outline">Xem xe mới về <b aria-hidden="true">›</b></a>
+        </div>
+        <dl class="stats">
+          <div><dt>42+</dt><dd>Mẫu chính hãng</dd></div>
+          <div><dt>17</dt><dd>Thương hiệu</dd></div>
+          <div><dt>4.8★</dt><dd>Đánh giá trung bình</dd></div>
+        </dl>
+      </div>
+
+      <!-- Cột sân khấu phải với xe cut-out & chữ chìm 1:64 -->
+      <div class="stage">
+        <span class="tag-top" aria-hidden="true">Diecast cars<br>RC models<br>for collectors</span>
+        <div class="big" aria-hidden="true">1:64</div>
         
-        <!-- Khung nội dung chính căn giữa (~870px) -->
-        <div class="inner-showroom-content">
-          
-          <!-- 1. HEADER & NAVBAR VÀNG ĐỒNG -->
-          <header class="showroom-header">
-            <!-- Logo Spartan Ares Store -->
-            <a th:href="@{/home}" class="brand-logo-unit" title="Ares Store">
-              <img th:src="@{/images/logo.png}" alt="Ares Store Logo" class="brand-logo-img">
-              <span class="brand-logo-text">Ares Store</span>
-            </a>
+        <!-- Xe cut-out nổi khối đặc trưng của Ares Toys -->
+        <a href="javascript:void(0)" onclick="openProductModal(1)" class="car" aria-label="Hot Wheels Premium Racer">
+          <img th:src="@{/images/toys/cut/hw-racer.webp}" width="1600" height="990" alt="Hot Wheels Racer Cutout" fetchpriority="high">
+        </a>
 
-            <!-- Thanh menu vàng đồng -->
-            <nav class="golden-nav-bar">
-              <ul class="nav-links-list">
-                <li><a href="javascript:void(0)" class="nav-tab active" id="navHomeTab">Home</a></li>
-                <li><a href="javascript:void(0)" class="nav-tab" id="navCategoryTab">Danh Mục</a></li>
-                <li><a href="#categoriesSection" class="nav-tab">Phụ kiện</a></li>
-                <li><a href="#bestSellersSection" class="nav-tab">Kho Ảnh</a></li>
-                <li><a href="#customerReviewsSection" class="nav-tab">Hỗ trợ</a></li>
-                <li><a href="#footerSection" class="nav-tab">Về chúng tôi</a></li>
-              </ul>
+        <!-- Thẻ ghi chú xe nổi góc trái -->
+        <a href="javascript:void(0)" onclick="openProductModal(1)" class="note">
+          <b>Hot Wheels Premium</b>
+          <span>1:64 scale · Hot Wheels</span>
+          <span class="pr">290.000 ₫</span>
+        </a>
 
-              <!-- Tiện ích bên phải thanh vàng: Tìm kiếm, Giỏ hàng, Tài khoản -->
-              <div class="nav-utilities">
-                <!-- Nút Tìm kiếm (Kích hoạt thanh tìm kiếm API) -->
-                <button type="button" class="nav-tool-btn search-trigger-btn" id="searchToggleBtn" title="Tìm kiếm xe qua API">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                </button>
+        <!-- Chữ ký script nghệ thuật góc phải -->
+        <div class="script" aria-hidden="true">Small scale · Big passion</div>
+      </div>
+    </div>
+  </section>
 
-                <!-- Nút Giỏ hàng (Kết nối GET /api/cart) -->
-                <button type="button" class="nav-tool-btn cart-trigger-btn" id="cartOpenBtn" title="Xem giỏ hàng API">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="9" cy="21" r="1"></circle>
-                    <circle cx="20" cy="21" r="1"></circle>
-                    <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
-                  </svg>
-                  <span id="cartCountDisplay">0 in cart</span>
-                </button>
-
-                <!-- Cụm Tài khoản Người dùng (Load tự động từ GET /api/auth/me) -->
-                <div id="userAuthSection" class="user-auth-box">
-                  <a th:href="@{/login}" class="account-btn" id="userLoginBtn" title="Tài khoản">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                  </a>
-                </div>
-              </div>
-            </nav>
-          </header>
-
-          <!-- Thanh Tìm Kiếm Trực Tiếp Kết Nối API GET /api/cars?search=... -->
-          <div class="search-api-bar" id="searchApiBar" style="display: none;">
-            <input type="text" id="searchApiInput" placeholder="Tìm kiếm siêu xe, mô hình RC (API /api/cars?search=...)...">
-            <button type="button" id="searchApiBtn">Tìm</button>
-            <button type="button" id="searchCloseBtn">&times;</button>
-          </div>
-
-          <!-- 2. HERO HURACAN BANNER & 5 DOTS -->
-          <section class="hero-huracan-section">
-            <div class="huracan-card" id="huracanBannerCard">
-              <img th:src="@{/images/cars/huracan-banner-exact.png}" alt="Lamborghini Huracan" class="huracan-banner-img" id="heroBannerImg">
-            </div>
-
-            <!-- Khung Giao Diện "Danh Mục" Mega Panel khi click Tab Danh Mục -->
-            <div class="category-mega-panel" id="categoryMegaPanel" style="display: none;">
-              <div class="cat-panel-left">
-                <h3>Danh Mục</h3>
-              </div>
-              <div class="cat-panel-cards" id="megaPanelCards">
-                <a href="#modelHighlightsSection" class="cat-preview-card" onclick="document.getElementById('navHomeTab').click()">
-                  <div class="cat-preview-thumb"><img th:src="@{/images/cars/model-1.jpg}" alt="Xe Model"></div>
-                  <div class="cat-preview-name">Xe Model</div>
-                </a>
-                <a href="#rcHighlightsSection" class="cat-preview-card" onclick="document.getElementById('navHomeTab').click()">
-                  <div class="cat-preview-thumb"><img th:src="@{/images/cars/rc-1.jpg}" alt="Xe RC"></div>
-                  <div class="cat-preview-name">Xe RC</div>
-                </a>
-                <a href="#bestSellersSection" class="cat-preview-card" onclick="document.getElementById('navHomeTab').click()">
-                  <div class="cat-preview-thumb"><img th:src="@{/images/cars/bestseller-2.jpg}" alt="Xe Trưng Bày"></div>
-                  <div class="cat-preview-name">Xe Trưng Bày</div>
-                </a>
-              </div>
-              <div class="cat-panel-right">
-                <a href="#categoriesSection" class="cat-view-all-btn">Tất cả &rarr;</a>
-              </div>
-            </div>
-
-            <!-- 5 chấm tròn điều hướng chuẩn Concept 2 -->
-            <div class="hero-dots-row" id="heroDotsRow">
-              <span class="concept-dot active"></span>
-              <span class="concept-dot"></span>
-              <span class="concept-dot"></span>
-              <span class="concept-dot"></span>
-              <span class="concept-dot"></span>
-            </div>
-          </section>
-
-          <!-- 3. PROMO BANNER: MID-AUTUMN FESTIVAL SALE -->
-          <section class="promo-sale-section" id="promoSaleSection">
-            <div class="promo-banner-wrapper" id="promoBannerWrapper">
-              <img th:src="@{/images/cars/mid-autumn-banner-hires.png}" alt="Mid-Autumn Festival Sale" class="promo-banner-exact-img" id="promoBannerImg">
-            </div>
-          </section>
-
-          <!-- 4. CATEGORIES SECTION (KẾT NỐI API GET /api/categories) -->
-          <section class="showroom-section" id="categoriesSection">
-            <h2 class="section-heading">Categories</h2>
-            <div class="categories-buttons-row" id="categoriesContainer">
-              <button class="cat-rect-btn active" data-cat="RC_CARS" onclick="filterCategoryApi('RC_CARS', this)">
-                <span>RC Cars</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="6" width="20" height="12" rx="4"></rect><path d="M6 12h4m-2-2v4"></path><circle cx="15" cy="11" r="1"></circle><circle cx="17" cy="13" r="1"></circle></svg>
-              </button>
-              <button class="cat-rect-btn" data-cat="MODEL_CARS" onclick="filterCategoryApi('MODEL_CARS', this)">
-                <span>Model Cars</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4-6.2-4.5-6.2 4.5 2.4-7.4L2 9.4h7.6z"></path></svg>
-              </button>
-              <button class="cat-rect-btn" data-cat="BATTERIES" onclick="filterCategoryApi('BATTERIES', this)">
-                <span>Batteries</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"></rect><line x1="20" y1="11" x2="20" y2="13"></line><line x1="6" y1="11" x2="6" y2="13"></line><line x1="10" y1="11" x2="10" y2="13"></line></svg>
-              </button>
-              <button class="cat-rect-btn" data-cat="CONTROLLERS" onclick="filterCategoryApi('CONTROLLERS', this)">
-                <span>Controllers</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v8m-4-4h8"></path></svg>
-              </button>
-              <button class="cat-rect-btn" data-cat="OTHER_PARTS" onclick="filterCategoryApi('OTHER_PARTS', this)">
-                <span>Other Parts</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>
-              </button>
-            </div>
-          </section>
-
-          <!-- 5. BEST SELLERS (KẾT NỐI API GET /api/cars?section=BEST_SELLER) -->
-          <section class="showroom-section" id="bestSellersSection">
-            <h2 class="section-heading">Best Sellers</h2>
-            <div class="cards-3-row" id="bestSellersGrid">
-              <div class="concept-car-card" onclick="openCarModalFromApi(1)" title="Huracan STO RC Drifting">
-                <img th:src="@{/images/cars/bestseller-1.jpg}" alt="Huracan STO RC" class="concept-car-img">
-              </div>
-              <div class="concept-car-card" onclick="openCarModalFromApi(2)" title="Pagani Huayra R Full Carbon">
-                <img th:src="@{/images/cars/bestseller-2.jpg}" alt="Pagani Huayra R" class="concept-car-img">
-              </div>
-              <div class="concept-car-card" onclick="openCarModalFromApi(3)" title="Ferrari F40 Berlinetta Rosso">
-                <img th:src="@{/images/cars/bestseller-3.jpg}" alt="Ferrari F40" class="concept-car-img">
-              </div>
-            </div>
-          </section>
-
-          <!-- 6. RC HIGHLIGHTS (KẾT NỐI API GET /api/cars?section=RC_HIGHLIGHTS) -->
-          <section class="showroom-section" id="rcHighlightsSection">
-            <h2 class="section-heading">RC Highlights</h2>
-            <div class="cards-3-row" id="rcHighlightsGrid">
-              <div class="concept-car-card" onclick="openCarModalFromApi(4)" title="BMW M4 Competition RC Drift">
-                <img th:src="@{/images/cars/rc-1.jpg}" alt="BMW M4 RC Drift" class="concept-car-img">
-              </div>
-              <div class="concept-car-card" onclick="openCarModalFromApi(5)" title="Nissan Skyline GT-R R34 Nismo">
-                <img th:src="@{/images/cars/rc-2.jpg}" alt="Nissan Skyline GT-R" class="concept-car-img">
-              </div>
-              <div class="concept-car-card" onclick="openCarModalFromApi(6)" title="Porsche 911 GT3 RS Track Spec">
-                <img th:src="@{/images/cars/rc-3.jpg}" alt="Porsche 911 GT3 RS" class="concept-car-img">
-              </div>
-            </div>
-          </section>
-
-          <!-- 7. MODEL HIGHLIGHTS (KẾT NỐI API GET /api/cars?section=MODEL_HIGHLIGHTS) -->
-          <section class="showroom-section" id="modelHighlightsSection">
-            <h2 class="section-heading">Model Highlights</h2>
-            <div class="cards-3-row" id="modelHighlightsGrid">
-              <div class="concept-car-card" onclick="openCarModalFromApi(7)" title="Bugatti Chiron Pur Sport 1:18">
-                <img th:src="@{/images/cars/model-1.jpg}" alt="Bugatti Chiron Pur Sport" class="concept-car-img">
-              </div>
-              <div class="concept-car-card" onclick="openCarModalFromApi(8)" title="Ferrari Monza SP2 Speedster">
-                <img th:src="@{/images/cars/model-2.jpg}" alt="Ferrari Monza SP2" class="concept-car-img">
-              </div>
-              <div class="concept-car-card" onclick="openCarModalFromApi(9)" title="Porsche 911 GT3 R Neon Pink">
-                <img th:src="@{/images/cars/model-3.jpg}" alt="Porsche 911 GT3 R" class="concept-car-img">
-              </div>
-            </div>
-          </section>
-
-          <!-- 8. CUSTOMER REVIEWS (KẾT NỐI API GET /api/reviews) -->
-          <section class="showroom-section" id="customerReviewsSection">
-            <h2 class="section-heading">Customer Reviews</h2>
-            <div class="reviews-3-row" id="reviewsGrid">
-              <!-- Review 1: eng****** -->
-              <div class="concept-review-card">
-                <div class="concept-review-photo">
-                  <img th:src="@{/images/cars/review-1.jpg}" alt="Review car 1">
-                </div>
-                <div class="concept-review-content">
-                  <div class="concept-review-header">
-                    <span class="concept-reviewer-name">eng******</span>
-                    <span class="concept-reviewer-stars">★★★★★</span>
-                  </div>
-                  <p class="concept-review-text">
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis semper lacus at tempor commodo. Phasellus posuere fermentum odio, vel aliquet ligula consequat accumsan."
-                  </p>
-                  <div class="concept-review-date">
-                    Bought 1:18 Pagani Huayra Model on July 8, 2026
-                  </div>
-                </div>
-              </div>
-
-              <!-- Review 2: shi****** -->
-              <div class="concept-review-card">
-                <div class="concept-review-photo">
-                  <img th:src="@{/images/cars/review-2.jpg}" alt="Review car 2">
-                </div>
-                <div class="concept-review-content">
-                  <div class="concept-review-header">
-                    <span class="concept-reviewer-name">shi******</span>
-                    <span class="concept-reviewer-stars">★★★★★</span>
-                  </div>
-                  <p class="concept-review-text">
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis semper lacus at tempor commodo. Phasellus posuere fermentum odio, vel aliquet ligula consequat accumsan."
-                  </p>
-                  <div class="concept-review-date">
-                    Bought 1:18 Bugatti Chiron Model on Aug 15, 2026
-                  </div>
-                </div>
-              </div>
-
-              <!-- Review 3: mel***** -->
-              <div class="concept-review-card">
-                <div class="concept-review-photo">
-                  <img th:src="@{/images/cars/review-3.jpg}" alt="Review car 3">
-                </div>
-                <div class="concept-review-content">
-                  <div class="concept-review-header">
-                    <span class="concept-reviewer-name">mel*****</span>
-                    <span class="concept-reviewer-stars">★★★★★</span>
-                  </div>
-                  <p class="concept-review-text">
-                    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis semper lacus at tempor commodo. Phasellus posuere fermentum odio, vel aliquet ligula consequat accumsan."
-                  </p>
-                  <div class="concept-review-date">
-                    Bought 1:10 Nissan GT-R RC Model on Sept 2, 2026
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-        </div> <!-- Kết thúc inner-showroom-content -->
-
-        <!-- 9. FOOTER TRẢI DÀI FULL KHUNG 1440PX -->
-        <footer class="showroom-footer" id="footerSection">
-          <div class="footer-container">
-            <div class="footer-row-top">
-              <div class="footer-logo-box">
-                <img th:src="@{/images/logo.png}" alt="Ares Store Logo" class="footer-logo-img">
-                <span class="footer-logo-name">Ares Store</span>
-              </div>
-              <ul class="footer-links">
-                <li><a href="#footerSection">About us</a></li>
-                <li><a href="#footerSection">Contact us</a></li>
-                <li><a href="https://github.com/KoreDev" target="_blank">Source Code</a></li>
-                <li><a href="#footerSection">Terms of Service</a></li>
-                <li><a href="#footerSection">Privacy Policy</a></li>
-              </ul>
-            </div>
-            <div class="footer-row-bottom">
-              <div class="footer-disclaimer">
-                This website is meant for a college finals project. Here's disclaimers <a href="javascript:void(0)" onclick="alert('Đồ án Showroom Ares Store phục vụ môn học.')">here</a>.
-              </div>
-              <div class="footer-repo">
-                <a href="https://github.com/KoreDev" target="_blank">github.com/KoreDev</a>
-              </div>
-            </div>
-          </div>
-        </footer>
-
-      </main> <!-- Kết thúc canvas-1440-artboard -->
-
-      <!-- Thước đo 1440 px bên phải artboard chuẩn Figma/Concept -->
-      <aside class="dimension-ruler" aria-hidden="true">
-        <div class="ruler-line"></div>
-        <span class="ruler-text">1440 px</span>
-        <div class="ruler-line"></div>
-      </aside>
-
+  <!-- ====================================================================
+       3. TICKER BAR ĐEN SỌC CARO THỂ THAO
+       ==================================================================== -->
+  <div class="ticker">
+    <div class="v2wrap tk">
+      <span class="flow">Diecast · RC · Limited edition · Ares Toys</span>
+      <i class="checker sm" aria-hidden="true"></i>
+      <ul class="badges">
+        <li>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 7h11v9H3zM14 10h4l3 3v3h-7"></path>
+            <circle cx="7" cy="17" r="2"></circle>
+            <circle cx="17" cy="17" r="2"></circle>
+          </svg>
+          Freeship từ 500K
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"></path>
+            <path d="m9 12 2 2 4-4"></path>
+          </svg>
+          Hàng chính hãng
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path>
+            <path d="M3 3v5h5"></path>
+          </svg>
+          Đổi trả 7 ngày
+        </li>
+        <li>
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="6" width="18" height="12" rx="2"></rect>
+            <path d="M3 10h18"></path>
+          </svg>
+          Trả góp 0%
+        </li>
+      </ul>
     </div>
   </div>
 
-  <!-- ========================================================
-       MODAL CHI TIẾT SẢN PHẨM (KẾT NỐI API GET /api/cars/{id})
-       ======================================================== -->
-  <div class="modal-overlay" id="productModal" style="display: none;">
+  <main class="v2wrap">
+    
+    <!-- ====================================================================
+         4. BỘ SƯU TẬP NỔI BẬT (CHỌN GU. CHỌN XE. - CARDS VÁT CHÉO)
+         ==================================================================== -->
+    <section class="pick" id="pickSection">
+      <div class="pick-copy">
+        <span class="kick">Bộ sưu tập nổi bật</span>
+        <h2><span>Chọn gu.</span><span class="or">Chọn xe.</span></h2>
+        <p>Từ những huyền thoại thu nhỏ đến mẫu RC mạnh mẽ và phụ kiện cao cấp — tất cả dành cho nhà sưu tầm như bạn.</p>
+        <i class="checker" aria-hidden="true"></i>
+      </div>
+
+      <div class="cards">
+        <!-- Card 01: Xe mô hình -->
+        <a href="#modelSection" class="ccard">
+          <img th:src="@{/images/toys/bburago-sf90-card.jpg}" alt="Xe mô hình Diecast" loading="lazy">
+          <b class="num">01</b>
+          <span class="arr" aria-hidden="true">→</span>
+          <div class="cc-bot">
+            <h3>Xe mô hình</h3>
+            <small class="sub">Diecast · 1:64 · 1:18 · Limited</small>
+            <small class="nm">Ferrari SF90 Stradale</small>
+            <b>1.450.000 ₫</b>
+          </div>
+        </a>
+
+        <!-- Card 02: Xe RC -->
+        <a href="#rcSection" class="ccard">
+          <img th:src="@{/images/toys/traxxas-xmaxx-0.jpg}" alt="Xe RC Tốc độ" loading="lazy">
+          <b class="num">02</b>
+          <span class="arr" aria-hidden="true">→</span>
+          <div class="cc-bot">
+            <h3>Xe RC</h3>
+            <small class="sub">Off-road · On-road · Drift · RTR</small>
+            <small class="nm">Traxxas X-Maxx 8S 4WD</small>
+            <b>26.500.000 ₫</b>
+          </div>
+        </a>
+        <-- test commit-->
+        <!-- Card 03: Phụ kiện -->
+        <a href="#flashSaleSection" class="ccard">
+          <img th:src="@{/images/toys/charger-1.jpg}" alt="Phụ kiện RC" loading="lazy">
+          <b class="num">03</b>
+          <span class="arr" aria-hidden="true">→</span>
+          <div class="cc-bot">
+            <h3>Phụ kiện</h3>
+            <small class="sub">Pin & sạc · Khiển RC · Bánh xe</small>
+            <small class="nm">Sạc cân bằng đa năng iMAX B6</small>
+            <b>650.000 ₫</b>
+          </div>
+        </a>
+
+        <!-- Card 04: Deal phụ kiện cam -->
+        <a href="#flashSaleSection" class="deal">
+          <b>Deal</b>
+          <strong>-25%</strong>
+          <small>Phụ kiện chính hãng</small>
+          <span class="arr" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         5. FLASH SALE (⚡ FLASH SALE VỚI ĐỒNG HỒ ĐẾM NGƯỢC)
+         ==================================================================== -->
+    <section class="block" id="flashSaleSection">
+      <div class="bh">
+        <h2>
+          ⚡ Flash sale
+          <span class="cd">kết thúc sau <span id="flashTimer">08:45:20</span></span>
+          <span class="livedot">LIVE</span>
+        </h2>
+        <a href="#bestsellerSection">Xem tất cả →</a>
+      </div>
+
+      <div class="grid-4" id="flashGrid">
+        <!-- Item 1 -->
+        <div class="tile" onclick="openProductModal(1)">
+          <span class="off">−20%</span>
+          <img th:src="@{/images/toys/hw-r34-0.jpg}" alt="Hot Wheels R34">
+          <div class="cap">
+            <span>Hot Wheels Skyline GT-R R34 Premium</span>
+            <small>320.000 ₫</small>
+          </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="tile" onclick="openProductModal(2)">
+          <span class="off">−15%</span>
+          <img th:src="@{/images/toys/traxxas-slash-0.jpg}" alt="Traxxas Slash 4WD">
+          <div class="cap">
+            <span>Traxxas Slash 4X4 VXL Short Course</span>
+            <small>8.900.000 ₫</small>
+          </div>
+        </div>
+        <!-- test commit -->
+        <!-- Item 3 -->
+        <div class="tile" onclick="openProductModal(3)">
+          <span class="off">−12%</span>
+          <img th:src="@{/images/toys/kyosho-countach-0.jpg}" alt="Kyosho Countach">
+          <div class="cap">
+            <span>Kyosho Lamborghini Countach LP500S 1:18</span>
+            <small>4.250.000 ₫</small>
+          </div>
+        </div>
+
+        <!-- Item 4 -->
+        <div class="tile" onclick="openProductModal(4)">
+          <span class="off">−18%</span>
+          <img th:src="@{/images/toys/wltoys-144001-0.jpg}" alt="WLToys Buggy">
+          <div class="cap">
+            <span>WLToys 144001 4WD High Speed Buggy</span>
+            <small>1.250.000 ₫</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         6. TUYỂN CHỌN THEO CHỦ ĐỀ (BỘ SƯU TẬP THEME V2)
+         ==================================================================== -->
+    <section class="cols" id="collectionsSection">
+      <div class="ch">
+        <div>
+          <span class="kick">Tuyển chọn theo chủ đề</span>
+          <h2><span>Bộ sưu tập</span></h2>
+        </div>
+        <a href="#pickSection" class="btn btn-outline">Tất cả <b aria-hidden="true">›</b></a>
+      </div>
+
+      <div class="crow">
+        <!-- Collection 1 -->
+        <a href="#pickSection" class="col">
+          <img th:src="@{/images/cars/rc-2.jpg}" alt="Huyền thoại JDM">
+          <div>
+            <small>Series JDM Racing</small>
+            <b>Huyền Thoại JDM</b>
+            <em>12 mẫu →</em>
+          </div>
+        </a>
+
+        <!-- Collection 2 -->
+        <a href="#modelSection" class="col">
+          <img th:src="@{/images/cars/bestseller-2.jpg}" alt="Siêu xe Le Mans">
+          <div>
+            <small>Hypercars Series</small>
+            <b>Siêu Xe Hypercar</b>
+            <em>9 mẫu →</em>
+          </div>
+        </a>
+
+        <!-- Collection 3 -->
+        <a href="#rcSection" class="col">
+          <img th:src="@{/images/toys/traxxas-xmaxx-0.jpg}" alt="Monster Truck RC">
+          <div>
+            <small>Bashing & Traxxas</small>
+            <b>Off-Road & Monster</b>
+            <em>8 mẫu →</em>
+          </div>
+        </a>
+
+        <!-- Collection 4 -->
+        <a href="#pickSection" class="col">
+          <img th:src="@{/images/cars/rc-1.jpg}" alt="Drift King">
+          <div>
+            <small>Drift Specs</small>
+            <b>RC Drift Kings</b>
+            <em>7 mẫu →</em>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         7. SẮP RA MẮT · ĐẶT TRƯỚC (UPCOMING PRE-ORDER)
+         ==================================================================== -->
+    <section class="upc">
+      <div class="up-in">
+        <div class="up-copy">
+          <span class="kick">Sắp ra mắt · đặt trước</span>
+          <h2><span>Mini GT Toyota Supra GT4</span></h2>
+          <p>Phát hành dự kiến vào cuối tháng này — giữ suất ngay hôm nay, chỉ đặt cọc khi hàng về kho Ares.</p>
+          <div class="cdn">
+            <div>
+              <b>14</b>
+              <small>Ngày còn lại</small>
+            </div>
+            <div>
+              <b>5</b>
+              <small>Mẫu mở đặt trước</small>
+            </div>
+          </div>
+          <button type="button" class="btn v2-black" onclick="alert('Đã ghi nhận đăng ký giữ suất đặt trước Mini GT Supra GT4!')">Đặt trước <b aria-hidden="true">›</b></button>
+        </div>
+        <img th:src="@{/images/toys/cut/minigt-supra.webp}" alt="Mini GT Supra GT4" loading="lazy">
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         8. BÁN CHẠY NHẤT (BEST SELLERS 3 CỘT)
+         ==================================================================== -->
+    <section class="block" id="bestsellerSection">
+      <div class="bh">
+        <h2>Bán chạy</h2>
+        <a href="#pickSection">Xem tất cả →</a>
+      </div>
+      <div class="grid-3">
+        <!-- Card 1 -->
+        <div class="tile" onclick="openProductModal(1)">
+          <span class="off">−20%</span>
+          <img th:src="@{/images/cars/bestseller-1.jpg}" alt="Huracan STO RC">
+          <div class="cap">
+            <span>Lamborghini Huracan STO RC Drifting</span>
+            <small>3.200.000 ₫</small>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="tile" onclick="openProductModal(2)">
+          <span class="off">−12%</span>
+          <img th:src="@{/images/cars/bestseller-2.jpg}" alt="Pagani Huayra R">
+          <div class="cap">
+            <span>Pagani Huayra R Full Carbon Edition 1:18</span>
+            <small>4.850.000 ₫</small>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="tile" onclick="openProductModal(3)">
+          <span class="off">−13%</span>
+          <img th:src="@{/images/cars/bestseller-3.jpg}" alt="Ferrari F40">
+          <div class="cap">
+            <span>Ferrari F40 Berlinetta Rosso Corsa</span>
+            <small>3.900.000 ₫</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         9. XE RC NỔI BẬT & MÔ HÌNH
+         ==================================================================== -->
+    <section class="block" id="rcSection">
+      <div class="bh">
+        <h2>Xe RC nổi bật</h2>
+        <a href="#bestsellerSection">Xem tất cả xe RC →</a>
+      </div>
+      <div class="grid-3">
+        <div class="tile" onclick="openProductModal(4)">
+          <span class="off">−16%</span>
+          <img th:src="@{/images/cars/rc-1.jpg}" alt="BMW M4 RC">
+          <div class="cap">
+            <span>BMW M4 Competition RC Track Drifter</span>
+            <small>2.850.000 ₫</small>
+          </div>
+        </div>
+        <div class="tile" onclick="openProductModal(5)">
+          <span class="off">−15%</span>
+          <img th:src="@{/images/cars/rc-2.jpg}" alt="Nissan Skyline R34">
+          <div class="cap">
+            <span>Nissan Skyline GT-R R34 Nismo Z-Tune</span>
+            <small>3.600.000 ₫</small>
+          </div>
+        </div>
+        <div class="tile" onclick="openProductModal(6)">
+          <span class="off">−13%</span>
+          <img th:src="@{/images/cars/rc-3.jpg}" alt="Porsche 911 GT3 RS">
+          <div class="cap">
+            <span>Porsche 911 GT3 RS Track Spec</span>
+            <small>3.450.000 ₫</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="modelSection">
+      <div class="bh">
+        <h2>Xe Model & Trưng Bày</h2>
+        <a href="#bestsellerSection">Xem tất cả Model →</a>
+      </div>
+      <div class="grid-3">
+        <div class="tile" onclick="openProductModal(7)">
+          <span class="off">−14%</span>
+          <img th:src="@{/images/cars/model-1.jpg}" alt="Bugatti Chiron">
+          <div class="cap">
+            <span>Bugatti Chiron Pur Sport 1:18 Limited</span>
+            <small>5.200.000 ₫</small>
+          </div>
+        </div>
+        <div class="tile" onclick="openProductModal(8)">
+          <span class="off">−12%</span>
+          <img th:src="@{/images/cars/model-2.jpg}" alt="Ferrari Monza SP2">
+          <div class="cap">
+            <span>Ferrari Monza SP2 Speedster Icona</span>
+            <small>4.300.000 ₫</small>
+          </div>
+        </div>
+        <div class="tile" onclick="openProductModal(9)">
+          <span class="off">−11%</span>
+          <img th:src="@{/images/cars/model-3.jpg}" alt="Porsche 911 GT3 R">
+          <div class="cap">
+            <span>Porsche 911 GT3 R Neon Pink Edition</span>
+            <small>3.800.000 ₫</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         10. ĐÁNH GIÁ CỦA KHÁCH HÀNG (REVIEWS)
+         ==================================================================== -->
+    <section class="block" id="reviewsSection">
+      <div class="bh">
+        <h2>Đánh giá của khách hàng</h2>
+      </div>
+      <div class="grid-3">
+        <!-- Review 1 -->
+        <div class="rev">
+          <div class="rimg"><img th:src="@{/images/cars/review-1.jpg}" alt="Pagani Review"></div>
+          <div class="rbody">
+            <div class="rh"><b>Hoàng Nam</b><span class="rate">★ 5.0</span></div>
+            <p>“Mô hình Pagani Huayra R đóng gói cực kỳ cẩn thận, chi tiết vân carbon sắc sảo không một vết xước. Giao hàng hỏa tốc trong 2 tiếng rất hài lòng!”</p>
+            <small>Đã mua Pagani Huayra R 1:18 · 18/10/2026</small>
+          </div>
+        </div>
+
+        <!-- Review 2 -->
+        <div class="rev">
+          <div class="rimg"><img th:src="@{/images/cars/review-2.jpg}" alt="Bugatti Review"></div>
+          <div class="rbody">
+            <div class="rh"><b>Minh Trí</b><span class="rate">★ 5.0</span></div>
+            <p>“Chiếc Bugatti Chiron màu nước sơn bóng tuyệt đẹp, hộp da và đế mica đi kèm rất sang trọng để ở phòng khách ai đến chơi cũng khen.”</p>
+            <small>Đã mua Bugatti Chiron Pur Sport · 12/10/2026</small>
+          </div>
+        </div>
+
+        <!-- Review 3 -->
+        <div class="rev">
+          <div class="rimg"><img th:src="@{/images/cars/review-3.jpg}" alt="RC Drift Review"></div>
+          <div class="rbody">
+            <div class="rh"><b>Thành Đạt</b><span class="rate">★ 5.0</span></div>
+            <p>“Xe RC Nissan R34 drift cực phê, gyro cân bằng tốt không bị văng đuôi bậy bạ. Pin 3S kéo êm ru, shop tư vấn hỗ trợ kỹ thuật rất nhiệt tình.”</p>
+            <small>Đã mua Nissan GT-R R34 RC · 05/10/2026</small>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ====================================================================
+       11. FOOTER 2.0 (ĐEN, SỌC CARO TRÊN CÙNG, FORM NHẬN TIN)
+       ==================================================================== -->
+  <footer class="ftr" id="footerSection">
+    <div class="in">
+      <!-- Dải nhận tin Newsletter -->
+      <div class="news">
+        <div>
+          <b>Nhận tin hàng mới & ưu đãi</b>
+          <span>Mẫu xe vừa về, flash sale, phiên đấu giá hàng hiếm và voucher riêng cho thành viên.</span>
+        </div>
+        <form onsubmit="handleNewsletter(event)">
+          <input type="email" id="newsletterEmail" placeholder="Email của bạn" required>
+          <button type="submit" class="btn">Đăng ký</button>
+        </form>
+      </div>
+
+      <!-- Main footer navigation -->
+      <div class="main">
+        <a th:href="@{/home}" class="logo">
+          <img th:src="@{/images/logo.png}" alt="Ares Logo">
+          <span><b>Ares</b> Toys</span>
+        </a>
+        <nav>
+          <a th:href="@{/home}">Về chúng tôi</a>
+          <a href="#pickSection">Danh mục xe</a>
+          <a href="#rcSection">Xe RC</a>
+          <a href="#modelSection">Xe Model</a>
+          <a href="#collectionsSection">Bộ sưu tập</a>
+          <a href="#flashSaleSection">Ưu đãi</a>
+          <a href="#reviewsSection">Đánh giá</a>
+        </nav>
+      </div>
+
+      <!-- Bottom footer disclaimer -->
+      <div class="bottom">
+        <span>ARES Toys — xe mô hình, xe RC & phụ kiện chính hãng · 123 Nguyễn Văn Linh, Q.7, TP.HCM · Hotline 1900 8888</span>
+        <span>© 2026 ARES Toys</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ====================================================================
+       12. MODAL XEM NHANH CHI TIẾT SẢN PHẨM
+       ==================================================================== -->
+  <div class="modal-overlay" id="productModal">
     <div class="modal-box">
-      <button class="modal-close-btn" onclick="closeCarModal()" title="Đóng">&times;</button>
+      <button type="button" class="modal-close-btn" onclick="closeProductModal()" title="Đóng">&times;</button>
       <div class="modal-media">
-        <span class="modal-media-badge" id="modalBadge">Ares Official</span>
-        <img id="modalCarImg" src="" alt="Siêu xe mô hình">
+        <img id="modalCarImg" src="" alt="Mô hình xe Ares">
       </div>
       <div class="modal-info">
-        <div class="modal-category-tag" id="modalCategory">Mô hình siêu xe</div>
-        <h4 id="modalCarTitle" class="modal-title">Tên sản phẩm</h4>
+        <div class="modal-category-tag" id="modalCategory">MÔ HÌNH XE CHÍNH HÃNG</div>
+        <h3 id="modalCarTitle" class="modal-title">Tên sản phẩm</h3>
         <div class="modal-rating-row">
-          <span class="modal-rating-stars">★★★★★</span>
-          <span class="modal-rating-text" id="modalRatingText">5.0 (128 đánh giá) • Đã bán 340+</span>
+          <span style="color: var(--v2-orange); font-size: 1rem;">★★★★★</span>
+          <span id="modalRatingText">5.0 (148 đánh giá) · Đã bán 280+</span>
         </div>
         <div class="modal-price-row">
-          <span id="modalCarPrice" class="modal-price">0₫</span>
-          <span id="modalCarPriceOld" class="modal-price-old">0₫</span>
-          <span class="modal-price-discount" id="modalDiscount">-20% OFF</span>
+          <span id="modalCarPrice" class="modal-price">0 ₫</span>
+          <span id="modalCarPriceOld" class="modal-price-old">0 ₫</span>
+          <span class="modal-price-discount" id="modalDiscount">-20%</span>
         </div>
-        <div class="modal-specs-grid" id="modalSpecsGrid">
+
+        <div class="modal-specs-grid">
           <div class="modal-spec-item">
             <span class="modal-spec-label">Tỉ lệ mô hình</span>
             <span class="modal-spec-value" id="modalSpecScale">1:18</span>
           </div>
           <div class="modal-spec-item">
-            <span class="modal-spec-label">Chất liệu</span>
+            <span class="modal-spec-label">Chất liệu thân vỏ</span>
             <span class="modal-spec-value" id="modalSpecMaterial">Hợp kim đúc</span>
           </div>
           <div class="modal-spec-item">
-            <span class="modal-spec-label">Tính năng</span>
+            <span class="modal-spec-label">Tính năng nổi bật</span>
             <span class="modal-spec-value" id="modalSpecFeature">Mở full cửa</span>
           </div>
           <div class="modal-spec-item">
-            <span class="modal-spec-label">Tình trạng</span>
-            <span class="modal-spec-value" style="color: #16a34a; font-weight: 700;">Còn hàng (Sẵn sàng giao)</span>
+            <span class="modal-spec-label">Tình trạng kho</span>
+            <span class="modal-spec-value" id="modalSpecStock" style="color: #16a34a;">Còn hàng</span>
           </div>
         </div>
-        <p class="modal-description" id="modalCarDesc">Mô tả sản phẩm</p>
+
+        <p class="modal-description" id="modalCarDesc">
+          Mô tả chi tiết sản phẩm.
+        </p>
+
         <div class="modal-action-row">
           <div class="modal-qty-control">
-            <button class="modal-qty-btn" type="button" onclick="changeModalQty(-1)">-</button>
+            <button type="button" class="modal-qty-btn" onclick="changeModalQty(-1)">-</button>
             <span class="modal-qty-num" id="modalQtyDisplay">1</span>
-            <button class="modal-qty-btn" type="button" onclick="changeModalQty(1)">+</button>
+            <button type="button" class="modal-qty-btn" onclick="changeModalQty(1)">+</button>
           </div>
-          <button class="modal-btn-add" type="button" onclick="addToCartFromModal()">
-            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-            </svg>
+          <button type="button" class="modal-btn-add" onclick="addToCartFromModal()">
             Thêm vào giỏ hàng
           </button>
         </div>
-        <div class="modal-trust-badges">
-          <div class="modal-trust-item"><span>🛡️</span> 100% Chính Hãng</div>
-          <div class="modal-trust-item"><span>🚀</span> Giao Hỏa Tốc</div>
-          <div class="modal-trust-item"><span>🔄</span> Đổi Trả 7 Ngày</div>
-        </div>
       </div>
     </div>
   </div>
 
-  <!-- ========================================================
-       MODAL GIỎ HÀNG (KẾT NỐI API GET / DELETE /api/cart)
-       ======================================================== -->
-  <div class="modal-overlay" id="cartModal" style="display: none;">
+  <!-- ====================================================================
+       13. MODAL GIỎ HÀNG (DRAWER)
+       ==================================================================== -->
+  <div class="modal-overlay" id="cartModal">
     <div class="modal-box cart-modal-box">
-      <button class="modal-close-btn" onclick="closeCartModal()" title="Đóng">&times;</button>
-      <h3 class="cart-modal-title">🛒 Giỏ Hàng Ares Store</h3>
+      <button type="button" class="modal-close-btn" onclick="closeCartModal()" title="Đóng">&times;</button>
+      <h3 class="cart-modal-title">GIỎ HÀNG ARES TOYS</h3>
       <div class="cart-items-list" id="cartItemsList">
-        <!-- Render động từ API /api/cart -->
+        <!-- Render động từ JavaScript -->
       </div>
+      <section class="cart-saved-list" id="cartSavedList" aria-live="polite"></section>
       <div class="cart-footer-summary">
         <div class="cart-total-row">
-          <span>Tổng cộng:</span>
-          <span class="cart-total-val" id="cartTotalPrice">0₫</span>
+          <span>Tổng tiền:</span>
+          <span class="cart-total-val" id="cartTotalPrice">0 ₫</span>
         </div>
         <div class="cart-modal-actions">
-          <button class="cart-btn-clear" onclick="clearCartApi()">Làm trống</button>
-          <button class="cart-btn-checkout" onclick="alert('Cảm ơn bạn! Đơn hàng thử nghiệm đã được ghi nhận thành công.')">Thanh toán</button>
+          <button type="button" class="cart-btn-clear" onclick="clearCart()">Làm trống</button>
+          <button type="button" class="cart-btn-checkout" onclick="handleCheckout()">Thanh toán ngay</button>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- Nạp script xử lý toàn bộ qua REST API -->
+  <!-- Nạp tệp Script điều khiển giao diện -->
   <script th:src="@{/js/home.js}"></script>
 </body>
 </html>
