@@ -32,3 +32,11 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Vue frontend dependencies, generated output and local configuration
+node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.*
+!frontend/.env.example

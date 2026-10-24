@@ -1,6 +1,5 @@
 package com.ares.service;
 
-import com.ares.dto.ShopDtos.CategoryDto;
 import com.ares.dto.ShopDtos.ReviewDto;
 import com.ares.model.Car;
 import com.ares.repository.CarRepository;
@@ -120,16 +119,6 @@ public class CarService {
 
     public Optional<Car> getCarById(Long id) {
         return carRepository.findById(id);
-    }
-
-    public List<CategoryDto> getCategories() {
-        List<CategoryDto> list = new ArrayList<>();
-        list.add(new CategoryDto("RC_CARS", "RC Cars", "car", 12));
-        list.add(new CategoryDto("MODEL_CARS", "Model Cars", "model", 18));
-        list.add(new CategoryDto("BATTERIES", "Batteries", "battery", 8));
-        list.add(new CategoryDto("CONTROLLERS", "Controllers", "controller", 6));
-        list.add(new CategoryDto("OTHER_PARTS", "Other Parts", "parts", 24));
-        return list;
     }
 
     public List<ReviewDto> getReviews() {

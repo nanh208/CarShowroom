@@ -228,8 +228,31 @@ function loadCartFromStorage() {
         return [{ id: car.id, name: car.name, price: car.price, image: car.image, qty: Math.min(qty, stock) }];
       });
     };
-    cartItems = readLines('ares_cart');
-    savedCartItems = readLines('ares_cart_saved');
+
+    container.innerHTML = categories.map((cat, idx) => `
+      <button class="cat-rect-btn ${idx === 0 ? 'active' : ''}" data-cat="${cat.code}" onclick="filterCategoryApi('${cat.code}', this)">
+        <span>${cat.name}</span>
+        ${iconMap[cat.code] || iconMap['RC_CARS']}
+      </button>
+    `).join('');
+
+    // Nạp mega panel nếu có
+    if (megaContainer) {
+      megaContainer.innerHTML = `
+        <a href="#modelHighlightsSection" class="cat-preview-card" onclick="document.getElementById('navHomeTab').click()">
+          <div class="cat-preview-thumb"><img src="/images/cars/model-1.jpg" alt="Xe Model"></div>
+          <div class="cat-preview-name">Xe Model</div>
+        </a>
+        <a href="#rcHighlightsSection" class="cat-preview-card" onclick="document.getElementById('navHomeTab').click()">
+          <div class="cat-preview-thumb"><img src="/images/cars/rc-1.jpg" alt="Xe RC"></div>
+          <div class="cat-preview-name">Xe RC</div>
+        </a>
+        <a href="#bestSellersSection" class="cat-preview-card" onclick="document.getElementById('navHomeTab').click()">
+          <div class="cat-preview-thumb"><img src="/images/cars/bestseller-2.jpg" alt="Xe Trưng Bày"></div>
+          <div class="cat-preview-name">Xe Trưng Bày</div>
+        </a>
+      `;
+    }
   } catch (e) {
     cartItems = [];
     savedCartItems = [];
