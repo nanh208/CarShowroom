@@ -688,3 +688,201 @@ body.no-light-fx,
   text-shadow: none !important;
 }
 
+
+/* ==========================================================================
+   UPGRADED LOGIN STYLES (PORTED FROM CAR-COPY)
+   ========================================================================== */
+.auth-subtitle {
+  color: var(--text-muted, #94a3b8);
+  font-size: 13.5px;
+  text-align: center;
+  margin: -14px 0 20px 0;
+}
+
+.social-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.btn-social-card {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 9px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.btn-social-card:hover {
+  transform: translateY(-1px);
+}
+
+.btn-social-card.btn-google {
+  background: #ffffff;
+  color: #1e293b;
+  border-color: #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-social-card.btn-google:hover {
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.btn-social-card.btn-facebook {
+  background: #1877f2;
+  color: #ffffff;
+  border-color: #166fe5;
+  box-shadow: 0 2px 8px rgba(24, 119, 242, 0.3);
+}
+
+.btn-social-card.btn-facebook:hover {
+  background: #166fe5;
+  box-shadow: 0 4px 12px rgba(24, 119, 242, 0.45);
+}
+
+.btn-switch-mode {
+  width: 100%;
+  height: 42px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9px;
+  color: #e2e8f0;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.btn-switch-mode:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #ffffff;
+}
+
+.btn-switch-back {
+  width: 100%;
+  height: 40px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9px;
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  margin-top: 14px;
+}
+
+.btn-switch-back:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+}
+
+/* Phone OTP Input styles */
+.otp-input-large {
+  letter-spacing: 0.45em !important;
+  font-size: 1.25rem !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  padding-left: calc(0.45em + 12px) !important;
+}
+
+.phone-otp-info {
+  font-size: 12.5px;
+  color: #94a3b8;
+  margin: -4px 0 14px 0;
+  line-height: 1.4;
+}
+
+.phone-otp-info strong {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.phone-actions-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 12.5px;
+}
+
+.btn-link-action {
+  background: none;
+  border: none;
+  color: var(--text-link, #38bdf8);
+  font-size: 12.5px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+
+.btn-link-action:hover:not(:disabled) {
+  color: var(--text-link-hover, #7dd3fc);
+  text-decoration: underline;
+}
+
+.btn-link-action:disabled {
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.back-home-link {
+  margin-top: 20px;
+  color: var(--text-muted, #94a3b8);
+  font-size: 13px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.back-home-link:hover {
+  color: #ffffff;
+}
+
+.auth-card-footer {
+  text-align: center;
+  margin-top: 18px;
+  font-size: 13px;
+  color: var(--text-muted, #94a3b8);
+}
+
+.auth-card-footer a {
+  color: var(--text-link, #38bdf8);
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 4px;
+}
+
+.auth-card-footer a:hover {
+  text-decoration: underline;
+}
+
+.mode-pane {
+  display: none;
+}
+
+.mode-pane.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}

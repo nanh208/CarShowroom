@@ -19,8 +19,18 @@ public class ApiResponse {
         this.code = code;
     }
 
+    public ApiResponse(boolean success, String message, Object data) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
+    }
+
     public static ApiResponse ok(String message) {
         return new ApiResponse(true, message);
+    }
+
+    public static ApiResponse ok(String message, Object data) {
+        return new ApiResponse(true, message, data);
     }
 
     public static ApiResponse ok(String message, String code) {
