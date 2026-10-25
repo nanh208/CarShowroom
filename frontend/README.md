@@ -34,5 +34,12 @@ The imported frontend expects the API contract of the source project's
 Spring backend (including `/api/products`, authentication, checkout and admin
 endpoints). The existing backend in this repository still exposes the older
 `/api/cars` contract. Importing the interface does not migrate those endpoints;
-backend integration remains separate work. No backend, database, uploaded
+backend integration remains separate work. The first read-only bridge,
+`GET /api/products/{id}`, now returns `product`, `related`, `variants`, and
+`flash` from the existing car catalog, with HTTP 404 for unknown IDs. The
+legacy model only stores stock availability, so this endpoint exposes
+`inStock` and deliberately does not invent a numeric `stock` value. The Vue
+purchase flow still needs an inventory contract, and the product list,
+reviews, questions and other source-backend endpoints remain to be integrated.
+No source backend, database, uploaded
 customer files, local secrets or dependency folders are included in this import.

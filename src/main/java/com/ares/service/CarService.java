@@ -23,7 +23,8 @@ public class CarService {
 
     @PostConstruct
     public void initSeedData() {
-        carRepository.deleteAll();
+        // Seed only an empty catalog; preserve products and their IDs on restart.
+        if (carRepository.count() > 0) return;
         List<Car> seedCars = new ArrayList<>();
 
         // 1. Best Sellers
