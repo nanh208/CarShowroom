@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Danh mục sản phẩm · ARES</title><link rel="stylesheet" th:href="@{/css/catalog.css}"><script defer th:src="@{/js/catalog.js}"></script></head>
+<body><header><a th:href="@{/home}" class="brand">ARES <span>CATALOG</span></a><a th:href="@{/catalog}">Tất cả sản phẩm</a></header>
+<main><p class="eyebrow">MÔ HÌNH &amp; XE ĐIỀU KHIỂN</p><h1>Tìm chiếc xe của bạn.</h1>
+<nav class="categories" aria-label="Danh mục sản phẩm"><a th:each="c : ${categories}" th:href="@{/catalog(category=${c.code})}"><span th:text="${c.name}"></span> <small th:text="${c.count}"></small></a></nav>
+<form id="filters" method="get" th:action="@{/catalog}">
+<div class="search"><label for="q">Tên sản phẩm, mã hoặc câu tìm kiếm</label><input id="q" name="q" type="search" maxlength="200" th:value="${filter.q}" placeholder="Ví dụ: RC 1:10 dưới 3 triệu" list="suggestions" autocomplete="off"><datalist id="suggestions"></datalist></div>
+<div class="fields">
+<label>Danh mục<select name="category"><option value="">Tất cả</option><option th:each="c : ${categories}" th:value="${c.code}" th:text="${c.name}" th:selected="${filter.category == c.code}"></option></select></label>
+<label>Nhóm<select name="grp"><option value="">Tất cả</option><option value="TOY" th:selected="${filter.grp == 'TOY'}">Xe mô hình</option><option value="ACCESSORY" th:selected="${filter.grp == 'ACCESSORY'}">Phụ kiện</option></select></label>
+<label>Tỷ lệ<select name="scale"><option value="">Tất cả</option><option th:each="s : ${scales}" th:value="${s}" th:text="${s}" th:selected="${filter.scale == s}"></option></select></label>
+<label>Giá từ (đ)<input name="minPrice" type="number" min="0" step="1" th:value="${filter.minPrice}"></label>
+<label>Giá đến (đ)<input name="maxPrice" type="number" min="0" step="1" th:value="${filter.maxPrice}"></label>
+<label>Đánh giá từ<select name="minRating"><option value="">Tất cả</option><option value="4" th:selected="${filter.minRating != null and filter.minRating == 4}">4 sao</option><option value="4.5" th:selected="${filter.minRating != null and filter.minRating == 4.5}">4.5 sao</option><option value="5" th:selected="${filter.minRating != null and filter.minRating == 5}">5 sao</option></select></label>
+<label>Sắp xếp<select name="sort"><option value="featured" th:selected="${filter.sort == 'featured'}">Nổi bật</option><option value="newest" th:selected="${filter.sort == 'newest'}">Mới nhập</option><option value="price_asc" th:selected="${filter.sort == 'price_asc'}">Giá tăng dần</option><option value="price_desc" th:selected="${filter.sort == 'price_desc'}">Giá giảm dần</option><option value="name" th:selected="${filter.sort == 'name'}">Tên A–Z</option><option value="rating" th:selected="${filter.sort == 'rating'}">Đánh giá</option><option value="bestseller" th:selected="${filter.sort == 'bestseller'}">Bán chạy</option></select></label>
+<label class="check"><input name="inStock" value="true" type="checkbox" th:checked="${filter.inStock == true}"> Chỉ còn hàng</label>
+</div><div class="actions"><button name="page" value="0">Tìm &amp; áp dụng bộ lọc</button><a th:href="@{/catalog}">Xóa bộ lọc</a></div>
+<p id="filter-error" role="alert" hidden></p></form>
+<section aria-live="polite"><p class="summary"><strong th:text="${result.totalElements}"></strong> sản phẩm phù hợp</p>
+<div class="empty" th:if="${result.totalElements == 0}"><h2>Chưa tìm thấy sản phẩm.</h2><p>Thử bỏ bớt điều kiện hoặc đổi từ khóa.</p><a th:href="@{/catalog}">Xem tất cả sản phẩm</a></div>
+<div class="grid"><article th:each="car : ${result.content}" class="card"><a th:href="@{/catalog/{id}(id=${car.id})}"><img th:if="${car.image != null and !#strings.isEmpty(car.image)}" th:src="${car.image}" th:alt="${car.name}" loading="lazy"><div class="card-body"><small th:text="${car.scale}"></small><h2 th:text="${car.name}"></h2><p th:text="${car.code}"></p><strong class="price" th:text="${car.formattedPrice}"></strong><del th:if="${car.oldPrice != null and car.oldPrice > car.price}" th:text="${car.formattedOldPrice}"></del><p th:text="${car.inStock == true ? 'Còn hàng' : 'Hết hàng'}"></p></div></a></article></div>
+<nav class="pager" aria-label="Phân trang" th:if="${result.totalPages > 0}"><button form="filters" name="page" th:value="${filter.page - 1}" th:disabled="${filter.page == 0}">← Trước</button><span th:text="|Trang ${filter.page + 1} / ${result.totalPages}|"></span><button form="filters" name="page" th:value="${filter.page + 1}" th:disabled="${filter.page + 1 >= result.totalPages}">Sau →</button></nav></section>
+</main><footer>ARES · Danh mục, sản phẩm &amp; tìm kiếm</footer></body></html>
