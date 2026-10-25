@@ -14,6 +14,8 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
+    private String fullName;
+
     @Column(nullable = false)
     private String password;
 
@@ -60,6 +62,14 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public String getPassword() {
