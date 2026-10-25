@@ -89,6 +89,7 @@ public class AuthDtos {
     public static class UserDto {
         private Long id;
         private String username;
+        private String fullName;
         private String email;
         private String phone;
         private String avatarUrl;
@@ -103,6 +104,7 @@ public class AuthDtos {
             if (user != null) {
                 this.id = user.getId();
                 this.username = user.getUsername();
+                this.fullName = user.getFullName();
                 this.email = user.getEmail();
                 this.phone = user.getPhone();
                 this.avatarUrl = user.getAvatarUrl();
@@ -117,6 +119,8 @@ public class AuthDtos {
         public void setId(Long id) { this.id = id; }
         public String getUsername() { return username; }
         public void setUsername(String username) { this.username = username; }
+        public String getFullName() { return fullName; }
+        public void setFullName(String fullName) { this.fullName = fullName; }
         public String getEmail() { return email; }
         public void setEmail(String email) { this.email = email; }
         public String getPhone() { return phone; }

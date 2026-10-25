@@ -48,12 +48,15 @@ public class AccountApiController {
     }
 
     public static class ProfileUpdateRequest {
+        private String fullName;
         private String phone;
         private String avatarUrl;
         private Integer birthDay;
         private Integer birthMonth;
         private String gender;
 
+        public String getFullName() { return fullName; }
+        public void setFullName(String fullName) { this.fullName = fullName; }
         public String getPhone() { return phone; }
         public void setPhone(String phone) { this.phone = phone; }
         public String getAvatarUrl() { return avatarUrl; }
@@ -85,6 +88,14 @@ public class AccountApiController {
         if (user == null) {
             session.invalidate();
             return unauthorized();
+        }
+
+        if (request.getFullName() != null) {
+            String fullName = request.getFullName().trim();
+            if (fullName.isEmpty() || fullName.length() > 100) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("Tên hiển thị phải từ 1 đến 100 ký tự"));
+            }
+            user.setFullName(fullName);
         }
 
         if (request.getPhone() != null) {
