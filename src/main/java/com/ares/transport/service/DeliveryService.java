@@ -1,10 +1,14 @@
 package com.ares.transport.service;
 
 import com.ares.transport.model.Delivery;
+import com.ares.transport.model.DeliveryEvent;
 import com.ares.transport.model.DeliveryStatus;
+import com.ares.transport.repository.DeliveryEventRepository;
 import com.ares.transport.repository.DeliveryRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,8 +16,16 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DeliveryService {
     private final DeliveryRepository deliveries;
+    private final DeliveryEventRepository events;
 
-    public DeliveryService(DeliveryRepository deliveries) { this.deliveries = deliveries; }
+    public DeliveryService(DeliveryRepository deliveries, DeliveryEventRepository events) {
+        this.deliveries = deliveries;
+        this.events = events;
+    }
+
+    public record TrackingEvent(DeliveryStatus status, String description, LocalDateTime occurredAt) {}
+    public record TrackingDetails(String trackingNumber, String orderCode, String carrier,
+                                  DeliveryStatus status, List<TrackingEvent> events) {}
 
     @Transactional(readOnly = true)
     public List<Delivery> getDeliveries() { return deliveries.findAllByOrderByCreatedAtDesc(); }
@@ -31,9 +43,10 @@ public class DeliveryService {
                     .substring(0, 12).toUpperCase(Locale.ROOT);
         } while (deliveries.existsByTrackingNumber(tracking));
 
-        deliveries.save(new Delivery(required(orderCode, "Mã đơn"),
+        Delivery delivery = deliveries.save(new Delivery(required(orderCode, "Mã đơn"),
                 required(recipientName, "Người nhận"), required(phone, "Số điện thoại"),
                 required(address, "Địa chỉ"), required(city, "Tỉnh/thành phố"), cleanCarrier, tracking));
+        events.save(new DeliveryEvent(delivery, DeliveryStatus.READY, "Đã tạo vận đơn, chờ bàn giao cho đơn vị vận chuyển."));
     }
 
     @Transactional
@@ -50,6 +63,28 @@ public class DeliveryService {
         if (!allowed) throw new IllegalArgumentException("Không thể chuyển trạng thái " + label(current) + " sang " + label(next) + ".");
         delivery.setStatus(next);
         delivery.markUpdated();
+        events.save(new DeliveryEvent(delivery, next, description(next, delivery.getCarrier())));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<TrackingDetails> findTracking(String trackingNumber) {
+        if (trackingNumber == null || trackingNumber.isBlank()) return Optional.empty();
+        return deliveries.findByTrackingNumberIgnoreCase(trackingNumber.trim())
+                .map(delivery -> new TrackingDetails(delivery.getTrackingNumber(), delivery.getOrderCode(),
+                        delivery.getCarrier(), delivery.getStatus(),
+                        events.findAllByDeliveryIdOrderByOccurredAtAsc(delivery.getId()).stream()
+                                .map(event -> new TrackingEvent(event.getStatus(), event.getDescription(), event.getOccurredAt()))
+                                .toList()));
+    }
+
+    private static String description(DeliveryStatus status, String carrier) {
+        return switch (status) {
+            case READY -> "Đã tạo vận đơn, chờ bàn giao cho đơn vị vận chuyển.";
+            case IN_TRANSIT -> "Đã bàn giao vận đơn cho " + carrier + ".";
+            case OUT_FOR_DELIVERY -> "Vận đơn đang được giao tới người nhận.";
+            case DELIVERED -> "Giao hàng thành công.";
+            case RETURNED -> "Vận đơn được ghi nhận hoàn hàng.";
+        };
     }
 
     private static String required(String value, String label) {
@@ -58,12 +93,6 @@ public class DeliveryService {
     }
 
     private static String label(DeliveryStatus status) {
-        return switch (status) {
-            case READY -> "Chờ bàn giao";
-            case IN_TRANSIT -> "Đang vận chuyển";
-            case OUT_FOR_DELIVERY -> "Đang giao";
-            case DELIVERED -> "Đã giao";
-            case RETURNED -> "Hoàn hàng";
-        };
+        return status.getLabel();
     }
 }

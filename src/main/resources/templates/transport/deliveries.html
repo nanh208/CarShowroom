@@ -34,7 +34,7 @@
 <main class="page">
   <header class="top">
     <div><h1>🚚 Vận chuyển</h1><p>Tạo vận đơn và cập nhật hành trình giao hàng.</p></div>
-    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/home}">Trang chủ</a> &nbsp; <a th:href="@{/logout}">Đăng xuất</a></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/transport/track}">Tra cứu công khai</a> &nbsp; <a th:href="@{/home}">Trang chủ</a> &nbsp; <a th:href="@{/logout}">Đăng xuất</a></div>
   </header>
 
   <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
@@ -63,7 +63,7 @@
           <td><span th:text="${delivery.recipientName}"></span><br><span class="muted" th:text="${delivery.phone}"></span></td>
           <td><span th:text="${delivery.address}"></span><br><span class="muted" th:text="${delivery.city}"></span></td>
           <td th:text="${delivery.carrier}"></td>
-          <td th:text="${delivery.status}"></td>
+          <td th:text="${delivery.status.label}"></td>
           <td>
             <form th:if="${delivery.status.name() == 'READY'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="IN_TRANSIT"><button type="submit">Bàn giao vận chuyển</button></form>
             <form th:if="${delivery.status.name() == 'IN_TRANSIT'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="OUT_FOR_DELIVERY"><button type="submit">Đang giao</button></form>
