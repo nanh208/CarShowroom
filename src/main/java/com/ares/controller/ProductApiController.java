@@ -2,6 +2,8 @@ package com.ares.controller;
 
 import com.ares.model.Car;
 import com.ares.repository.CarRepository;
+import com.ares.service.CatalogService;
+import com.ares.service.CatalogSearch;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,9 +16,41 @@ import java.util.Map;
 @RequestMapping("/api/products")
 public class ProductApiController {
     private final CarRepository cars;
+    private final CatalogService catalog;
 
-    public ProductApiController(CarRepository cars) {
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> invalidFilter(IllegalArgumentException error) {
+        return Map.of("message", error.getMessage());
+    }
+
+    public ProductApiController(CarRepository cars, CatalogService catalog) {
         this.cars = cars;
+        this.catalog = catalog;
+    }
+
+    @GetMapping
+    public Map<String, Object> list(@RequestParam Map<String, String> params) {
+        var result = catalog.list(CatalogService.Query.from(params));
+        return Map.of("content", result.content().stream().map(ProductApiController::product).toList(),
+            "totalElements", result.totalElements(), "totalPages", result.totalPages(),
+            "number", result.number(), "size", result.size());
+    }
+
+    @GetMapping("/suggest")
+    public List<Map<String, Object>> suggest(@RequestParam(defaultValue = "") String q) {
+        if (q.isBlank()) return List.of();
+        return catalog.list(CatalogService.Query.from(Map.of("q", q, "size", "6")))
+            .content().stream().map(ProductApiController::product).toList();
+    }
+
+    @GetMapping("/search-meta")
+    public CatalogSearch.Parsed searchMeta(@RequestParam(defaultValue = "") String q) {
+        CatalogService.Query.from(Map.of("q", q));
+        try { return CatalogSearch.parse(q); }
+        catch (IllegalArgumentException error) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, error.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
