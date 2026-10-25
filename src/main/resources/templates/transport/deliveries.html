@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vận chuyển - Ares Store</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+  <style>
+    body { justify-content:flex-start; }
+    .page { width:min(1180px,100%); margin:0 auto; }
+    .top,.panel { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:22px; margin-bottom:18px; backdrop-filter:blur(16px); }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; }
+    .top h1 { font-size:24px; margin-bottom:5px; }
+    .top p,.muted { color:#94a3b8; font-size:13px; }
+    a { color:#7dd3fc; text-decoration:none; }
+    .forms { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    h2 { font-size:17px; margin-bottom:15px; }
+    label { display:block; color:#cbd5e1; font-size:12px; margin:10px 0 5px; }
+    input,select { width:100%; height:40px; border-radius:8px; border:1px solid #475569; padding:0 10px; color:#0f172a; background:#f1f5f9; font:inherit; }
+    button { border:0; border-radius:8px; padding:9px 12px; background:#0284c7; color:white; font-weight:700; cursor:pointer; }
+    .create button { margin-top:14px; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; min-width:950px; }
+    th,td { text-align:left; padding:11px 10px; border-bottom:1px solid rgba(255,255,255,.08); font-size:13px; vertical-align:top; }
+    th { color:#94a3b8; font-weight:600; }
+    .notice { padding:12px 14px; border-radius:9px; margin-bottom:15px; }
+    .ok { color:#a7f3d0; background:rgba(16,185,129,.13); }
+    .err { color:#fecaca; background:rgba(239,68,68,.13); }
+    .tracking { font-family:monospace; color:#7dd3fc; }
+    @media(max-width:600px){ body{padding:14px 10px}.top,.panel{padding:16px}.top h1{font-size:20px} }
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="top">
+    <div><h1>🚚 Vận chuyển</h1><p>Tạo vận đơn và cập nhật hành trình giao hàng.</p></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/transport/track}">Tra cứu công khai</a> &nbsp; <a th:href="@{/home}">Trang chủ</a> &nbsp; <a th:href="@{/logout}">Đăng xuất</a></div>
+  </header>
+
+  <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
+  <div th:if="${errorMessage}" class="notice err" th:text="${errorMessage}"></div>
+
+  <form class="panel create" th:action="@{/transport/deliveries}" method="post">
+    <h2>Tạo vận đơn</h2>
+    <div class="forms">
+      <div><label for="orderCode">Mã đơn</label><input id="orderCode" name="orderCode" required maxlength="80" placeholder="ARES-1001"></div>
+      <div><label for="recipientName">Người nhận</label><input id="recipientName" name="recipientName" required maxlength="160"></div>
+      <div><label for="phone">Số điện thoại</label><input id="phone" name="phone" type="tel" required maxlength="30"></div>
+      <div><label for="city">Tỉnh/thành phố</label><input id="city" name="city" required maxlength="100"></div>
+      <div><label for="carrier">Đơn vị vận chuyển</label><select id="carrier" name="carrier" required><option value="GHN">GHN</option><option value="GHTK">GHTK</option><option value="OTHER">Đơn vị khác</option></select></div>
+      <div><label for="address">Địa chỉ giao hàng</label><input id="address" name="address" required maxlength="500"></div>
+    </div>
+    <button type="submit">Tạo vận đơn</button>
+  </form>
+
+  <section class="panel">
+    <h2>Danh sách vận đơn</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Mã đơn / mã vận đơn</th><th>Người nhận</th><th>Địa chỉ</th><th>Đơn vị</th><th>Trạng thái</th><th>Cập nhật hành trình</th></tr></thead>
+      <tbody>
+        <tr th:each="delivery : ${deliveries}">
+          <td><span th:text="${delivery.orderCode}"></span><br><span class="tracking" th:text="${delivery.trackingNumber}"></span></td>
+          <td><span th:text="${delivery.recipientName}"></span><br><span class="muted" th:text="${delivery.phone}"></span></td>
+          <td><span th:text="${delivery.address}"></span><br><span class="muted" th:text="${delivery.city}"></span></td>
+          <td th:text="${delivery.carrier}"></td>
+          <td th:text="${delivery.status.label}"></td>
+          <td>
+            <form th:if="${delivery.status.name() == 'READY'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="IN_TRANSIT"><button type="submit">Bàn giao vận chuyển</button></form>
+            <form th:if="${delivery.status.name() == 'IN_TRANSIT'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="OUT_FOR_DELIVERY"><button type="submit">Đang giao</button></form>
+            <form th:if="${delivery.status.name() == 'OUT_FOR_DELIVERY'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="DELIVERED"><button type="submit">Xác nhận đã giao</button></form>
+            <form th:if="${delivery.status.name() == 'READY' or delivery.status.name() == 'IN_TRANSIT' or delivery.status.name() == 'OUT_FOR_DELIVERY'}" th:action="@{/transport/deliveries/status}" method="post" style="margin-top:6px"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="RETURNED"><button type="submit" style="background:#475569">Hoàn hàng</button></form>
+            <span th:if="${delivery.status.name() == 'DELIVERED' or delivery.status.name() == 'RETURNED'}" class="muted">Đã kết thúc</span>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(deliveries)}"><td colspan="6" class="muted">Chưa có vận đơn. Tạo vận đơn để bắt đầu theo dõi.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</main>
+</body>
+</html>
