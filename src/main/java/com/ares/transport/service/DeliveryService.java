@@ -30,6 +30,9 @@ public class DeliveryService {
     @Transactional(readOnly = true)
     public List<Delivery> getDeliveries() { return deliveries.findAllByOrderByCreatedAtDesc(); }
 
+    @Transactional(readOnly = true)
+    public Optional<Delivery> findDelivery(Long id) { return deliveries.findById(id); }
+
     @Transactional
     public void create(String orderCode, String recipientName, String phone, String address,
                        String city, String carrier) {

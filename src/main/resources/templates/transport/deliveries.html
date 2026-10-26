@@ -56,7 +56,7 @@
   <section class="panel">
     <h2>Danh sách vận đơn</h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Mã đơn / mã vận đơn</th><th>Người nhận</th><th>Địa chỉ</th><th>Đơn vị</th><th>Trạng thái</th><th>Cập nhật hành trình</th></tr></thead>
+      <thead><tr><th>Mã đơn / mã vận đơn</th><th>Người nhận</th><th>Địa chỉ</th><th>Đơn vị</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
       <tbody>
         <tr th:each="delivery : ${deliveries}">
           <td><span th:text="${delivery.orderCode}"></span><br><span class="tracking" th:text="${delivery.trackingNumber}"></span></td>
@@ -65,6 +65,7 @@
           <td th:text="${delivery.carrier}"></td>
           <td th:text="${delivery.status.label}"></td>
           <td>
+            <a th:href="@{/transport/deliveries/{id}/label(id=${delivery.id})}" style="display:inline-block;margin-bottom:6px">In nhãn PDF A6</a><br>
             <form th:if="${delivery.status.name() == 'READY'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="IN_TRANSIT"><button type="submit">Bàn giao vận chuyển</button></form>
             <form th:if="${delivery.status.name() == 'IN_TRANSIT'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="OUT_FOR_DELIVERY"><button type="submit">Đang giao</button></form>
             <form th:if="${delivery.status.name() == 'OUT_FOR_DELIVERY'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="DELIVERED"><button type="submit">Xác nhận đã giao</button></form>
