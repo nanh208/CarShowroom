@@ -4,6 +4,7 @@ import com.ares.model.User;
 import com.ares.transport.model.Delivery;
 import com.ares.transport.model.DeliveryStatus;
 import com.ares.transport.service.DeliveryLabelService;
+import com.ares.transport.service.CarrierQuoteService;
 import com.ares.transport.service.DeliveryService;
 import com.lowagie.text.DocumentException;
 import jakarta.servlet.http.HttpSession;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -27,10 +29,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class DeliveryController {
     private final DeliveryService service;
     private final DeliveryLabelService labels;
+    private final CarrierQuoteService quotes;
 
-    public DeliveryController(DeliveryService service, DeliveryLabelService labels) {
+    public DeliveryController(DeliveryService service, DeliveryLabelService labels, CarrierQuoteService quotes) {
         this.service = service;
         this.labels = labels;
+        this.quotes = quotes;
     }
 
     @GetMapping
@@ -50,6 +54,18 @@ public class DeliveryController {
         if (session.getAttribute("currentUser") == null) return "redirect:/login";
         return perform(() -> service.create(orderCode, recipientName, phone, address, city, carrier),
                 "Đã tạo vận đơn.", flash);
+    }
+
+    @GetMapping("/quotes")
+    @ResponseBody
+    public ResponseEntity<?> quote(HttpSession session, @RequestParam String city,
+                                   @RequestParam int weightGrams, @RequestParam long codAmount) {
+        if (session.getAttribute("currentUser") == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        try {
+            return ResponseEntity.ok(quotes.quoteAll(city, weightGrams, codAmount));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("message", ex.getMessage()));
+        }
     }
 
     @PostMapping("/status")
