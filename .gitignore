@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Automation schedule and logs
+*.log
+scripts/*.log
+scripts/push_history.log
+scripts/schedule_state.json
+
