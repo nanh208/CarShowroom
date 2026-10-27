@@ -9,6 +9,11 @@ import com.ares.warehouse.repository.StockMovementRepository;
 import com.ares.warehouse.repository.WarehouseRepository;
 import com.ares.warehouse.repository.WarehouseStockRepository;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Comparator;
+import java.util.Collections;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
@@ -54,14 +59,64 @@ public class WarehouseService {
     @Transactional(readOnly = true)
     public List<StockMovement> getRecentMovements() { return movements.findTop100ByOrderByCreatedAtDesc(); }
 
+    public record RestockSuggestion(Long itemId, String sku, String name, String category, int available,
+                                    int reorderPoint, int suggestedOrder, Map<String, Integer> byWarehouse) {}
+
+    @Transactional(readOnly = true)
+    public List<RestockSuggestion> getRestockSuggestions() {
+        List<Warehouse> locations = warehouses.findAllByOrderByNameAsc();
+        List<InventoryItem> inventoryItems = items.findAllByOrderByNameAsc();
+        Map<Long, Map<String, Integer>> quantitiesByItem = new LinkedHashMap<>();
+        for (InventoryItem item : inventoryItems) quantitiesByItem.put(item.getId(), new LinkedHashMap<>());
+        for (Map<String, Integer> quantities : quantitiesByItem.values()) {
+            locations.forEach(location -> quantities.put(location.getCode(), 0));
+        }
+
+        Map<Long, Integer> totals = new LinkedHashMap<>();
+        for (Long itemId : quantitiesByItem.keySet()) totals.put(itemId, 0);
+        for (WarehouseStock stock : stocks.findAllByOrderByItem_NameAsc()) {
+            Long itemId = stock.getItem().getId();
+            Map<String, Integer> byWarehouse = quantitiesByItem.get(itemId);
+            if (byWarehouse != null) byWarehouse.put(stock.getWarehouse().getCode(), stock.getQuantity());
+            totals.computeIfPresent(itemId, (ignored, total) -> total + stock.getQuantity());
+        }
+
+        List<RestockSuggestion> result = new ArrayList<>();
+        for (InventoryItem item : inventoryItems) {
+            int available = totals.getOrDefault(item.getId(), 0);
+            int reorderPoint = item.getReorderPoint();
+            result.add(new RestockSuggestion(item.getId(), item.getSku(), item.getName(), item.getCategory(), available,
+                    reorderPoint, Math.max(0, reorderPoint - available),
+                    Collections.unmodifiableMap(new LinkedHashMap<>(
+                            quantitiesByItem.getOrDefault(item.getId(), Map.of())))));
+        }
+        result.sort(Comparator.comparingInt(RestockSuggestion::suggestedOrder).reversed()
+                .thenComparing(RestockSuggestion::name, String.CASE_INSENSITIVE_ORDER));
+        return result;
+    }
+
     @Transactional
-    public void addItem(String sku, String name, String category) {
+    public void addItem(String sku, String name, String category, int reorderPoint) {
+        if (reorderPoint < 0 || reorderPoint > 1_000_000) {
+            throw new IllegalArgumentException("Ngưỡng tồn tối thiểu phải từ 0 đến 1.000.000.");
+        }
         String cleanSku = required(sku, "SKU").toUpperCase();
         String cleanName = required(name, "Tên mặt hàng");
         if (items.findBySkuIgnoreCase(cleanSku).isPresent()) {
             throw new IllegalArgumentException("SKU này đã tồn tại.");
         }
-        items.save(new InventoryItem(cleanSku, cleanName, clean(category)));
+        items.save(new InventoryItem(cleanSku, cleanName, clean(category), reorderPoint));
+    }
+
+    @Transactional
+    public void updateReorderPoint(Long itemId, int reorderPoint) {
+        if (reorderPoint < 0 || reorderPoint > 1_000_000) {
+            throw new IllegalArgumentException("Ngưỡng tồn tối thiểu phải từ 0 đến 1.000.000.");
+        }
+        InventoryItem item = items.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy mặt hàng."));
+        item.setReorderPoint(reorderPoint);
+        items.save(item);
     }
 
     @Transactional

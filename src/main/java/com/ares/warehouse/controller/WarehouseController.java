@@ -13,6 +13,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.List;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 
 @Controller
 @RequestMapping("/inventory/warehouses")
@@ -38,11 +44,59 @@ public class WarehouseController {
         return "inventory/warehouses";
     }
 
+    @GetMapping("/forecast")
+    public String forecast(HttpSession session, Model model) {
+        if (session.getAttribute("currentUser") == null) return "redirect:/login";
+        model.addAttribute("user", (User) session.getAttribute("currentUser"));
+        model.addAttribute("suggestions", service.getRestockSuggestions());
+        return "inventory/forecast";
+    }
+
+    @GetMapping(value = "/forecast.csv", produces = "text/csv;charset=UTF-8")
+    public ResponseEntity<byte[]> exportForecast(HttpSession session) {
+        if (session.getAttribute("currentUser") == null) return ResponseEntity.status(401).build();
+        StringBuilder csv = new StringBuilder("\uFEFFSKU,Tên mặt hàng,Danh mục,Tồn hiện có,Ngưỡng tồn tối thiểu,Số lượng đề xuất");
+        List<String> warehouseCodes = service.getWarehouses().stream().map(warehouse -> warehouse.getCode()).toList();
+        warehouseCodes.forEach(code -> csv.append(',').append(csvCell("Tồn " + code)));
+        csv.append("\r\n");
+        for (WarehouseService.RestockSuggestion row : service.getRestockSuggestions()) {
+            csv.append(csvCell(row.sku())).append(',').append(csvCell(row.name())).append(',')
+                    .append(csvCell(row.category())).append(',').append(row.available()).append(',')
+                    .append(row.reorderPoint()).append(',').append(row.suggestedOrder());
+            for (String code : warehouseCodes) csv.append(',').append(row.byWarehouse().getOrDefault(code, 0));
+            csv.append("\r\n");
+        }
+        byte[] body = csv.toString().getBytes(StandardCharsets.UTF_8);
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=restock-plan-" + LocalDate.now() + ".csv")
+                .header(HttpHeaders.CACHE_CONTROL, "no-store").body(body);
+    }
+
+    private static String csvCell(String value) {
+        if (value == null) return "\"\"";
+        if (!value.isEmpty() && "=+-@".indexOf(value.charAt(0)) >= 0) value = "'" + value;
+        return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
     @PostMapping("/items")
     public String addItem(HttpSession session, @RequestParam String sku, @RequestParam String name,
-                          @RequestParam(required = false) String category, RedirectAttributes flash) {
+                          @RequestParam(required = false) String category,
+                          @RequestParam(defaultValue = "0") int reorderPoint, RedirectAttributes flash) {
         if (session.getAttribute("currentUser") == null) return "redirect:/login";
-        return perform(() -> service.addItem(sku, name, category), "Đã thêm mặt hàng.", flash);
+        return perform(() -> service.addItem(sku, name, category, reorderPoint), "Đã thêm mặt hàng.", flash);
+    }
+
+    @PostMapping("/reorder-point")
+    public String updateReorderPoint(HttpSession session, @RequestParam Long itemId,
+                                     @RequestParam int reorderPoint, RedirectAttributes flash) {
+        if (session.getAttribute("currentUser") == null) return "redirect:/login";
+        try {
+            service.updateReorderPoint(itemId, reorderPoint);
+            flash.addFlashAttribute("successMessage", "Đã cập nhật ngưỡng nhập hàng.");
+        } catch (IllegalArgumentException ex) {
+            flash.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/inventory/warehouses/forecast";
     }
 
     @PostMapping("/adjust")
