@@ -4,8 +4,10 @@ import com.ares.dto.ApiResponse;
 import com.ares.dto.AuthDtos.UserDto;
 import com.ares.model.Address;
 import com.ares.model.User;
+import com.ares.model.UserPreference;
 import com.ares.repository.AddressRepository;
 import com.ares.repository.UserRepository;
+import com.ares.repository.UserPreferenceRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +22,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.YearMonth;
+import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @RestController
@@ -30,10 +35,12 @@ public class AccountApiController {
 
     private final UserRepository users;
     private final AddressRepository addresses;
+    private final UserPreferenceRepository preferences;
 
-    public AccountApiController(UserRepository users, AddressRepository addresses) {
+    public AccountApiController(UserRepository users, AddressRepository addresses, UserPreferenceRepository preferences) {
         this.users = users;
         this.addresses = addresses;
+        this.preferences = preferences;
     }
 
     public record AddressRequest(String label, String receiverName, String phone, String line,
@@ -212,6 +219,47 @@ public class AccountApiController {
             });
         }
         return ResponseEntity.ok(ApiResponse.ok("Đã xóa địa chỉ"));
+    }
+
+    @GetMapping("/preferences")
+    public ResponseEntity<ApiResponse> preferences(HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return unauthorized();
+        Map<String, String> result = new LinkedHashMap<>();
+        for (UserPreference preference : preferences.findByUser_IdOrderByPreferenceKeyAsc(user.getId())) {
+            result.put(preference.getPreferenceKey(), preference.getValue());
+        }
+        return ResponseEntity.ok(ApiResponse.ok("Tùy chọn tài khoản", result));
+    }
+
+    @PutMapping("/preferences/{key}")
+    @Transactional
+    public ResponseEntity<ApiResponse> updatePreference(@PathVariable String key,
+                                                         @RequestBody Map<String, String> request,
+                                                         HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return unauthorized();
+        Set<String> allowedValues = switch (key) {
+            case "locale" -> Set.of("vi", "en");
+            case "currency" -> Set.of("VND", "USD");
+            default -> null;
+        };
+        String value = request == null ? null : request.get("value");
+        if (allowedValues == null || value == null || !allowedValues.contains(value)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Khóa hoặc giá trị tùy chọn không hợp lệ"));
+        }
+
+        UserPreference preference = preferences.findByUser_IdAndPreferenceKey(user.getId(), key)
+                .orElseGet(() -> {
+                    UserPreference created = new UserPreference();
+                    created.setUser(user);
+                    created.setPreferenceKey(key);
+                    return created;
+                });
+        preference.setValue(value);
+        preference.setUpdatedAt(LocalDateTime.now());
+        preferences.save(preference);
+        return ResponseEntity.ok(ApiResponse.ok("Đã lưu tùy chọn tài khoản", Map.of(key, value)));
     }
 
     private User currentUser(HttpSession session) {
