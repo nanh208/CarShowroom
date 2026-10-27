@@ -35,7 +35,7 @@
 <main class="page">
   <header class="top">
     <div><h1>📦 Quản lý kho bãi</h1><p>Theo dõi tồn theo chi nhánh, điều chỉnh và điều chuyển hàng.</p></div>
-    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/home}">Trang chủ</a> &nbsp; <a th:href="@{/logout}">Đăng xuất</a></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/warehouses/forecast}">Báo cáo &amp; kế hoạch nhập</a> &nbsp; <a th:href="@{/home}">Trang chủ</a> &nbsp; <a th:href="@{/logout}">Đăng xuất</a></div>
   </header>
 
   <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
@@ -56,6 +56,7 @@
       <label for="sku">Mã SKU</label><input id="sku" name="sku" required maxlength="50" placeholder="CAR-001">
       <label for="name">Tên mặt hàng</label><input id="name" name="name" required maxlength="160" placeholder="Mô hình xe...">
       <label for="category">Danh mục</label><input id="category" name="category" maxlength="100" placeholder="Mô hình 1:18">
+      <label for="reorderPoint">Ngưỡng tồn tối thiểu</label><input id="reorderPoint" name="reorderPoint" type="number" min="0" max="1000000" value="0" required>
       <button type="submit">Thêm mặt hàng</button>
     </form>
     <form class="panel" th:action="@{/inventory/warehouses/adjust}" method="post">

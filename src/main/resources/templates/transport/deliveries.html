@@ -27,6 +27,10 @@
     .ok { color:#a7f3d0; background:rgba(16,185,129,.13); }
     .err { color:#fecaca; background:rgba(239,68,68,.13); }
     .tracking { font-family:monospace; color:#7dd3fc; }
+    .estimate { margin-top:15px; padding:12px; border:1px solid rgba(125,211,252,.25); border-radius:10px; }
+    .estimate-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px; margin-top:10px; }
+    .estimate-card { padding:10px; border-radius:8px; background:rgba(15,23,42,.45); font-size:13px; }
+    .estimate-card strong { display:block; color:#bae6fd; margin-bottom:4px; }
     @media(max-width:600px){ body{padding:14px 10px}.top,.panel{padding:16px}.top h1{font-size:20px} }
   </style>
 </head>
@@ -49,14 +53,22 @@
       <div><label for="city">Tỉnh/thành phố</label><input id="city" name="city" required maxlength="100"></div>
       <div><label for="carrier">Đơn vị vận chuyển</label><select id="carrier" name="carrier" required><option value="GHN">GHN</option><option value="GHTK">GHTK</option><option value="OTHER">Đơn vị khác</option></select></div>
       <div><label for="address">Địa chỉ giao hàng</label><input id="address" name="address" required maxlength="500"></div>
+      <div><label for="weightGrams">Khối lượng kiện (g)</label><input id="weightGrams" type="number" min="50" max="30000" value="500" required></div>
+      <div><label for="codAmount">Tiền thu hộ COD (₫)</label><input id="codAmount" type="number" min="0" max="1000000000" value="0" required></div>
     </div>
+    <section class="estimate" aria-live="polite">
+      <strong>Ước tính phí vận chuyển</strong>
+      <div class="muted">Mức phí tham khảo theo vùng, khối lượng và COD; cần xác nhận lại với hãng vận chuyển.</div>
+      <div id="quoteStatus" class="muted" style="margin-top:8px">Nhập tỉnh/thành phố để xem giá GHN và GHTK.</div>
+      <div id="quoteList" class="estimate-list"></div>
+    </section>
     <button type="submit">Tạo vận đơn</button>
   </form>
 
   <section class="panel">
     <h2>Danh sách vận đơn</h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Mã đơn / mã vận đơn</th><th>Người nhận</th><th>Địa chỉ</th><th>Đơn vị</th><th>Trạng thái</th><th>Cập nhật hành trình</th></tr></thead>
+      <thead><tr><th>Mã đơn / mã vận đơn</th><th>Người nhận</th><th>Địa chỉ</th><th>Đơn vị</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
       <tbody>
         <tr th:each="delivery : ${deliveries}">
           <td><span th:text="${delivery.orderCode}"></span><br><span class="tracking" th:text="${delivery.trackingNumber}"></span></td>
@@ -65,6 +77,7 @@
           <td th:text="${delivery.carrier}"></td>
           <td th:text="${delivery.status.label}"></td>
           <td>
+            <a th:href="@{/transport/deliveries/{id}/label(id=${delivery.id})}" style="display:inline-block;margin-bottom:6px">In nhãn PDF A6</a><br>
             <form th:if="${delivery.status.name() == 'READY'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="IN_TRANSIT"><button type="submit">Bàn giao vận chuyển</button></form>
             <form th:if="${delivery.status.name() == 'IN_TRANSIT'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="OUT_FOR_DELIVERY"><button type="submit">Đang giao</button></form>
             <form th:if="${delivery.status.name() == 'OUT_FOR_DELIVERY'}" th:action="@{/transport/deliveries/status}" method="post"><input type="hidden" name="id" th:value="${delivery.id}"><input type="hidden" name="status" value="DELIVERED"><button type="submit">Xác nhận đã giao</button></form>
@@ -77,5 +90,42 @@
     </table></div>
   </section>
 </main>
+<script>
+  (() => {
+    const city = document.getElementById('city');
+    const weight = document.getElementById('weightGrams');
+    const cod = document.getElementById('codAmount');
+    const status = document.getElementById('quoteStatus');
+    const list = document.getElementById('quoteList');
+    let timer;
+    const vnd = value => new Intl.NumberFormat('vi-VN').format(value) + ' ₫';
+    async function refreshQuotes() {
+      list.replaceChildren();
+      if (!city.value.trim()) { status.textContent = 'Nhập tỉnh/thành phố để xem giá GHN và GHTK.'; return; }
+      if (!weight.value || Number(weight.value) < 50 || Number(weight.value) > 30000 || Number(cod.value) < 0) {
+        status.textContent = 'Khối lượng phải từ 50 g đến 30 kg; COD không được âm.'; return;
+      }
+      status.textContent = 'Đang tính mức phí tham khảo…';
+      const params = new URLSearchParams({ city: city.value, weightGrams: weight.value, codAmount: cod.value || '0' });
+      try {
+        const response = await fetch(`/transport/deliveries/quotes?${params}`, { headers: { Accept: 'application/json' } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Không thể tính phí lúc này.');
+        status.textContent = 'Mức phí ước tính; đơn vị vận chuyển có thể điều chỉnh theo địa chỉ thực tế.';
+        data.forEach(quote => {
+          const card = document.createElement('div');
+          card.className = 'estimate-card';
+          const title = document.createElement('strong'); title.textContent = quote.label;
+          const amount = document.createElement('span'); amount.textContent = `Phí: ${vnd(quote.fee)} · COD: ${vnd(quote.codFee)}`;
+          const eta = document.createElement('div'); eta.className = 'muted'; eta.textContent = `Dự kiến ${quote.etaFrom} – ${quote.etaTo}`;
+          card.append(title, amount, eta); list.append(card);
+        });
+      } catch (error) { status.textContent = error.message; }
+    }
+    [city, weight, cod].forEach(input => input.addEventListener('input', () => {
+      clearTimeout(timer); timer = setTimeout(refreshQuotes, 250);
+    }));
+  })();
+</script>
 </body>
 </html>
