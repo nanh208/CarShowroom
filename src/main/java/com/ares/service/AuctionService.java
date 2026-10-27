@@ -1,5 +1,6 @@
 ﻿package com.ares.service;
 
+import com.ares.dto.AuctionFinalizeResult;
 import com.ares.model.Auction;
 import com.ares.model.AuctionBid;
 import com.ares.model.AuctionStatus;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,9 +28,7 @@ public class AuctionService {
 
     public List<Auction> findAll(AuctionStatus status) {
         refreshTimedStatuses();
-        if (status == null) {
-            return auctionRepository.findAll();
-        }
+        if (status == null) return auctionRepository.findAll();
         return auctionRepository.findByStatus(status);
     }
 
@@ -62,7 +62,6 @@ public class AuctionService {
             }
         });
 
-        // Anti-sniping: náº¿u Ä‘áº·t giÃ¡ trong 60 giÃ¢y cuá»‘i, tá»± Ä‘á»™ng kÃ©o dÃ i thÃªm 2 phÃºt
         LocalDateTime now = LocalDateTime.now();
         if (Duration.between(now, auction.getEndsAt()).getSeconds() < 60) {
             auction.setEndsAt(auction.getEndsAt().plusMinutes(2));
@@ -78,6 +77,31 @@ public class AuctionService {
         auction.setBidCount((auction.getBidCount() == null ? 0 : auction.getBidCount()) + 1);
         auctionRepository.save(auction);
         return auctionBidRepository.save(bid);
+    }
+
+    @Transactional
+    public synchronized AuctionFinalizeResult finalizeAuction(Long auctionId) {
+        Auction auction = auctionRepository.findById(auctionId)
+                .orElseThrow(() -> new IllegalArgumentException("KhÃ´ng tÃ¬m tháº¥y phiÃªn Ä‘áº¥u giÃ¡"));
+
+        if (Boolean.TRUE.equals(auction.getFinalized())) {
+            throw new IllegalStateException("PhiÃªn Ä‘áº¥u giÃ¡ Ä‘Ã£ Ä‘Æ°á»£c chá»‘t trÆ°á»›c Ä‘Ã³");
+        }
+
+        Optional<AuctionBid> highestBid = auctionBidRepository.findFirstByAuctionIdOrderByAmountDesc(auctionId);
+        if (highestBid.isPresent()) {
+            AuctionBid top = highestBid.get();
+            auction.setWinner(top.getBidder());
+            String dateTag = DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDateTime.now());
+            auction.setOrderCode("AUC-" + dateTag + "-" + String.format("%04d", auction.getId()));
+        }
+
+        auction.setStatus(AuctionStatus.ENDED);
+        auction.setFinalized(true);
+        auctionRepository.save(auction);
+
+        String winnerName = auction.getWinner() != null ? auction.getWinner().getUsername() : "KhÃ´ng cÃ³ ngÆ°á»i Ä‘áº·t giÃ¡";
+        return new AuctionFinalizeResult(auction.getId(), auction.getTitle(), auction.getCurrentPrice(), winnerName, auction.getOrderCode(), LocalDateTime.now());
     }
 
     public List<AuctionBid> bidHistory(Long auctionId) {
