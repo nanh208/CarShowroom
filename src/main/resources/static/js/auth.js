@@ -1,7 +1,8 @@
 /**
  * Ares Store Authentication JavaScript
- * Handles Countdown timers (110s, 119s), OTP / Gmail verification code generation,
- * Rate-limiting prevention, form validation, and step transitions for Forgot Password.
+ * Handles Countdown timers (110s, 119s, 60s), OTP / Gmail verification code generation,
+ * Rate-limiting prevention, form validation, and step transitions for Forgot Password,
+ * Register, and Upgraded Login (Email/Username + Phone OTP + Social OAuth).
  * 
  * Note: Mỗi lần load lại trang, nút gửi mã luôn sẵn sàng (không lưu countdown qua reload).
  * Không hiển thị popup thông báo gửi thành công (âm thầm bắt đầu đếm ngược).
@@ -195,7 +196,9 @@ document.addEventListener('DOMContentLoaded', () => {
   sessionStorage.removeItem('ares_cooldown_register');
   sessionStorage.removeItem('ares_cooldown_forgot');
 
+  // ========================================================================
   // 1. REGISTER PAGE
+  // ========================================================================
   const registerForm = document.getElementById('registerForm');
   const btnResendRegister = document.getElementById('btnResendRegister');
   let regTimer = null;
@@ -260,7 +263,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ========================================================================
   // 2. FORGOT PASSWORD PAGE (Step 1 -> Step 2)
+  // ========================================================================
   const forgotFormStep1 = document.getElementById('forgotFormStep1');
   const forgotFormStep2 = document.getElementById('forgotFormStep2');
   const btnResendForgot = document.getElementById('btnResendForgot');
@@ -366,6 +371,302 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         console.error('Reset submit error:', err);
+      }
+    });
+  }
+
+  // ========================================================================
+  // 3. LOGIN PAGE LOGIC (PORTED & ENHANCED FROM CAR-COPY)
+  // ========================================================================
+  const emailLoginPane = document.getElementById('emailLoginPane');
+  const phoneLoginPane = document.getElementById('phoneLoginPane');
+  const btnSwitchToPhone = document.getElementById('btnSwitchToPhone');
+  const btnSwitchToEmail = document.getElementById('btnSwitchToEmail');
+  const btnSendPhoneOtp = document.getElementById('btnSendPhoneOtp');
+  const btnVerifyPhoneOtp = document.getElementById('btnVerifyPhoneOtp');
+  const btnChangePhone = document.getElementById('btnChangePhoneNumber');
+  const btnResendPhoneOtp = document.getElementById('btnResendPhoneOtp');
+  const phoneStep1 = document.getElementById('phoneStep1');
+  const phoneStep2 = document.getElementById('phoneStep2');
+  const plPhoneInput = document.getElementById('plPhone');
+  const plCodeInput = document.getElementById('plCode');
+  const maskedPhoneDisplay = document.getElementById('maskedPhoneDisplay');
+  const otpCooldownVal = document.getElementById('otpCooldownVal');
+  const clientErrorAlert = document.getElementById('clientErrorAlert');
+  const clientErrorMessage = document.getElementById('clientErrorMessage');
+  const loginForm = document.getElementById('loginForm');
+
+  function showClientError(msg) {
+    if (clientErrorAlert && clientErrorMessage) {
+      clientErrorMessage.textContent = msg;
+      clientErrorAlert.style.display = 'flex';
+    } else {
+      showToast({ title: 'Lỗi', message: msg, type: 'error' });
+    }
+  }
+
+  function clearClientError() {
+    if (clientErrorAlert) {
+      clientErrorAlert.style.display = 'none';
+    }
+  }
+
+  // Switch between Email and Phone OTP modes
+  if (btnSwitchToPhone && btnSwitchToEmail && emailLoginPane && phoneLoginPane) {
+    btnSwitchToPhone.addEventListener('click', () => {
+      clearClientError();
+      emailLoginPane.classList.remove('active');
+      phoneLoginPane.classList.add('active');
+      if (plPhoneInput) plPhoneInput.focus();
+    });
+
+    btnSwitchToEmail.addEventListener('click', () => {
+      clearClientError();
+      phoneLoginPane.classList.remove('active');
+      emailLoginPane.classList.add('active');
+      const uInput = document.getElementById('username');
+      if (uInput) uInput.focus();
+    });
+  }
+
+  // Phone OTP Cooldown Timer (60s)
+  let phoneCooldownTimerId = null;
+  function startPhoneCooldown(seconds = 60) {
+    if (phoneCooldownTimerId) clearInterval(phoneCooldownTimerId);
+    let remaining = seconds;
+    if (btnResendPhoneOtp) {
+      btnResendPhoneOtp.disabled = true;
+      if (otpCooldownVal) otpCooldownVal.textContent = `${remaining}s`;
+    }
+    phoneCooldownTimerId = setInterval(() => {
+      remaining--;
+      if (remaining <= 0) {
+        clearInterval(phoneCooldownTimerId);
+        phoneCooldownTimerId = null;
+        if (btnResendPhoneOtp) {
+          btnResendPhoneOtp.disabled = false;
+          btnResendPhoneOtp.textContent = 'Gửi lại mã';
+        }
+      } else {
+        if (otpCooldownVal) otpCooldownVal.textContent = `${remaining}s`;
+      }
+    }, 1000);
+  }
+
+  // Mask phone helper (e.g. 0988888888 -> 098****888)
+  function maskPhone(p) {
+    if (!p || p.length < 7) return p;
+    const start = p.slice(0, 3);
+    const end = p.slice(-3);
+    return `${start}****${end}`;
+  }
+
+  // Send OTP
+  async function handleSendPhoneOtp() {
+    clearClientError();
+    const phone = plPhoneInput ? plPhoneInput.value.trim() : '';
+    if (!phone || phone.length < 8) {
+      showClientError('Vui lòng nhập số điện thoại hợp lệ (tối thiểu 9-10 chữ số)!');
+      if (plPhoneInput) plPhoneInput.focus();
+      return;
+    }
+
+    if (btnSendPhoneOtp) {
+      btnSendPhoneOtp.disabled = true;
+      btnSendPhoneOtp.textContent = 'Đang gửi mã...';
+    }
+
+    try {
+      const res = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target: phone, isEmail: false })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        if (phoneStep1 && phoneStep2) {
+          phoneStep1.style.display = 'none';
+          phoneStep2.style.display = 'block';
+        }
+        if (maskedPhoneDisplay) {
+          maskedPhoneDisplay.textContent = maskPhone(phone);
+        }
+        startPhoneCooldown(60);
+        showToast({
+          title: 'Đã gửi mã OTP',
+          message: data.message || `Mã OTP đã được gửi tới số ${maskPhone(phone)}`,
+          type: 'info'
+        });
+        if (plCodeInput) {
+          plCodeInput.value = '';
+          plCodeInput.focus();
+        }
+      } else {
+        showClientError(data.message || 'Không thể gửi mã OTP. Vui lòng thử lại sau.');
+      }
+    } catch (err) {
+      console.error('Send OTP error:', err);
+      showClientError('Lỗi kết nối máy chủ khi gửi OTP. Vui lòng thử lại!');
+    } finally {
+      if (btnSendPhoneOtp) {
+        btnSendPhoneOtp.disabled = false;
+        btnSendPhoneOtp.textContent = 'Gửi mã OTP';
+      }
+    }
+  }
+
+  if (btnSendPhoneOtp) {
+    btnSendPhoneOtp.addEventListener('click', handleSendPhoneOtp);
+  }
+
+  if (btnResendPhoneOtp) {
+    btnResendPhoneOtp.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleSendPhoneOtp();
+    });
+  }
+
+  // Change phone number
+  if (btnChangePhone) {
+    btnChangePhone.addEventListener('click', () => {
+      clearClientError();
+      if (phoneCooldownTimerId) {
+        clearInterval(phoneCooldownTimerId);
+        phoneCooldownTimerId = null;
+      }
+      if (phoneStep1 && phoneStep2) {
+        phoneStep2.style.display = 'none';
+        phoneStep1.style.display = 'block';
+      }
+      if (plPhoneInput) plPhoneInput.focus();
+    });
+  }
+
+  // Verify Phone OTP & Login
+  async function handleVerifyPhoneOtp() {
+    clearClientError();
+    const phone = plPhoneInput ? plPhoneInput.value.trim() : '';
+    const code = plCodeInput ? plCodeInput.value.trim() : '';
+
+    if (!phone) {
+      showClientError('Thiếu số điện thoại!');
+      return;
+    }
+    if (!code || code.length !== 6) {
+      showClientError('Vui lòng nhập đủ 6 chữ số mã OTP!');
+      if (plCodeInput) plCodeInput.focus();
+      return;
+    }
+
+    if (btnVerifyPhoneOtp) {
+      btnVerifyPhoneOtp.disabled = true;
+      btnVerifyPhoneOtp.textContent = 'Đang xác thực...';
+    }
+
+    try {
+      const res = await fetch('/api/auth/phone-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phone, code: code })
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        showToast({
+          title: 'Đăng nhập thành công',
+          message: 'Chào mừng bạn đến với Ares Store!',
+          type: 'success'
+        });
+        setTimeout(() => {
+          window.location.href = '/home';
+        }, 500);
+      } else {
+        showClientError(data.message || 'Mã OTP không đúng hoặc đã hết hạn!');
+        if (plCodeInput) {
+          plCodeInput.select();
+          plCodeInput.focus();
+        }
+      }
+    } catch (err) {
+      console.error('Verify phone login error:', err);
+      showClientError('Lỗi kết nối máy chủ khi xác thực OTP!');
+    } finally {
+      if (btnVerifyPhoneOtp) {
+        btnVerifyPhoneOtp.disabled = false;
+        btnVerifyPhoneOtp.textContent = 'Xác nhận & đăng nhập';
+      }
+    }
+  }
+
+  if (btnVerifyPhoneOtp) {
+    btnVerifyPhoneOtp.addEventListener('click', handleVerifyPhoneOtp);
+  }
+
+  if (plCodeInput) {
+    plCodeInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleVerifyPhoneOtp();
+      }
+    });
+  }
+
+  if (plPhoneInput) {
+    plPhoneInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSendPhoneOtp();
+      }
+    });
+  }
+
+  // AJAX Login submission for Email/Username form with graceful fallback
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      clearClientError();
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const btnEmailLogin = document.getElementById('btnEmailLogin');
+
+      const username = usernameInput ? usernameInput.value.trim() : '';
+      const password = passwordInput ? passwordInput.value : '';
+
+      if (!username || !password) return; // browser validation handles this
+
+      e.preventDefault();
+      if (btnEmailLogin) {
+        btnEmailLogin.disabled = true;
+        btnEmailLogin.textContent = 'Đang đăng nhập...';
+      }
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username, password: password })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          showToast({
+            title: 'Đăng nhập thành công',
+            message: 'Đang chuyển hướng về trang chủ...',
+            type: 'success'
+          });
+          setTimeout(() => {
+            window.location.href = '/home';
+          }, 400);
+        } else {
+          showClientError(data.message || 'Tên đăng nhập hoặc mật khẩu không chính xác!');
+          if (btnEmailLogin) {
+            btnEmailLogin.disabled = false;
+            btnEmailLogin.textContent = 'Đăng nhập';
+          }
+        }
+      } catch (err) {
+        console.warn('API login error, falling back to standard POST:', err);
+        loginForm.submit();
       }
     });
   }
