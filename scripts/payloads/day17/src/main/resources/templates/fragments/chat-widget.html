@@ -1,0 +1,106 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="chatWidget">
+    <style>
+        .chat-widget-toggle { position: fixed; bottom: 25px; right: 25px; width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #2563eb); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4); z-index: 9999; transition: transform 0.2s, box-shadow 0.2s; border: 2px solid rgba(255, 255, 255, 0.2); }
+        .chat-widget-toggle:hover { transform: scale(1.08); }
+        .chat-widget-box { position: fixed; bottom: 100px; right: 25px; width: 360px; height: 500px; background: #0f172a; border: 1px solid #334155; border-radius: 18px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: none; flex-direction: column; z-index: 9999; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        .chat-header { background: #1e293b; padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        .chat-header h4 { margin: 0; color: #38bdf8; font-size: 1.05rem; }
+        .chat-body { flex: 1; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-msg { max-width: 80%; padding: 10px 14px; border-radius: 14px; font-size: 0.9rem; line-height: 1.4; word-break: break-word; }
+        .chat-msg.customer { align-self: flex-end; background: #0284c7; color: #fff; border-bottom-right-radius: 2px; }
+        .chat-msg.admin { align-self: flex-start; background: #1e293b; color: #f1f5f9; border-bottom-left-radius: 2px; border: 1px solid #334155; }
+        .chat-quick-btns { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 14px; background: #1e293b; border-top: 1px solid #334155; }
+        .btn-quick-reply { background: #0f172a; color: #38bdf8; border: 1px solid #334155; border-radius: 12px; padding: 5px 10px; font-size: 0.8rem; cursor: pointer; }
+        .btn-quick-reply:hover { background: #0284c7; color: #fff; }
+        .chat-footer { padding: 10px 14px; background: #1e293b; display: flex; gap: 8px; }
+        .chat-input { flex: 1; background: #0f172a; border: 1px solid #475569; color: #fff; padding: 8px 12px; border-radius: 10px; font-size: 0.9rem; }
+        .btn-chat-send { background: #0284c7; color: #fff; border: none; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; }
+    </style>
+
+    <div class="chat-widget-toggle" onclick="toggleChatWidget()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+    </div>
+
+    <div id="chatWidgetBox" class="chat-widget-box">
+        <div class="chat-header">
+            <h4>Ares CSKH & Trá»£ LÃ½ AI</h4>
+            <span style="cursor:pointer;color:#94a3b8;font-size:1.2rem;" onclick="toggleChatWidget()">&times;</span>
+        </div>
+        <div id="chatBody" class="chat-body">
+            <div class="chat-msg admin">Xin chÃ o! Em cÃ³ thá»ƒ giÃºp gÃ¬ cho quÃ½ khÃ¡ch vá» giÃ¡ xe, tráº£ gÃ³p hoáº·c Ä‘áº·t lá»‹ch lÃ¡i thá»­ hÃ´m nay áº¡?</div>
+        </div>
+        <div class="chat-quick-btns">
+            <button class="btn-quick-reply" onclick="sendQuick('Báº£ng giÃ¡ xe má»›i nháº¥t')">Báº£ng giÃ¡ xe</button>
+            <button class="btn-quick-reply" onclick="sendQuick('TÆ° váº¥n mua tráº£ gÃ³p 0%')">Mua tráº£ gÃ³p</button>
+            <button class="btn-quick-reply" onclick="sendQuick('ÄÄƒng kÃ½ lÃ¡i thá»­ xe')">ÄÄƒng kÃ½ lÃ¡i thá»­</button>
+        </div>
+        <div class="chat-footer">
+            <input type="text" id="widgetInput" class="chat-input" placeholder="Nháº­p cÃ¢u há»i cá»§a báº¡n..." onkeypress="handleWidgetKey(event)">
+            <button class="btn-chat-send" onclick="sendWidgetMsg()">Gá»­i</button>
+        </div>
+    </div>
+
+    <script>
+        let chatSessionId = localStorage.getItem('ares_chat_session') || ('s_' + Math.random().toString(36).substring(2, 10));
+        localStorage.setItem('ares_chat_session', chatSessionId);
+
+        function toggleChatWidget() {
+            const box = document.getElementById('chatWidgetBox');
+            box.style.display = (box.style.display === 'flex') ? 'none' : 'flex';
+        }
+
+        function handleWidgetKey(e) {
+            if (e.key === 'Enter') sendWidgetMsg();
+        }
+
+        function sendQuick(text) {
+            document.getElementById('widgetInput').value = text;
+            sendWidgetMsg();
+        }
+
+        async function sendWidgetMsg() {
+            const inp = document.getElementById('widgetInput');
+            const text = inp.value.trim();
+            if (!text) return;
+
+            appendMsg(text, 'customer');
+            inp.value = '';
+
+            try {
+                await fetch(`/api/chat/${chatSessionId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ customerName: 'KhÃ¡ch hÃ ng', content: text, fromAdmin: false })
+                });
+                setTimeout(pollWidgetMessages, 600);
+            } catch(e) { console.error(e); }
+        }
+
+        function appendMsg(text, type) {
+            const body = document.getElementById('chatBody');
+            const d = document.createElement('div');
+            d.className = `chat-msg ${type}`;
+            d.innerText = text;
+            body.appendChild(d);
+            body.scrollTop = body.scrollHeight;
+        }
+
+        async function pollWidgetMessages() {
+            try {
+                const res = await fetch(`/api/chat/${chatSessionId}`);
+                const r = await res.json();
+                if (r.data && r.data.length > 0) {
+                    const body = document.getElementById('chatBody');
+                    body.innerHTML = '';
+                    r.data.forEach(m => appendMsg(m.content, m.fromAdmin ? 'admin' : 'customer'));
+                }
+            } catch(e) {}
+        }
+        setInterval(pollWidgetMessages, 4000);
+    </script>
+</div>
+</body>
+</html>

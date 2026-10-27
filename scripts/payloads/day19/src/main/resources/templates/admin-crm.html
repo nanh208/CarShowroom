@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>CRM Quáº£n LÃ½ KhÃ¡ch HÃ ng Tiá»m NÄƒng - Ares Showroom</title>
+    <style>
+        body { background: #090d16; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; padding: 25px; }
+        .crm-table { width: 100%; border-collapse: collapse; background: #1e293b; border-radius: 12px; overflow: hidden; margin-top: 20px; }
+        .crm-table th, .crm-table td { padding: 14px; text-align: left; border-bottom: 1px solid #334155; }
+        .crm-table th { background: #0f172a; color: #94a3b8; font-weight: 600; }
+        .badge-status { padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; }
+        .badge-NEW { background: #3b82f6; color: #fff; }
+        .badge-IN_PROGRESS { background: #eab308; color: #000; }
+        .badge-RESOLVED { background: #10b981; color: #fff; }
+    </style>
+</head>
+<body>
+    <h2>Há»† THá»NG CRM CHÄ‚M SÃ“C KHÃCH HÃ€NG & LEADS</h2>
+    <table class="crm-table">
+        <thead>
+            <tr>
+                <th>MÃ£ Ticket</th>
+                <th>KhÃ¡ch HÃ ng</th>
+                <th>Äiá»‡n Thoáº¡i</th>
+                <th>DÃ²ng Xe Quan TÃ¢m</th>
+                <th>PhÃ¢n Loáº¡i</th>
+                <th>Tráº¡ng ThÃ¡i</th>
+                <th>NhÃ¢n ViÃªn Phá»¥ TrÃ¡ch</th>
+            </tr>
+        </thead>
+        <tbody id="crmBody"></tbody>
+    </table>
+
+    <script>
+        async function loadCrm() {
+            const res = await fetch('/api/crm/admin/tickets');
+            const data = await res.json();
+            const list = data.data || [];
+            document.getElementById('crmBody').innerHTML = list.map(t => `
+                <tr>
+                    <td><strong>${t.ticketCode}</strong></td>
+                    <td>${t.customerName}</td>
+                    <td>${t.phone}</td>
+                    <td style="color:#38bdf8;">${t.interestCar || 'ChÆ°a chá»n'}</td>
+                    <td>${t.inquiryType}</td>
+                    <td><span class="badge-status badge-${t.status}">${t.status}</span></td>
+                    <td>${t.assignedStaff || 'ChÆ°a phÃ¢n cÃ´ng'}</td>
+                </tr>
+            `).join('');
+        }
+        loadCrm();
+    </script>
+</body>
+</html>

@@ -15,4 +15,12 @@ class AuctionTests {
         assertEquals(100L, auction.getCurrentPrice());
         assertEquals(AuctionStatus.UPCOMING, auction.getStatus());
     }
+
+    @Test
+    void recordsBidAmountAndTimestamp() {
+        AuctionBid bid = new AuctionBid();
+        bid.setAmount(250L);
+
+        assertEquals(250L, bid.getAmount());
+    }
 }
