@@ -54,6 +54,8 @@ public class AccountApiController {
         }
     }
 
+    public record PaymentPreferenceRequest(String method) {}
+
     public static class ProfileUpdateRequest {
         private String fullName;
         private String phone;
@@ -242,6 +244,7 @@ public class AccountApiController {
         Set<String> allowedValues = switch (key) {
             case "locale" -> Set.of("vi", "en");
             case "currency" -> Set.of("VND", "USD");
+            case "paymentMethod" -> Set.of("COD", "BANK_QR", "MOMO", "VNPAY", "INSTALLMENT");
             default -> null;
         };
         String value = request == null ? null : request.get("value");
@@ -260,6 +263,39 @@ public class AccountApiController {
         preference.setUpdatedAt(LocalDateTime.now());
         preferences.save(preference);
         return ResponseEntity.ok(ApiResponse.ok("Đã lưu tùy chọn tài khoản", Map.of(key, value)));
+    }
+
+    @GetMapping("/payment-preference")
+    public ResponseEntity<ApiResponse> paymentPreference(HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return unauthorized();
+        String method = preferences.findByUser_IdAndPreferenceKey(user.getId(), "paymentMethod")
+                .map(UserPreference::getValue).orElse("");
+        return ResponseEntity.ok(ApiResponse.ok("Phương thức thanh toán ưa thích", Map.of("method", method)));
+    }
+
+    @PutMapping("/payment-preference")
+    @Transactional
+    public ResponseEntity<ApiResponse> updatePaymentPreference(@RequestBody PaymentPreferenceRequest request,
+                                                               HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return unauthorized();
+        if (request == null || request.method() == null
+                || !Set.of("COD", "BANK_QR", "MOMO", "VNPAY", "INSTALLMENT").contains(request.method())) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Phương thức thanh toán không hợp lệ"));
+        }
+        UserPreference preference = preferences.findByUser_IdAndPreferenceKey(user.getId(), "paymentMethod")
+                .orElseGet(() -> {
+                    UserPreference created = new UserPreference();
+                    created.setUser(user);
+                    created.setPreferenceKey("paymentMethod");
+                    return created;
+                });
+        preference.setValue(request.method());
+        preference.setUpdatedAt(LocalDateTime.now());
+        preferences.save(preference);
+        return ResponseEntity.ok(ApiResponse.ok("Đã lưu phương thức thanh toán ưa thích",
+                Map.of("method", request.method())));
     }
 
     private User currentUser(HttpSession session) {
