@@ -596,11 +596,53 @@
         </div>
         <div class="cart-modal-actions">
           <button type="button" class="cart-btn-clear" onclick="clearCart()">Làm trống</button>
-          <button type="button" class="cart-btn-checkout" onclick="handleCheckout()">Thanh toán ngay</button>
+          <button type="button" class="cart-btn-checkout" onclick="openCheckoutModal()">Tiến hành đặt hàng</button>
         </div>
       </div>
     </div>
 
+  </div>
+
+  <div class="modal-overlay" id="checkoutModal">
+    <section class="modal-box checkout-modal-box" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+      <button type="button" class="modal-close-btn" onclick="closeCheckoutModal()" title="Đóng" aria-label="Đóng">&times;</button>
+      <h3 class="cart-modal-title" id="checkoutTitle">THÔNG TIN ĐẶT HÀNG</h3>
+      <div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div>
+      <p class="checkout-total">Tổng cộng: <strong id="checkoutTotal">0 ₫</strong></p>
+      <p class="checkout-payment-note">Thanh toán trực tuyến ở đây chỉ là mô phỏng sandbox, không trừ tiền thật.</p>
+      <form id="checkoutForm" class="checkout-form" onsubmit="handleCheckout(event)">
+        <label>Họ và tên <input name="customerName" autocomplete="name" minlength="2" maxlength="100" required></label>
+        <label>Số điện thoại <input name="phone" type="tel" autocomplete="tel" minlength="8" maxlength="24" required></label>
+        <label>Email <span class="checkout-optional">(không bắt buộc)</span><input name="email" type="email" autocomplete="email" maxlength="180"></label>
+        <label>Địa chỉ nhận hàng <textarea name="shippingAddress" autocomplete="street-address" minlength="8" maxlength="300" rows="3" required></textarea></label>
+        <label>Ghi chú <span class="checkout-optional">(không bắt buộc)</span><textarea name="note" maxlength="500" rows="2"></textarea></label>
+        <label>Phương thức thanh toán
+          <select name="paymentMethod" required>
+            <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+            <option value="VNPAY_SANDBOX">VNPay (mô phỏng sandbox)</option>
+            <option value="MOMO_SANDBOX">MoMo (mô phỏng sandbox)</option>
+          </select>
+        </label>
+        <p class="checkout-message" id="checkoutMessage" role="status" aria-live="polite"></p>
+        <div class="checkout-form-actions">
+          <button type="button" class="cart-btn-clear" onclick="closeCheckoutModal()">Quay lại</button>
+          <button type="submit" class="cart-btn-checkout">Xác nhận đặt hàng</button>
+        </div>
+      </form>
+      <div id="checkoutSuccess" class="checkout-success" hidden>
+        <h4>Đã nhận đơn hàng</h4>
+        <p id="checkoutSuccessText"></p>
+        <div id="sandboxPaymentActions" hidden>
+          <p id="sandboxPaymentStatus" role="status" aria-live="polite"></p>
+          <div class="checkout-form-actions">
+            <button type="button" class="cart-btn-clear" onclick="completeSandboxPayment('24')">Mô phỏng hủy</button>
+            <button type="button" class="cart-btn-clear" onclick="completeSandboxPayment('51')">Mô phỏng thất bại</button>
+            <button type="button" class="cart-btn-checkout" onclick="completeSandboxPayment('00')">Mô phỏng thành công</button>
+          </div>
+        </div>
+        <button type="button" class="cart-btn-checkout" onclick="closeCheckoutModal()">Hoàn tất</button>
+      </div>
+    </section>
   </div>
 
   <!-- Nạp tệp Script điều khiển giao diện -->
