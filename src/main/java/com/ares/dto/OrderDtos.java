@@ -13,6 +13,7 @@ public class OrderDtos {
             String email,
             String shippingAddress,
             String note,
+            String paymentMethod,
             List<OrderLineRequest> items) {}
 
     public record OrderLineResponse(
@@ -28,6 +29,8 @@ public class OrderDtos {
             String code,
             String status,
             String paymentMethod,
+            String paymentStatus,
+            String paymentToken,
             long total,
             int totalQuantity,
             LocalDateTime createdAt,

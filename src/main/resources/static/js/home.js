@@ -222,6 +222,9 @@ function addToCartFromModal() {
 const cartModal = document.getElementById('cartModal');
 const checkoutModal = document.getElementById('checkoutModal');
 const cartCountDisplay = document.getElementById('cartCountDisplay');
+let sandboxOrderCode = null;
+let sandboxOrderToken = null;
+let sandboxTransactionRef = null;
 
 function loadCartFromStorage() {
   try {
@@ -464,6 +467,7 @@ function openCheckoutModal() {
   const total = document.getElementById('checkoutTotal');
   const form = document.getElementById('checkoutForm');
   const success = document.getElementById('checkoutSuccess');
+  const paymentActions = document.getElementById('sandboxPaymentActions');
   const message = document.getElementById('checkoutMessage');
   if (!checkoutModal || !summary || !total || !form || !success || !message) return;
 
@@ -482,6 +486,8 @@ function openCheckoutModal() {
   form.reset();
   form.hidden = false;
   success.hidden = true;
+  paymentActions.hidden = true;
+  sandboxOrderCode = sandboxOrderToken = sandboxTransactionRef = null;
   message.textContent = '';
   message.classList.remove('is-error');
   closeCartModal();
@@ -502,6 +508,7 @@ async function handleCheckout(event) {
   const message = document.getElementById('checkoutMessage');
   const success = document.getElementById('checkoutSuccess');
   const successText = document.getElementById('checkoutSuccessText');
+  const paymentActions = document.getElementById('sandboxPaymentActions');
   if (!cartItems.length) {
     message.textContent = 'Giỏ hàng đang trống. Vui lòng quay lại chọn sản phẩm.';
     message.classList.add('is-error');
@@ -519,6 +526,7 @@ async function handleCheckout(event) {
       email: form.elements.email.value.trim(),
       shippingAddress: form.elements.shippingAddress.value.trim(),
       note: form.elements.note.value.trim(),
+      paymentMethod: form.elements.paymentMethod.value,
       items: cartItems.map(item => ({ productCode: item.code, quantity: item.qty }))
     };
     const response = await fetch('/api/orders', {
@@ -535,7 +543,28 @@ async function handleCheckout(event) {
     cartItems = [];
     saveCartToStorage();
     form.hidden = true;
-    successText.textContent = `Mã đơn hàng: ${order.code}. Tổng tiền ${formatVND(order.total)}. Đơn đang chờ xác nhận; bạn sẽ thanh toán khi nhận hàng.`;
+    if (order.paymentMethod === 'COD') {
+      successText.textContent = `Mã đơn hàng: ${order.code}. Tổng tiền ${formatVND(order.total)}. Đơn đang chờ xác nhận; bạn sẽ thanh toán khi nhận hàng.`;
+    } else {
+      sandboxOrderCode = order.code;
+      sandboxOrderToken = order.paymentToken;
+      successText.textContent = `Mã đơn hàng: ${order.code}. Tổng tiền ${formatVND(order.total)}. Đây là phiên thanh toán mô phỏng, không phát sinh giao dịch thật.`;
+      try {
+        const paymentResponse = await fetch(`/api/payments/sandbox/orders/${encodeURIComponent(order.code)}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ orderToken: sandboxOrderToken, provider: order.paymentMethod })
+        });
+        const paymentResult = await paymentResponse.json();
+        if (!paymentResponse.ok || !paymentResult.success || !paymentResult.data) {
+          throw new Error(paymentResult.message || 'Chưa tạo được phiên mô phỏng.');
+        }
+        sandboxTransactionRef = paymentResult.data.transactionRef;
+        document.getElementById('sandboxPaymentStatus').textContent = `Mã giao dịch mô phỏng: ${sandboxTransactionRef}. Phiên hết hạn lúc ${new Date(paymentResult.data.expiresAt).toLocaleString('vi-VN')}. Chọn kết quả mô phỏng bên dưới.`;
+      } catch (paymentError) {
+        document.getElementById('sandboxPaymentStatus').textContent = `${paymentError.message} Đơn đã được tạo (${order.code}), bạn có thể đóng cửa sổ và liên hệ cửa hàng để thanh toán lại.`;
+      }
+      paymentActions.hidden = false;
+    }
     success.hidden = false;
   } catch (error) {
     message.textContent = error.message || 'Không thể kết nối để gửi đơn. Vui lòng thử lại.';
@@ -543,6 +572,34 @@ async function handleCheckout(event) {
   } finally {
     submitButton.disabled = false;
     submitButton.textContent = 'Xác nhận đặt hàng';
+  }
+}
+
+async function completeSandboxPayment(responseCode) {
+  const status = document.getElementById('sandboxPaymentStatus');
+  const buttons = document.querySelectorAll('#sandboxPaymentActions button');
+  if (!sandboxOrderToken || !sandboxTransactionRef) {
+    status.textContent = 'Không có phiên thanh toán đang chờ. Vui lòng tạo đơn mới để thử lại.';
+    return;
+  }
+  buttons.forEach(button => { button.disabled = true; });
+  try {
+    const response = await fetch(`/api/payments/sandbox/transactions/${encodeURIComponent(sandboxTransactionRef)}/complete`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ orderToken: sandboxOrderToken, responseCode })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data) throw new Error(result.message || 'Không thể ghi nhận kết quả mô phỏng.');
+    const payment = result.data;
+    status.textContent = payment.status === 'SUCCESS'
+      ? `Mô phỏng thành công. Đơn ${payment.orderCode} đã được đánh dấu đã thanh toán (sandbox).`
+      : payment.status === 'CANCELLED' ? 'Bạn đã mô phỏng hủy thanh toán. Đơn hàng vẫn chưa được thanh toán.'
+        : 'Mô phỏng thanh toán thất bại. Đơn hàng vẫn chưa được thanh toán.';
+    if (payment.status !== 'PENDING') buttons.forEach(button => { button.hidden = true; });
+  } catch (error) {
+    status.textContent = error.message || 'Không thể kết nối với dịch vụ thanh toán mô phỏng.';
+  } finally {
+    buttons.forEach(button => { if (!button.hidden) button.disabled = false; });
   }
 }
 

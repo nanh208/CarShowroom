@@ -20,6 +20,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.security.MessageDigest;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.regex.Pattern;
 
 @Service
@@ -29,6 +32,7 @@ public class OrderService {
     private static final int MAX_QUANTITY_PER_CAR = 99;
     private static final Pattern EMAIL = Pattern.compile("^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$");
     private static final Pattern PHONE = Pattern.compile("^\\+?[0-9][0-9 .-]{7,18}$");
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final CarRepository cars;
     private final CustomerOrderRepository orders;
@@ -51,7 +55,18 @@ public class OrderService {
         order.setShippingAddress(request.shippingAddress().trim());
         order.setNote(blankToNull(request.note()));
         order.setStatus("PENDING");
-        order.setPaymentMethod("COD");
+        String paymentMethod = request.paymentMethod() == null ? "COD" : request.paymentMethod().trim().toUpperCase(Locale.ROOT);
+        if (!List.of("COD", "VNPAY_SANDBOX", "MOMO_SANDBOX").contains(paymentMethod)) {
+            throw new IllegalArgumentException("Phương thức thanh toán không hợp lệ");
+        }
+        order.setPaymentMethod(paymentMethod);
+        String paymentToken = null;
+        if (!"COD".equals(paymentMethod)) {
+            byte[] tokenBytes = new byte[32];
+            RANDOM.nextBytes(tokenBytes);
+            paymentToken = Base64.getUrlEncoder().withoutPadding().encodeToString(tokenBytes);
+            order.setPaymentTokenHash(sha256(paymentToken));
+        }
         order.setCreatedAt(LocalDateTime.now());
 
         long total = 0;
@@ -80,8 +95,17 @@ public class OrderService {
         order.setTotal(total);
         order.setTotalQuantity(totalQuantity);
         CustomerOrder saved = orders.save(order);
-        return new CreateOrderResponse(saved.getCode(), saved.getStatus(), saved.getPaymentMethod(), saved.getTotal(),
+        return new CreateOrderResponse(saved.getCode(), saved.getStatus(), saved.getPaymentMethod(), saved.getPaymentStatus(), paymentToken, saved.getTotal(),
                 saved.getTotalQuantity(), saved.getCreatedAt(), List.copyOf(responseLines));
+    }
+
+    private String sha256(String value) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(value.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            return java.util.HexFormat.of().formatHex(digest);
+        } catch (java.security.NoSuchAlgorithmException ex) {
+            throw new IllegalStateException("Không thể tạo mã thanh toán an toàn", ex);
+        }
     }
 
     private void validateCustomer(CreateOrderRequest request) {

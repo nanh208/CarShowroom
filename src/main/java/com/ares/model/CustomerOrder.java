@@ -46,6 +46,14 @@ public class CustomerOrder {
     @Column(nullable = false, length = 24)
     private String paymentMethod = "COD";
 
+    @Column(nullable = false, length = 24)
+    private String paymentStatus = "UNPAID";
+
+    @Column(length = 64, unique = true)
+    private String paymentTokenHash;
+
+    private LocalDateTime paidAt;
+
     @Column(nullable = false)
     private long total;
 
@@ -82,6 +90,12 @@ public class CustomerOrder {
     public void setStatus(String status) { this.status = status; }
     public String getPaymentMethod() { return paymentMethod; }
     public void setPaymentMethod(String paymentMethod) { this.paymentMethod = paymentMethod; }
+    public String getPaymentStatus() { return paymentStatus; }
+    public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
+    public String getPaymentTokenHash() { return paymentTokenHash; }
+    public void setPaymentTokenHash(String paymentTokenHash) { this.paymentTokenHash = paymentTokenHash; }
+    public LocalDateTime getPaidAt() { return paidAt; }
+    public void setPaidAt(LocalDateTime paidAt) { this.paidAt = paidAt; }
     public long getTotal() { return total; }
     public void setTotal(long total) { this.total = total; }
     public int getTotalQuantity() { return totalQuantity; }
