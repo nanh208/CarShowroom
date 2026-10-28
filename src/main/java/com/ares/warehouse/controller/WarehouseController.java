@@ -1,6 +1,7 @@
 package com.ares.warehouse.controller;
 
 import com.ares.model.User;
+import com.ares.warehouse.model.StockMovement;
 import com.ares.warehouse.model.WarehouseStock;
 import com.ares.warehouse.service.WarehouseService;
 import jakarta.servlet.http.HttpSession;
@@ -10,11 +11,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -69,6 +72,54 @@ public class WarehouseController {
         byte[] body = csv.toString().getBytes(StandardCharsets.UTF_8);
         return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=restock-plan-" + LocalDate.now() + ".csv")
+                .header(HttpHeaders.CACHE_CONTROL, "no-store").body(body);
+    }
+
+    @GetMapping("/movements")
+    public String movementReport(HttpSession session, Model model,
+                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                 @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        if (session.getAttribute("currentUser") == null) return "redirect:/login";
+        LocalDate today = LocalDate.now();
+        LocalDate start = from == null ? today.minusDays(29) : from;
+        LocalDate end = to == null ? today : to;
+        boolean invalidRange = start.isAfter(end);
+        if (invalidRange) {
+            start = today.minusDays(29);
+            end = today;
+        }
+        List<StockMovement> rows = service.getMovements(start, end);
+        model.addAttribute("user", (User) session.getAttribute("currentUser"));
+        model.addAttribute("movements", rows);
+        model.addAttribute("from", start);
+        model.addAttribute("to", end);
+        model.addAttribute("invalidRange", invalidRange);
+        model.addAttribute("inboundQuantity", rows.stream().filter(row -> row.getFromWarehouse() == null && row.getToWarehouse() != null).mapToInt(StockMovement::getQuantity).sum());
+        model.addAttribute("outboundQuantity", rows.stream().filter(row -> row.getFromWarehouse() != null && row.getToWarehouse() == null).mapToInt(StockMovement::getQuantity).sum());
+        model.addAttribute("transferQuantity", rows.stream().filter(row -> row.getFromWarehouse() != null && row.getToWarehouse() != null).mapToInt(StockMovement::getQuantity).sum());
+        return "inventory/movements";
+    }
+
+    @GetMapping(value = "/movements.csv", produces = "text/csv;charset=UTF-8")
+    public ResponseEntity<byte[]> exportMovements(HttpSession session,
+                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                 @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        if (session.getAttribute("currentUser") == null) return ResponseEntity.status(401).build();
+        if (from.isAfter(to)) return ResponseEntity.badRequest().build();
+        DateTimeFormatter timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        StringBuilder csv = new StringBuilder("\uFEFFThời gian,SKU,Mặt hàng,Loại,Từ kho,Đến kho,Số lượng,Ghi chú\r\n");
+        for (StockMovement row : service.getMovements(from, to)) {
+            csv.append(csvCell(row.getCreatedAt().format(timestamp))).append(',')
+                    .append(csvCell(row.getItem().getSku())).append(',')
+                    .append(csvCell(row.getItem().getName())).append(',')
+                    .append(csvCell(row.getMovementType())).append(',')
+                    .append(csvCell(row.getFromWarehouse() == null ? "" : row.getFromWarehouse().getCode())).append(',')
+                    .append(csvCell(row.getToWarehouse() == null ? "" : row.getToWarehouse().getCode())).append(',')
+                    .append(row.getQuantity()).append(',').append(csvCell(row.getNote())).append("\r\n");
+        }
+        byte[] body = csv.toString().getBytes(StandardCharsets.UTF_8);
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=stock-movements-" + from + "-to-" + to + ".csv")
                 .header(HttpHeaders.CACHE_CONTROL, "no-store").body(body);
     }
 

@@ -14,6 +14,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Comparator;
 import java.util.Collections;
+import java.time.LocalDate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
@@ -58,6 +59,15 @@ public class WarehouseService {
 
     @Transactional(readOnly = true)
     public List<StockMovement> getRecentMovements() { return movements.findTop100ByOrderByCreatedAtDesc(); }
+
+    @Transactional(readOnly = true)
+    public List<StockMovement> getMovements(LocalDate from, LocalDate to) {
+        if (from == null || to == null || from.isAfter(to)) {
+            throw new IllegalArgumentException("Khoảng ngày báo cáo không hợp lệ.");
+        }
+        return movements.findByCreatedAtGreaterThanEqualAndCreatedAtLessThanOrderByCreatedAtDesc(
+                from.atStartOfDay(), to.plusDays(1).atStartOfDay());
+    }
 
     public record RestockSuggestion(Long itemId, String sku, String name, String category, int available,
                                     int reorderPoint, int suggestedOrder, Map<String, Integer> byWarehouse) {}
