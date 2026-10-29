@@ -1,0 +1,91 @@
+<template>
+  <div class="container page">
+    <Breadcrumb :items="[{ label: 'So sánh sản phẩm' }]" />
+    <h1>So sánh sản phẩm</h1>
+    <p>Đặt tối đa 3 sản phẩm cùng nhóm cạnh nhau. Những dòng có thông số khác nhau được làm nổi bật.</p>
+    <div v-if="!items.length" class="empty card">Chưa có sản phẩm nào để so sánh. Bấm biểu tượng ⇄ trên ảnh sản phẩm để thêm. <router-link to="/products">Chọn sản phẩm →</router-link></div>
+    <template v-else>
+      <div class="row between tools"><label class="check diffonly"><input v-model="diffOnly" type="checkbox" /> Chỉ hiện thông số khác nhau</label>
+        <div class="row exp"><button class="btn btn-sm btn-outline" @click="exportCsv">⤓ Xuất CSV (Excel)</button><button class="btn btn-sm btn-outline" @click="print">🖨 In / PDF</button><button class="btn btn-sm btn-outline" @click="copyLink">🔗 Sao chép liên kết</button></div></div>
+      <div class="table-wrap card flush">
+        <table class="cmp">
+          <thead><tr><th />
+            <th v-for="p in items" :key="p.id">
+              <div class="head">
+                <button class="rm" title="Bỏ khỏi so sánh" @click="prefs.toggleCompare(p)">×</button>
+                <router-link :to="`/products/${p.id}`"><img loading="lazy" decoding="async" :src="p.images?.[0]" alt="" /></router-link>
+                <small>{{ p.brand?.name }}</small>
+                <router-link :to="`/products/${p.id}`" class="nm">{{ p.name }}</router-link>
+                <div class="price">{{ vnd(p.price) }}</div>
+                <button class="btn btn-sm" :disabled="!p.stock" @click="add(p)">Thêm vào giỏ</button>
+              </div>
+            </th>
+            <th v-for="i in 3 - items.length" :key="'e' + i"><router-link to="/products" class="addslot">+ Thêm</router-link></th>
+          </tr></thead>
+          <tbody>
+            <tr v-for="r in rows" :key="r.label" :class="{ diff: r.diff }">
+              <td>{{ r.label }}</td><td v-for="(v, i) in r.values" :key="i">{{ v || '—' }}</td><td v-for="i in 3 - items.length" :key="'e' + i" />
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </template>
+  </div>
+</template>
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import api from '../api'
+import Breadcrumb from '../components/Breadcrumb.vue'
+import { usePrefs, toast } from '../stores/prefs'
+import { useCart } from '../stores/cart'
+import { vnd, TYPES } from '../format'
+const prefs = usePrefs(), cart = useCart(), diffOnly = ref(false)
+const fresh = ref({})
+// lấy dữ liệu mới nhất (giá/tồn kho) từ API
+onMounted(() => prefs.compare.forEach(async c => { try { fresh.value[c.id] = (await api.get(`/products/${c.id}`)).data.product } catch {} }))
+const items = computed(() => prefs.compare.map(c => fresh.value[c.id] || c))
+const rows = computed(() => {
+  const keys = new Set(); items.value.forEach(p => Object.keys(p.specs || {}).forEach(k => keys.add(k)))
+  const base = [['Giá bán', p => vnd(p.price)], ['Thương hiệu', p => p.brand?.name], ['Danh mục', p => TYPES[p.type]], ['Tỷ lệ', p => p.scale], ['Độ tuổi', p => p.ageMin ? p.ageMin + '+' : ''],
+    ['Chất liệu', p => p.material], ['Bảo hành', p => p.warrantyMonths ? p.warrantyMonths + ' tháng' : 'Không'], ['Đánh giá', p => p.reviewCount ? `${(p.rating || 0).toFixed(1)}★ (${p.reviewCount})` : ''],
+    ['Tồn kho', p => p.stock ? `${p.stock} sp` : 'Hết hàng']]
+  const all = [...base.map(([label, f]) => ({ label, values: items.value.map(f) })),
+    ...[...keys].map(k => ({ label: k, values: items.value.map(p => p.specs?.[k]) }))]
+  all.forEach(r => { r.diff = items.value.length > 1 && new Set(r.values.map(v => v ?? '')).size > 1 })
+  return diffOnly.value ? all.filter(r => r.diff) : all
+})
+const router = useRouter()
+function exportCsv() {
+  const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`
+  const lines = [['Thông số', ...items.value.map(p => p.name)], ...rows.value.map(r => [r.label, ...r.values])].map(r => r.map(esc).join(','))
+  const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' })
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `so-sanh-ares-${new Date().toISOString().slice(0, 10)}.csv`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000)
+  toast('Đã xuất bảng so sánh')
+}
+const print = () => window.print()
+const copyLink = () => { navigator.clipboard?.writeText(location.origin + '/wishlist/shared?ids=' + items.value.map(p => p.id).join(',')); toast('Đã sao chép liên kết các sản phẩm') }
+const add = p => {
+  if (p.hasVariants) return router.push(`/products/${p.id}`)
+  cart.add({ productId: p.id, name: p.name, image: p.images?.[0], unitPrice: p.price, oldPrice: p.oldPrice, quantity: 1, stock: p.stock }); toast(`Đã thêm “${p.name}” vào giỏ hàng`)
+}
+</script>
+<style scoped>
+.tools { gap: 10px; flex-wrap: wrap; margin-bottom: 10px; } .exp { gap: 6px; flex-wrap: wrap; }
+@media print { .tools, .rm, .addslot, .head .btn { display: none !important; } }
+
+.diffonly { margin-bottom: 16px; }
+.flush { padding: 0; overflow: hidden; }
+.cmp { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.cmp th, .cmp td { padding: 16px 24px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+.cmp th:first-child, .cmp td:first-child { width: 200px; color: var(--muted); }
+.cmp td + td, .cmp th + th { border-left: 1px solid var(--border); }
+.head { position: relative; display: flex; flex-direction: column; gap: 8px; font-weight: 400; }
+.head img { width: 100%; aspect-ratio: 16/10; object-fit: contain; background: #faf6f0; border-radius: 12px; }
+.head small { color: var(--muted); text-transform: uppercase; letter-spacing: .08em; font-size: .75rem; }
+.nm { color: var(--text); font-weight: 700; font-size: 1.1rem; } .head .price { font-size: 1.2rem; }
+.rm { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; border-radius: 50%; border: none; background: rgba(255,255,255,.9); color: var(--text); box-shadow: 0 1px 4px rgba(0,0,0,.2); font-size: 1.1rem; cursor: pointer; z-index: 1; }
+.addslot { display: flex; align-items: center; justify-content: center; aspect-ratio: 16/10; border: 1px dashed rgba(0,0,0,.2); border-radius: 12px; color: var(--muted); }
+.addslot:hover { border-color: var(--accent); color: var(--accent); }
+tr.diff td:not(:first-child) { color: var(--text); font-weight: 600; } tr.diff td:first-child { color: var(--accent); }
+</style>

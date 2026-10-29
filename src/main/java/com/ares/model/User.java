@@ -1,6 +1,7 @@
 package com.ares.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,12 +15,17 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
+    private String fullName;
+
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     private String email;
 
     private String phone;
+
+    private String avatarUrl;
 
     private Integer birthDay;
 
@@ -60,6 +66,14 @@ public class User {
         this.username = username;
     }
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -82,6 +96,14 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public Integer getBirthDay() {
