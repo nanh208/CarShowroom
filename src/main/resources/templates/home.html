@@ -30,6 +30,7 @@
         <a href="#collectionsSection">Bộ sưu tập</a>
         <a href="#flashSaleSection">Flash Sale</a>
         <a href="#reviewsSection">Đánh giá</a>
+        <a href="#" onclick="openReturnsModal(); return false;">Đổi trả</a>
         <a href="#footerSection">Hỗ trợ</a>
       </nav>
 
@@ -677,6 +678,45 @@
         </div>
         <button type="button" class="cart-btn-checkout" onclick="closeCheckoutModal()">Hoàn tất</button>
       </div>
+    </section>
+  </div>
+
+  <div class="modal-overlay" id="returnsModal">
+    <section class="modal-box checkout-modal-box" role="dialog" aria-modal="true" aria-labelledby="returnsTitle">
+      <button type="button" class="modal-close-btn" onclick="closeReturnsModal()" title="Đóng" aria-label="Đóng">&times;</button>
+      <h3 class="cart-modal-title" id="returnsTitle">YÊU CẦU ĐỔI TRẢ</h3>
+      <p class="checkout-payment-note">Xác minh bằng mã đơn hàng và số điện thoại đã đặt. Yêu cầu cần gửi trong vòng 7 ngày từ ngày đặt hàng; cửa hàng sẽ xem xét trước khi đổi hàng hoặc hoàn tiền.</p>
+      <p class="checkout-message" id="returnMessage" role="status" aria-live="polite"></p>
+      <form id="returnLookupForm" class="checkout-form" onsubmit="handleReturnLookup(event)">
+        <label>Mã đơn hàng <input name="orderCode" maxlength="32" required></label>
+        <label>Số điện thoại đặt hàng <input name="phone" type="tel" maxlength="24" required></label>
+        <button type="submit" class="cart-btn-checkout">Tra cứu sản phẩm</button>
+      </form>
+      <form id="returnRequestForm" class="checkout-form" onsubmit="submitReturnRequest(event)" hidden>
+        <div id="returnOrderItems" class="checkout-summary"></div>
+        <label>Lý do đổi trả <textarea name="reason" minlength="10" maxlength="1000" rows="3" required placeholder="Mô tả lý do (ít nhất 10 ký tự)"></textarea></label>
+        <fieldset class="return-kind-options">
+          <legend>Phương án mong muốn</legend>
+          <label><input type="radio" name="kind" value="RETURN" checked> Đổi sản phẩm mới</label>
+          <label><input type="radio" name="kind" value="REFUND"> Trả hàng, yêu cầu hoàn tiền</label>
+        </fieldset>
+        <div class="checkout-form-actions">
+          <button type="button" class="cart-btn-clear" onclick="resetReturnLookup()">Tra cứu đơn khác</button>
+          <button type="submit" class="cart-btn-checkout">Gửi yêu cầu</button>
+        </div>
+      </form>
+      <div id="returnSuccess" class="checkout-success" hidden>
+        <h4>Đã nhận yêu cầu</h4>
+        <p id="returnSuccessText"></p>
+        <button type="button" class="cart-btn-checkout" onclick="closeReturnsModal()">Hoàn tất</button>
+      </div>
+      <form id="returnTrackForm" class="checkout-form" onsubmit="trackReturnRequest(event)">
+        <h4>Tra cứu yêu cầu đã gửi</h4>
+        <label>Mã yêu cầu đổi trả <input name="requestCode" maxlength="40" required></label>
+        <label>Số điện thoại đặt hàng <input name="phone" type="tel" maxlength="24" required></label>
+        <button type="submit" class="cart-btn-clear">Tra cứu trạng thái</button>
+        <p class="checkout-message" id="returnTrackMessage" role="status" aria-live="polite"></p>
+      </form>
     </section>
   </div>
 
