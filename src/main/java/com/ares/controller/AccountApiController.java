@@ -8,6 +8,7 @@ import com.ares.model.UserPreference;
 import com.ares.repository.AddressRepository;
 import com.ares.repository.UserRepository;
 import com.ares.repository.UserPreferenceRepository;
+import com.ares.service.PasswordHashService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +56,7 @@ public class AccountApiController {
     }
 
     public record PaymentPreferenceRequest(String method) {}
+    public record PasswordUpdateRequest(String currentPassword, String newPassword) {}
 
     public static class ProfileUpdateRequest {
         private String fullName;
@@ -86,6 +88,33 @@ public class AccountApiController {
         return users.findById(sessionUser.getId())
                 .map(user -> ResponseEntity.ok(ApiResponse.ok("Thông tin hồ sơ", new UserDto(user))))
                 .orElseGet(() -> unauthorized());
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<ApiResponse> updatePassword(@RequestBody PasswordUpdateRequest request, HttpSession session) {
+        User sessionUser = (User) session.getAttribute("currentUser");
+        if (sessionUser == null) return unauthorized();
+        User user = users.findById(sessionUser.getId()).orElse(null);
+        if (user == null) {
+            session.invalidate();
+            return unauthorized();
+        }
+        if (request == null || request.currentPassword() == null || request.newPassword() == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Vui lòng nhập mật khẩu hiện tại và mật khẩu mới"));
+        }
+        if (!PasswordHashService.matches(request.currentPassword(), user.getPassword())) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Mật khẩu hiện tại không đúng"));
+        }
+        if (request.newPassword().length() < 6 || request.newPassword().length() > 128) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Mật khẩu mới phải từ 6 đến 128 ký tự"));
+        }
+        if (request.currentPassword().equals(request.newPassword())) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Mật khẩu mới phải khác mật khẩu hiện tại"));
+        }
+        user.setPassword(PasswordHashService.encode(request.newPassword()));
+        User saved = users.save(user);
+        session.setAttribute("currentUser", saved);
+        return ResponseEntity.ok(ApiResponse.ok("Đã đổi mật khẩu"));
     }
 
     @PutMapping("/profile")

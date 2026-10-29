@@ -1,6 +1,7 @@
 package com.ares.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Entity
@@ -17,6 +18,7 @@ public class User {
     private String fullName;
 
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     private String email;

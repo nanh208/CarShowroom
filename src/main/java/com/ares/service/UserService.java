@@ -57,7 +57,7 @@ public class UserService {
 
         User user = new User();
         user.setUsername(req.getUsername().trim());
-        user.setPassword(req.getPassword()); // Note: In production BCryptPasswordEncoder should be used
+        user.setPassword(PasswordHashService.encode(req.getPassword()));
         user.setBirthDay(req.getBirthDay());
         user.setBirthMonth(req.getBirthMonth());
         user.setGender(req.getGender() != null ? req.getGender() : "Nam");
@@ -89,8 +89,13 @@ public class UserService {
             userOpt = userRepository.findByPhone(trimmed);
         }
 
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
-            return userOpt;
+        if (userOpt.isPresent() && PasswordHashService.matches(password, userOpt.get().getPassword())) {
+            User user = userOpt.get();
+            if (PasswordHashService.needsUpgrade(user.getPassword())) {
+                user.setPassword(PasswordHashService.encode(password));
+                userRepository.save(user);
+            }
+            return Optional.of(user);
         }
 
         return Optional.empty();
@@ -111,7 +116,7 @@ public class UserService {
                 generatedUsername += "_" + (System.currentTimeMillis() % 100);
             }
             newUser.setUsername(generatedUsername);
-            newUser.setPassword("PHONE_AUTH_" + System.currentTimeMillis());
+            newUser.setPassword(PasswordHashService.encode("PHONE_AUTH_" + System.currentTimeMillis()));
             newUser.setVerifiedType("PHONE");
             return userRepository.save(newUser);
         });
@@ -155,7 +160,7 @@ public class UserService {
         }
 
         User user = userOpt.get();
-        user.setPassword(req.getNewPassword());
+        user.setPassword(PasswordHashService.encode(req.getNewPassword()));
         userRepository.save(user);
 
         return ApiResponse.ok("Đặt lại mật khẩu thành công!");
@@ -176,7 +181,7 @@ public class UserService {
                 generatedUsername += "_" + System.currentTimeMillis() % 1000;
             }
             newUser.setUsername(generatedUsername);
-            newUser.setPassword("OAUTH_" + System.currentTimeMillis());
+            newUser.setPassword(PasswordHashService.encode("OAUTH_" + System.currentTimeMillis()));
             newUser.setVerifiedType("GOOGLE");
             return userRepository.save(newUser);
         });
@@ -205,7 +210,7 @@ public class UserService {
                 gen += "_" + (System.currentTimeMillis() % 1000);
             }
             newUser.setUsername(gen);
-            newUser.setPassword("FB_OAUTH_" + System.currentTimeMillis());
+            newUser.setPassword(PasswordHashService.encode("FB_OAUTH_" + System.currentTimeMillis()));
             newUser.setVerifiedType("FACEBOOK");
             return userRepository.save(newUser);
         });
