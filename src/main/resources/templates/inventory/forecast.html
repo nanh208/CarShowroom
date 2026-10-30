@@ -21,7 +21,7 @@
 <main class="page">
   <header class="top">
     <div><h1>📊 Báo cáo &amp; kế hoạch nhập hàng</h1><p>Đề xuất bổ sung theo ngưỡng tồn tối thiểu của từng mặt hàng.</p></div>
-    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/purchase-orders}">Đơn nhập hàng</a> &nbsp; <a th:href="@{/reports/catalog}">Báo cáo danh mục</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/inventory/warehouses/movements}">Báo cáo biến động kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
   </header>
   <section class="panel note">
     <div th:if="${successMessage}" class="ok" th:text="${successMessage}"></div>

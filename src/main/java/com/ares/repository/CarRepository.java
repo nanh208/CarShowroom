@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface CarRepository extends JpaRepository<Car, Long> {
-    long countByCategory(String category);
+    List<Car> findAllByOrderByCategoryAscNameAsc();
     List<Car> findBySection(String section);
     List<Car> findByCategory(String category);
     List<Car> findByNameContainingIgnoreCase(String keyword);

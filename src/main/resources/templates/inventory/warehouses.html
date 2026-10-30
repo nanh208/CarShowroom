@@ -35,7 +35,7 @@
 <main class="page">
   <header class="top">
     <div><h1>📦 Quản lý kho bãi</h1><p>Theo dõi tồn theo chi nhánh, điều chỉnh và điều chuyển hàng.</p></div>
-    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/warehouses/forecast}">Báo cáo &amp; kế hoạch nhập</a> &nbsp; <a th:href="@{/home}">Trang chủ</a> &nbsp; <a th:href="@{/logout}">Đăng xuất</a></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/reports/catalog}">Báo cáo danh mục</a> &nbsp; <a th:href="@{/inventory/purchase-orders}">Đơn nhập hàng</a> &nbsp; <a th:href="@{/inventory/warehouses/forecast}">Báo cáo &amp; kế hoạch nhập</a> &nbsp; <a th:href="@{/inventory/warehouses/movements}">Báo cáo biến động kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a> &nbsp; <a th:href="@{/logout}">Đăng xuất</a></div>
   </header>
 
   <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
