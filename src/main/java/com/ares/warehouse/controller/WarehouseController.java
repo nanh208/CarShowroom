@@ -4,6 +4,7 @@ import com.ares.model.User;
 import com.ares.warehouse.model.StockMovement;
 import com.ares.warehouse.model.WarehouseStock;
 import com.ares.warehouse.service.WarehouseService;
+import com.ares.warehouse.service.DemandForecastService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -27,8 +28,12 @@ import org.springframework.http.ResponseEntity;
 @RequestMapping("/inventory/warehouses")
 public class WarehouseController {
     private final WarehouseService service;
+    private final DemandForecastService demandForecast;
 
-    public WarehouseController(WarehouseService service) { this.service = service; }
+    public WarehouseController(WarehouseService service, DemandForecastService demandForecast) {
+        this.service = service;
+        this.demandForecast = demandForecast;
+    }
 
     @GetMapping
     public String page(HttpSession session, Model model) {
@@ -48,30 +53,47 @@ public class WarehouseController {
     }
 
     @GetMapping("/forecast")
-    public String forecast(HttpSession session, Model model) {
+    public String forecast(HttpSession session, Model model,
+                           @RequestParam(defaultValue = "90") int days,
+                           @RequestParam(defaultValue = "30") int horizon,
+                           @RequestParam(defaultValue = "7") int lead,
+                           @RequestParam(defaultValue = "0.95") double serviceLevel) {
         if (session.getAttribute("currentUser") == null) return "redirect:/login";
         model.addAttribute("user", (User) session.getAttribute("currentUser"));
+        model.addAttribute("warehouses", service.getWarehouses());
         model.addAttribute("suggestions", service.getRestockSuggestions());
+        model.addAttribute("report", demandForecast.run(days, horizon, lead, serviceLevel));
         return "inventory/forecast";
     }
 
     @GetMapping(value = "/forecast.csv", produces = "text/csv;charset=UTF-8")
-    public ResponseEntity<byte[]> exportForecast(HttpSession session) {
+    public ResponseEntity<byte[]> exportForecast(HttpSession session,
+                           @RequestParam(defaultValue = "90") int days,
+                           @RequestParam(defaultValue = "30") int horizon,
+                           @RequestParam(defaultValue = "7") int lead,
+                           @RequestParam(defaultValue = "0.95") double serviceLevel) {
         if (session.getAttribute("currentUser") == null) return ResponseEntity.status(401).build();
-        StringBuilder csv = new StringBuilder("\uFEFFSKU,Tên mặt hàng,Danh mục,Tồn hiện có,Ngưỡng tồn tối thiểu,Số lượng đề xuất");
+        DemandForecastService.ForecastReport report = demandForecast.run(days, horizon, lead, serviceLevel);
+        StringBuilder csv = new StringBuilder("\uFEFFSKU,Tên mặt hàng,Tồn hiện có,Đã bán trong lịch sử,TB nhu cầu/ngày,Xu hướng/ngày,Nhu cầu thời gian chờ,Nhu cầu kỳ dự báo,Tồn an toàn,Điểm đặt theo nhu cầu,Ngưỡng tồn thủ công,Số lượng đề xuất,Số ngày đủ bán,Ngày dự kiến hết hàng,Mức rủi ro");
         List<String> warehouseCodes = service.getWarehouses().stream().map(warehouse -> warehouse.getCode()).toList();
         warehouseCodes.forEach(code -> csv.append(',').append(csvCell("Tồn " + code)));
         csv.append("\r\n");
-        for (WarehouseService.RestockSuggestion row : service.getRestockSuggestions()) {
+        for (DemandForecastService.ForecastItem row : report.items()) {
             csv.append(csvCell(row.sku())).append(',').append(csvCell(row.name())).append(',')
-                    .append(csvCell(row.category())).append(',').append(row.available()).append(',')
-                    .append(row.reorderPoint()).append(',').append(row.suggestedOrder());
+                    .append(row.available()).append(',').append(row.soldInHistory()).append(',')
+                    .append(row.avgDailyDemand()).append(',').append(row.trendPerDay()).append(',')
+                    .append(row.leadDemand()).append(',').append(row.horizonDemand()).append(',')
+                    .append(row.safetyStock()).append(',').append(row.demandReorderPoint()).append(',')
+                    .append(row.thresholdReorderPoint()).append(',').append(row.suggestedOrder()).append(',')
+                    .append(row.daysOfCover() == null ? "" : row.daysOfCover()).append(',')
+                    .append(row.stockoutDate() == null ? "" : row.stockoutDate()).append(',')
+                    .append(csvCell(row.risk()));
             for (String code : warehouseCodes) csv.append(',').append(row.byWarehouse().getOrDefault(code, 0));
             csv.append("\r\n");
         }
         byte[] body = csv.toString().getBytes(StandardCharsets.UTF_8);
         return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=restock-plan-" + LocalDate.now() + ".csv")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=demand-forecast-" + LocalDate.now() + ".csv")
                 .header(HttpHeaders.CACHE_CONTROL, "no-store").body(body);
     }
 
