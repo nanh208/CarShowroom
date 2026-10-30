@@ -1,4 +1,4 @@
-﻿package com.ares.controller;
+package com.ares.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

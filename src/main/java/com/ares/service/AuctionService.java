@@ -1,4 +1,4 @@
-﻿package com.ares.service;
+package com.ares.service;
 
 import com.ares.dto.AuctionFinalizeResult;
 import com.ares.model.Auction;
