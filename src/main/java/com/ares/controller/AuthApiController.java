@@ -10,8 +10,10 @@ import com.ares.dto.AuthDtos.UserDto;
 import com.ares.dto.AuthDtos.VerifyCodeRequest;
 import com.ares.model.User;
 import com.ares.service.UserService;
+import com.ares.service.TotpAttemptService;
 import com.ares.service.VerificationService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,11 +28,14 @@ public class AuthApiController {
 
     private final VerificationService verificationService;
     private final UserService userService;
+    private final TotpAttemptService totpAttempts;
 
     @Autowired
-    public AuthApiController(VerificationService verificationService, UserService userService) {
+    public AuthApiController(VerificationService verificationService, UserService userService,
+                             TotpAttemptService totpAttempts) {
         this.verificationService = verificationService;
         this.userService = userService;
+        this.totpAttempts = totpAttempts;
     }
 
     /**
@@ -104,7 +109,7 @@ public class AuthApiController {
      * Endpoint for user login via JSON API (Username, Email, or Phone).
      */
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest req, HttpSession session) {
+    public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest req, HttpSession session, HttpServletRequest request) {
         String loginId = req.getUsername();
         if (loginId == null || loginId.trim().isEmpty() ||
             req.getPassword() == null || req.getPassword().isEmpty()) {
@@ -114,6 +119,16 @@ public class AuthApiController {
         Optional<User> userOpt = userService.authenticate(loginId, req.getPassword());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+            if (user.isTotpEnabled()) {
+                session.removeAttribute("currentUser");
+                session.setAttribute("twoFactorPendingUserId", user.getId());
+                session.removeAttribute("twoFactorAttempts");
+                return ResponseEntity.ok(ApiResponse.ok("Nhập mã xác thực hai bước để hoàn tất đăng nhập",
+                        Map.of("totpRequired", true)));
+            }
+            session.removeAttribute("twoFactorPendingUserId");
+            session.removeAttribute("twoFactorAttempts");
+            request.changeSessionId();
             session.setAttribute("currentUser", user);
             UserDto userDto = new UserDto(user);
             return ResponseEntity.ok(ApiResponse.ok("Đăng nhập thành công!", userDto));
@@ -126,7 +141,7 @@ public class AuthApiController {
      * Endpoint for Phone OTP login (matching car-copy PhoneLogin.vue feature).
      */
     @PostMapping("/phone-login")
-    public ResponseEntity<ApiResponse> phoneLogin(@RequestBody PhoneLoginRequest req, HttpSession session) {
+    public ResponseEntity<ApiResponse> phoneLogin(@RequestBody PhoneLoginRequest req, HttpSession session, HttpServletRequest request) {
         if (req.getPhone() == null || req.getPhone().trim().isEmpty() ||
             req.getCode() == null || req.getCode().trim().isEmpty()) {
             return ResponseEntity.badRequest().body(ApiResponse.error("Vui lòng nhập đầy đủ số điện thoại và mã OTP!"));
@@ -139,6 +154,43 @@ public class AuthApiController {
         }
 
         User user = userService.authenticateOrRegisterByPhoneOtp(phone);
+        if (user.isTotpEnabled()) {
+            session.removeAttribute("currentUser");
+            session.setAttribute("twoFactorPendingUserId", user.getId());
+            session.removeAttribute("twoFactorAttempts");
+            return ResponseEntity.ok(ApiResponse.ok("Nhập mã xác thực hai bước để hoàn tất đăng nhập",
+                    Map.of("totpRequired", true)));
+        }
+        session.removeAttribute("twoFactorPendingUserId");
+        session.removeAttribute("twoFactorAttempts");
+        request.changeSessionId();
+        session.setAttribute("currentUser", user);
+        return ResponseEntity.ok(ApiResponse.ok("Đăng nhập thành công!", new UserDto(user)));
+    }
+
+    @PostMapping("/verify-2fa")
+    public ResponseEntity<ApiResponse> verifyTwoFactor(@RequestBody Map<String, String> body,
+                                                       HttpSession session, HttpServletRequest request) {
+        Object pending = session.getAttribute("twoFactorPendingUserId");
+        if (!(pending instanceof Long userId)) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Phiên xác thực hai bước không còn hợp lệ"));
+        }
+        User user = userService.findById(userId).orElse(null);
+        String code = body == null ? null : body.get("code");
+        if (user == null || !user.isTotpEnabled() || !totpAttempts.verify(user, code)) {
+            Object storedAttempts = session.getAttribute("twoFactorAttempts");
+            int attempts = (storedAttempts instanceof Integer value ? value : 0) + 1;
+            if (attempts >= 5) {
+                session.removeAttribute("twoFactorPendingUserId");
+                session.removeAttribute("twoFactorAttempts");
+                return ResponseEntity.status(401).body(ApiResponse.error("Quá nhiều lần thử. Vui lòng đăng nhập lại"));
+            }
+            session.setAttribute("twoFactorAttempts", attempts);
+            return ResponseEntity.status(401).body(ApiResponse.error("Mã xác thực hai bước không đúng"));
+        }
+        session.removeAttribute("twoFactorPendingUserId");
+        session.removeAttribute("twoFactorAttempts");
+        request.changeSessionId();
         session.setAttribute("currentUser", user);
         return ResponseEntity.ok(ApiResponse.ok("Đăng nhập thành công!", new UserDto(user)));
     }

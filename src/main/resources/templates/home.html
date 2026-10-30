@@ -14,6 +14,7 @@
        1. HEADER 2.0 (THANH TRẮNG PHẲNG, LOGO ARES TOYS, CHỮ OSWALD)
        ==================================================================== -->
   <header class="hdr" id="siteHeader">
+    <a th:href="@{/catalog}" style="display:block;background:#b62b20;color:white;text-align:center;padding:10px">Khám phá sản phẩm · Tìm kiếm &amp; bộ lọc</a>
     <div class="wrap">
       <!-- Logo thương hiệu Ares Toys -->
       <a th:href="@{/home}" class="logo" title="Ares Toys">
@@ -21,14 +22,51 @@
         <span><b>Ares</b> Toys</span>
       </a>
 
-      <div class="nav-actions">
-        <span style="font-size: 14px; color: #cbd5e1;">
-          Xin chào, <strong style="color: #38bdf8;" th:text="${user.username}">Username</strong>!
-        </span>
-        <a th:href="@{/inventory/warehouses}" class="btn-testdrive" style="width:auto;padding:9px 16px;margin:0;text-decoration:none">📦 Quản lý kho</a>
-        <a th:href="@{/transport/deliveries}" class="btn-testdrive" style="width:auto;padding:9px 16px;margin:0;text-decoration:none">🚚 Vận chuyển</a>
-        <a th:href="@{/logout}" class="btn-nav-logout">
-          <span>🚪</span> Đăng xuất
+      <!-- Menu thể thao chữ đen phong cách 2.0 -->
+      <nav class="menu">
+        <a th:href="@{/home}" class="on">Trang chủ</a>
+        <a href="#pickSection">Xe mô hình</a>
+        <a href="#rcSection">Xe RC</a>
+        <a href="#pickSection">Phụ kiện</a>
+        <a href="#collectionsSection">Bộ sưu tập</a>
+        <a href="#flashSaleSection">Flash Sale</a>
+        <a href="#reviewsSection">Đánh giá</a>
+        <a href="#" onclick="openReturnsModal(); return false;">Đổi trả</a>
+        <a href="#footerSection">Hỗ trợ</a>
+      </nav>
+
+      <!-- Tiện ích bên phải Header -->
+      <div class="tools">
+        <!-- Ô tìm kiếm có gợi ý -->
+        <div class="search">
+          <button type="button" class="ib" id="searchTriggerBtn" title="Tìm kiếm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+              <circle cx="11" cy="11" r="7"></circle>
+              <line x1="21" y1="21" x2="16.5" y2="16.5"></line>
+            </svg>
+          </button>
+          <input type="text" id="searchInput" placeholder="Tìm xe đồ chơi, hãng…" autocomplete="off">
+        </div>
+
+        <!-- Nút giỏ hàng có số lượng đen -->
+        <button type="button" class="cartpill" onclick="openCartModal()" title="Xem giỏ hàng">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"></path>
+            <circle cx="10" cy="20" r="1.3"></circle>
+            <circle cx="17" cy="20" r="1.3"></circle>
+          </svg>
+          <span id="cartCountDisplay">0 món</span>
+        </button>
+
+        <!-- Tài khoản -->
+        <a th:if="${user != null}" th:href="@{/logout}" class="avatar" th:title="'Đăng xuất (' + ${user.username} + ')'">
+          <span th:text="${#strings.substring(user.username, 0, 1).toUpperCase()}">U</span>
+        </a>
+        <a th:if="${user == null}" th:href="@{/login}" class="avatar" title="Đăng nhập">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="8" r="4"></circle>
+            <path d="M4 21a8 8 0 0 1 16 0z"></path>
+          </svg>
         </a>
       </div>
     </div>
@@ -587,6 +625,7 @@
       <div class="cart-items-list" id="cartItemsList">
         <!-- Render động từ JavaScript -->
       </div>
+      <section class="cart-saved-list" id="cartSavedList" aria-live="polite"></section>
       <div class="cart-footer-summary">
         <div class="cart-total-row">
           <span>Tổng tiền:</span>
@@ -594,11 +633,92 @@
         </div>
         <div class="cart-modal-actions">
           <button type="button" class="cart-btn-clear" onclick="clearCart()">Làm trống</button>
-          <button type="button" class="cart-btn-checkout" onclick="handleCheckout()">Thanh toán ngay</button>
+          <button type="button" class="cart-btn-checkout" onclick="openCheckoutModal()">Tiến hành đặt hàng</button>
         </div>
       </div>
     </div>
 
+  </div>
+
+  <div class="modal-overlay" id="checkoutModal">
+    <section class="modal-box checkout-modal-box" role="dialog" aria-modal="true" aria-labelledby="checkoutTitle">
+      <button type="button" class="modal-close-btn" onclick="closeCheckoutModal()" title="Đóng" aria-label="Đóng">&times;</button>
+      <h3 class="cart-modal-title" id="checkoutTitle">THÔNG TIN ĐẶT HÀNG</h3>
+      <div id="checkoutSummary" class="checkout-summary" aria-live="polite"></div>
+      <p class="checkout-total">Tổng cộng: <strong id="checkoutTotal">0 ₫</strong></p>
+      <p class="checkout-payment-note">Thanh toán trực tuyến ở đây chỉ là mô phỏng sandbox, không trừ tiền thật.</p>
+      <form id="checkoutForm" class="checkout-form" onsubmit="handleCheckout(event)">
+        <label>Họ và tên <input name="customerName" autocomplete="name" minlength="2" maxlength="100" required></label>
+        <label>Số điện thoại <input name="phone" type="tel" autocomplete="tel" minlength="8" maxlength="24" required></label>
+        <label>Email <span class="checkout-optional">(không bắt buộc)</span><input name="email" type="email" autocomplete="email" maxlength="180"></label>
+        <label>Địa chỉ nhận hàng <textarea name="shippingAddress" autocomplete="street-address" minlength="8" maxlength="300" rows="3" required></textarea></label>
+        <label>Ghi chú <span class="checkout-optional">(không bắt buộc)</span><textarea name="note" maxlength="500" rows="2"></textarea></label>
+        <label>Phương thức thanh toán
+          <select name="paymentMethod" required>
+            <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+            <option value="VNPAY_SANDBOX">VNPay (mô phỏng sandbox)</option>
+            <option value="MOMO_SANDBOX">MoMo (mô phỏng sandbox)</option>
+          </select>
+        </label>
+        <p class="checkout-message" id="checkoutMessage" role="status" aria-live="polite"></p>
+        <div class="checkout-form-actions">
+          <button type="button" class="cart-btn-clear" onclick="closeCheckoutModal()">Quay lại</button>
+          <button type="submit" class="cart-btn-checkout">Xác nhận đặt hàng</button>
+        </div>
+      </form>
+      <div id="checkoutSuccess" class="checkout-success" hidden>
+        <h4>Đã nhận đơn hàng</h4>
+        <p id="checkoutSuccessText"></p>
+        <div id="sandboxPaymentActions" hidden>
+          <p id="sandboxPaymentStatus" role="status" aria-live="polite"></p>
+          <div class="checkout-form-actions">
+            <button type="button" class="cart-btn-clear" onclick="completeSandboxPayment('24')">Mô phỏng hủy</button>
+            <button type="button" class="cart-btn-clear" onclick="completeSandboxPayment('51')">Mô phỏng thất bại</button>
+            <button type="button" class="cart-btn-checkout" onclick="completeSandboxPayment('00')">Mô phỏng thành công</button>
+          </div>
+        </div>
+        <button type="button" class="cart-btn-checkout" onclick="closeCheckoutModal()">Hoàn tất</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal-overlay" id="returnsModal">
+    <section class="modal-box checkout-modal-box" role="dialog" aria-modal="true" aria-labelledby="returnsTitle">
+      <button type="button" class="modal-close-btn" onclick="closeReturnsModal()" title="Đóng" aria-label="Đóng">&times;</button>
+      <h3 class="cart-modal-title" id="returnsTitle">YÊU CẦU ĐỔI TRẢ</h3>
+      <p class="checkout-payment-note">Xác minh bằng mã đơn hàng và số điện thoại đã đặt. Yêu cầu cần gửi trong vòng 7 ngày từ ngày đặt hàng; cửa hàng sẽ xem xét trước khi đổi hàng hoặc hoàn tiền.</p>
+      <p class="checkout-message" id="returnMessage" role="status" aria-live="polite"></p>
+      <form id="returnLookupForm" class="checkout-form" onsubmit="handleReturnLookup(event)">
+        <label>Mã đơn hàng <input name="orderCode" maxlength="32" required></label>
+        <label>Số điện thoại đặt hàng <input name="phone" type="tel" maxlength="24" required></label>
+        <button type="submit" class="cart-btn-checkout">Tra cứu sản phẩm</button>
+      </form>
+      <form id="returnRequestForm" class="checkout-form" onsubmit="submitReturnRequest(event)" hidden>
+        <div id="returnOrderItems" class="checkout-summary"></div>
+        <label>Lý do đổi trả <textarea name="reason" minlength="10" maxlength="1000" rows="3" required placeholder="Mô tả lý do (ít nhất 10 ký tự)"></textarea></label>
+        <fieldset class="return-kind-options">
+          <legend>Phương án mong muốn</legend>
+          <label><input type="radio" name="kind" value="RETURN" checked> Đổi sản phẩm mới</label>
+          <label><input type="radio" name="kind" value="REFUND"> Trả hàng, yêu cầu hoàn tiền</label>
+        </fieldset>
+        <div class="checkout-form-actions">
+          <button type="button" class="cart-btn-clear" onclick="resetReturnLookup()">Tra cứu đơn khác</button>
+          <button type="submit" class="cart-btn-checkout">Gửi yêu cầu</button>
+        </div>
+      </form>
+      <div id="returnSuccess" class="checkout-success" hidden>
+        <h4>Đã nhận yêu cầu</h4>
+        <p id="returnSuccessText"></p>
+        <button type="button" class="cart-btn-checkout" onclick="closeReturnsModal()">Hoàn tất</button>
+      </div>
+      <form id="returnTrackForm" class="checkout-form" onsubmit="trackReturnRequest(event)">
+        <h4>Tra cứu yêu cầu đã gửi</h4>
+        <label>Mã yêu cầu đổi trả <input name="requestCode" maxlength="40" required></label>
+        <label>Số điện thoại đặt hàng <input name="phone" type="tel" maxlength="24" required></label>
+        <button type="submit" class="cart-btn-clear">Tra cứu trạng thái</button>
+        <p class="checkout-message" id="returnTrackMessage" role="status" aria-live="polite"></p>
+      </form>
+    </section>
   </div>
 
   <!-- Nạp tệp Script điều khiển giao diện -->

@@ -6,7 +6,9 @@ import com.ares.model.User;
 import com.ares.service.GoogleOAuthService;
 import com.ares.service.UserService;
 import com.ares.service.VerificationService;
+import com.ares.service.TotpAttemptService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,14 +27,17 @@ public class AuthController {
     private final UserService userService;
     private final GoogleOAuthService googleOAuthService;
     private final VerificationService verificationService;
+    private final TotpAttemptService totpAttempts;
 
     @Autowired
     public AuthController(UserService userService, 
                           GoogleOAuthService googleOAuthService,
-                          VerificationService verificationService) {
+                          VerificationService verificationService,
+                          TotpAttemptService totpAttempts) {
         this.userService = userService;
         this.googleOAuthService = googleOAuthService;
         this.verificationService = verificationService;
+        this.totpAttempts = totpAttempts;
     }
 
     @GetMapping("/")
@@ -41,20 +46,31 @@ public class AuthController {
     }
 
     @GetMapping("/login")
-    public String loginPage(HttpSession session) {
+    public String loginPage(HttpSession session, Model model) {
         if (session.getAttribute("currentUser") != null) {
             return "redirect:/home";
         }
+        model.addAttribute("totpPending", session.getAttribute("twoFactorPendingUserId") != null);
         return "login";
     }
 
     @PostMapping("/login")
     public String handleLogin(@RequestParam("username") String username,
                               @RequestParam("password") String password,
-                              HttpSession session) {
+                              HttpSession session, HttpServletRequest request) {
         Optional<User> userOpt = userService.authenticate(username, password);
         if (userOpt.isPresent()) {
-            session.setAttribute("currentUser", userOpt.get());
+            User user = userOpt.get();
+            if (user.isTotpEnabled()) {
+                session.removeAttribute("currentUser");
+                session.setAttribute("twoFactorPendingUserId", user.getId());
+                session.removeAttribute("twoFactorAttempts");
+                return "redirect:/login?totpRequired=true";
+            }
+            session.removeAttribute("twoFactorPendingUserId");
+            session.removeAttribute("twoFactorAttempts");
+            request.changeSessionId();
+            session.setAttribute("currentUser", user);
             return "redirect:/home";
         }
         return "redirect:/login?error=true";
@@ -64,6 +80,7 @@ public class AuthController {
     public String handlePhoneLogin(@RequestParam("phone") String phone,
                                    @RequestParam("code") String code,
                                    HttpSession session,
+                                   HttpServletRequest request,
                                    RedirectAttributes redirectAttributes) {
         if (phone == null || phone.trim().isEmpty() || code == null || code.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("errorMsg", "Vui lòng nhập đầy đủ số điện thoại và mã OTP!");
@@ -77,6 +94,31 @@ public class AuthController {
         }
 
         User user = userService.authenticateOrRegisterByPhoneOtp(phone.trim());
+        return completeLogin(user, session, request);
+    }
+
+    @PostMapping("/login/verify-2fa")
+    public String verifyTwoFactor(@RequestParam("code") String code, HttpSession session, HttpServletRequest request,
+                                  RedirectAttributes redirectAttributes) {
+        Object pending = session.getAttribute("twoFactorPendingUserId");
+        if (!(pending instanceof Long userId)) return "redirect:/login";
+        User user = userService.findById(userId).orElse(null);
+        if (user == null || !user.isTotpEnabled() || !totpAttempts.verify(user, code)) {
+            Object storedAttempts = session.getAttribute("twoFactorAttempts");
+            int attempts = (storedAttempts instanceof Integer value ? value : 0) + 1;
+            if (attempts >= 5) {
+                session.removeAttribute("twoFactorPendingUserId");
+                session.removeAttribute("twoFactorAttempts");
+                redirectAttributes.addFlashAttribute("errorMsg", "Quá nhiều lần thử. Vui lòng đăng nhập lại.");
+                return "redirect:/login";
+            }
+            session.setAttribute("twoFactorAttempts", attempts);
+            redirectAttributes.addFlashAttribute("errorMsg", "Mã xác thực hai bước không đúng.");
+            return "redirect:/login?totpRequired=true";
+        }
+        session.removeAttribute("twoFactorPendingUserId");
+        session.removeAttribute("twoFactorAttempts");
+        request.changeSessionId();
         session.setAttribute("currentUser", user);
         return "redirect:/home";
     }
@@ -127,6 +169,7 @@ public class AuthController {
     public String handleGoogleLoginCallback(@RequestParam(value = "code", required = false) String code,
                                            @RequestParam(value = "error", required = false) String error,
                                            HttpSession session,
+                                           HttpServletRequest request,
                                            RedirectAttributes redirectAttributes) {
         if (error != null) {
             redirectAttributes.addFlashAttribute("errorMsg", "Đăng nhập Google bị hủy: " + error);
@@ -142,8 +185,7 @@ public class AuthController {
             String email = userInfo.get("email");
             String name = userInfo.get("name");
             User oauthUser = userService.processGoogleOAuth(email, name);
-            session.setAttribute("currentUser", oauthUser);
-            return "redirect:/home";
+            return completeLogin(oauthUser, session, request);
         } catch (Exception e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("errorMsg", "Lỗi xác thực Google: " + e.getMessage());
@@ -154,13 +196,12 @@ public class AuthController {
     @GetMapping("/oauth2/callback")
     public String handleLegacyOAuthCallback(@RequestParam(value = "email", required = false, defaultValue = "demo.google@ares.vn") String email,
                                            @RequestParam(value = "name", defaultValue = "Google User") String name,
-                                           HttpSession session) {
+                                           HttpSession session, HttpServletRequest request) {
         if (email == null || email.trim().isEmpty()) {
             email = "demo.google@ares.vn";
         }
         User oauthUser = userService.processGoogleOAuth(email, name);
-        session.setAttribute("currentUser", oauthUser);
-        return "redirect:/home";
+        return completeLogin(oauthUser, session, request);
     }
 
     /**
@@ -174,13 +215,12 @@ public class AuthController {
     @GetMapping({"/oauth2/callback/facebook", "/login/oauth2/code/facebook"})
     public String handleFacebookCallback(@RequestParam(value = "email", required = false, defaultValue = "demo.facebook@ares.vn") String email,
                                          @RequestParam(value = "name", defaultValue = "Facebook User") String name,
-                                         HttpSession session) {
+                                         HttpSession session, HttpServletRequest request) {
         if (email == null || email.trim().isEmpty()) {
             email = "demo.facebook@ares.vn";
         }
         User oauthUser = userService.processFacebookOAuth(email, name);
-        session.setAttribute("currentUser", oauthUser);
-        return "redirect:/home";
+        return completeLogin(oauthUser, session, request);
     }
 
     @GetMapping("/home")
@@ -194,5 +234,19 @@ public class AuthController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/login?logout=true";
+    }
+
+    private String completeLogin(User user, HttpSession session, HttpServletRequest request) {
+        if (user.isTotpEnabled()) {
+            session.removeAttribute("currentUser");
+            session.setAttribute("twoFactorPendingUserId", user.getId());
+            session.removeAttribute("twoFactorAttempts");
+            return "redirect:/login?totpRequired=true";
+        }
+        session.removeAttribute("twoFactorPendingUserId");
+        session.removeAttribute("twoFactorAttempts");
+        request.changeSessionId();
+        session.setAttribute("currentUser", user);
+        return "redirect:/home";
     }
 }

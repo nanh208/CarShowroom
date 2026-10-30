@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Quáº£n Trá»‹ Äáº¥u GiÃ¡ Xe - Admin Ares</title>
+    <style>
+        body { background: #0f172a; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; padding: 25px; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #1e293b; border-radius: 12px; overflow: hidden; }
+        .admin-table th, .admin-table td { padding: 14px 18px; text-align: left; border-bottom: 1px solid #334155; }
+        .admin-table th { background: #1e293b; color: #94a3b8; font-weight: 600; }
+        .btn-action { padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: 600; margin-right: 5px; }
+        .btn-cancel { background: #ef4444; color: #fff; }
+        .btn-finalize { background: #10b981; color: #fff; }
+    </style>
+</head>
+<body>
+    <h2>Báº¢NG ÄIá»€U KHIá»‚N QUáº¢N TRá»Š Äáº¤U GIÃ</h2>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>TÃªn Xe</th>
+                <th>GiÃ¡ Khá»Ÿi Äiá»ƒm</th>
+                <th>GiÃ¡ Hiá»‡n Táº¡i</th>
+                <th>LÆ°á»£t Bid</th>
+                <th>Tráº¡ng ThÃ¡i</th>
+                <th>Thao TÃ¡c</th>
+            </tr>
+        </thead>
+        <tbody id="adminAuctionBody"></tbody>
+    </table>
+
+    <script>
+        async function loadAdminAuctions() {
+            const res = await fetch('/api/admin/auctions');
+            const data = await res.json();
+            const list = data.data || [];
+            const tbody = document.getElementById('adminAuctionBody');
+            tbody.innerHTML = list.map(a => `
+                <tr>
+                    <td>#${a.id}</td>
+                    <td><strong>${a.title}</strong></td>
+                    <td>${new Intl.NumberFormat('vi-VN').format(a.startingPrice)} â‚«</td>
+                    <td style="color:#38bdf8;font-weight:700;">${new Intl.NumberFormat('vi-VN').format(a.currentPrice)} â‚«</td>
+                    <td>${a.bidCount || 0}</td>
+                    <td><span style="font-weight:700;">${a.status}</span></td>
+                    <td>
+                        <button class="btn-action btn-finalize" onclick="finalize(${a.id})">Chá»‘t phiÃªn</button>
+                        <button class="btn-action btn-cancel" onclick="cancel(${a.id})">Há»§y</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function finalize(id) {
+            if (!confirm('XÃ¡c nháº­n chá»‘t phiÃªn Ä‘áº¥u giÃ¡ #' + id + '?')) return;
+            const res = await fetch(`/api/admin/auctions/${id}/finalize`, {method: 'POST'});
+            const r = await res.json();
+            alert(r.message);
+            loadAdminAuctions();
+        }
+
+        async function cancel(id) {
+            if (!confirm('XÃ¡c nháº­n há»§y phiÃªn #' + id + '?')) return;
+            const res = await fetch(`/api/admin/auctions/${id}/cancel`, {method: 'POST'});
+            const r = await res.json();
+            alert(r.message);
+            loadAdminAuctions();
+        }
+
+        loadAdminAuctions();
+    </script>
+</body>
+</html>
