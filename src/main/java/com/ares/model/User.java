@@ -39,6 +39,19 @@ public class User {
      */
     private String verifiedType;
 
+    @JsonIgnore
+    @Column(length = 64)
+    private String totpSecret;
+
+    @JsonIgnore
+    private Boolean totpEnabled = false;
+
+    @JsonIgnore
+    private Integer totpFailedAttempts = 0;
+
+    @JsonIgnore
+    private LocalDateTime totpLockedUntil;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     public User() {}
@@ -137,6 +150,15 @@ public class User {
     public void setVerifiedType(String verifiedType) {
         this.verifiedType = verifiedType;
     }
+
+    public String getTotpSecret() { return totpSecret; }
+    public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
+    public boolean isTotpEnabled() { return Boolean.TRUE.equals(totpEnabled); }
+    public void setTotpEnabled(boolean totpEnabled) { this.totpEnabled = totpEnabled; }
+    public int getTotpFailedAttempts() { return totpFailedAttempts == null ? 0 : totpFailedAttempts; }
+    public void setTotpFailedAttempts(int totpFailedAttempts) { this.totpFailedAttempts = totpFailedAttempts; }
+    public LocalDateTime getTotpLockedUntil() { return totpLockedUntil; }
+    public void setTotpLockedUntil(LocalDateTime totpLockedUntil) { this.totpLockedUntil = totpLockedUntil; }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

@@ -9,6 +9,8 @@ import com.ares.repository.AddressRepository;
 import com.ares.repository.UserRepository;
 import com.ares.repository.UserPreferenceRepository;
 import com.ares.service.PasswordHashService;
+import com.ares.service.TotpService;
+import com.ares.service.TotpAttemptService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,6 +30,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @RestController
 @RequestMapping("/api/account")
@@ -37,11 +41,14 @@ public class AccountApiController {
     private final UserRepository users;
     private final AddressRepository addresses;
     private final UserPreferenceRepository preferences;
+    private final TotpAttemptService totpAttempts;
 
-    public AccountApiController(UserRepository users, AddressRepository addresses, UserPreferenceRepository preferences) {
+    public AccountApiController(UserRepository users, AddressRepository addresses, UserPreferenceRepository preferences,
+                                TotpAttemptService totpAttempts) {
         this.users = users;
         this.addresses = addresses;
         this.preferences = preferences;
+        this.totpAttempts = totpAttempts;
     }
 
     public record AddressRequest(String label, String receiverName, String phone, String line,
@@ -57,6 +64,7 @@ public class AccountApiController {
 
     public record PaymentPreferenceRequest(String method) {}
     public record PasswordUpdateRequest(String currentPassword, String newPassword) {}
+    public record TotpRequest(String code) {}
 
     public static class ProfileUpdateRequest {
         private String fullName;
@@ -115,6 +123,63 @@ public class AccountApiController {
         User saved = users.save(user);
         session.setAttribute("currentUser", saved);
         return ResponseEntity.ok(ApiResponse.ok("Đã đổi mật khẩu"));
+    }
+
+    @GetMapping("/security/2fa")
+    public ResponseEntity<ApiResponse> twoFactorStatus(HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return unauthorized();
+        return ResponseEntity.ok(ApiResponse.ok("Trạng thái xác thực hai bước",
+                Map.of("enabled", user.isTotpEnabled(), "setupPending", user.getTotpSecret() != null && !user.isTotpEnabled())));
+    }
+
+    @PostMapping("/security/2fa/setup")
+    @Transactional
+    public ResponseEntity<ApiResponse> setupTwoFactor(HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return unauthorized();
+        if (user.isTotpEnabled()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Xác thực hai bước đã được bật"));
+        }
+        if (user.getTotpSecret() == null) user.setTotpSecret(TotpService.newSecret());
+        users.save(user);
+        String label = URLEncoder.encode(user.getEmail() == null ? user.getUsername() : user.getEmail(), StandardCharsets.UTF_8)
+                .replace("+", "%20");
+        String issuer = URLEncoder.encode("CarShowroom", StandardCharsets.UTF_8).replace("+", "%20");
+        String uri = "otpauth://totp/" + issuer + ":" + label + "?secret=" + user.getTotpSecret()
+                + "&issuer=" + issuer + "&digits=6&period=30";
+        return ResponseEntity.ok(ApiResponse.ok("Quét mã bằng ứng dụng xác thực, sau đó xác nhận mã 6 số",
+                Map.of("secret", user.getTotpSecret(), "otpauth", uri)));
+    }
+
+    @PostMapping("/security/2fa/enable")
+    @Transactional
+    public ResponseEntity<ApiResponse> enableTwoFactor(@RequestBody TotpRequest request, HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return unauthorized();
+        if (user.isTotpEnabled()) return ResponseEntity.badRequest().body(ApiResponse.error("Xác thực hai bước đã được bật"));
+        if (user.getTotpSecret() == null || request == null || !totpAttempts.verify(user, request.code())) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Mã xác thực không hợp lệ"));
+        }
+        user.setTotpEnabled(true);
+        totpAttempts.reset(user);
+        users.save(user);
+        return ResponseEntity.ok(ApiResponse.ok("Đã bật xác thực hai bước", Map.of("enabled", true)));
+    }
+
+    @PostMapping("/security/2fa/disable")
+    @Transactional
+    public ResponseEntity<ApiResponse> disableTwoFactor(@RequestBody TotpRequest request, HttpSession session) {
+        User user = currentUser(session);
+        if (user == null) return unauthorized();
+        if (user.isTotpEnabled() && (request == null || !totpAttempts.verify(user, request.code()))) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Mã xác thực không hợp lệ"));
+        }
+        user.setTotpEnabled(false);
+        user.setTotpSecret(null);
+        totpAttempts.reset(user);
+        users.save(user);
+        return ResponseEntity.ok(ApiResponse.ok("Đã tắt xác thực hai bước", Map.of("enabled", false)));
     }
 
     @PutMapping("/profile")
