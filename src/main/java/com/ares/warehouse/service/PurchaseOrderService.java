@@ -72,8 +72,8 @@ public class PurchaseOrderService {
                 Integer quantity = quantities.get(index);
                 Long unitCost = unitCosts.get(index);
                 if (itemId == null || quantity == null || quantity < 1 || quantity > 1_000_000
-                        || unitCost == null || unitCost < 0 || unitCost > 1_000_000_000_000L) {
-                    throw new IllegalArgumentException("Số lượng phải từ 1 đến 1.000.000; đơn giá không được âm.");
+                        || unitCost == null || unitCost < 1 || unitCost > 1_000_000_000_000L) {
+                    throw new IllegalArgumentException("Số lượng phải từ 1 đến 1.000.000; đơn giá phải từ 1 đến 1.000.000.000.000 ₫.");
                 }
                 if (!distinctItemIds.add(itemId)) {
                     throw new IllegalArgumentException("Mỗi mặt hàng chỉ được xuất hiện một lần trong đơn.");
