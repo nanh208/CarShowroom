@@ -1632,7 +1632,8 @@ h3, h4 {
 }
 
 .checkout-form input,
-.checkout-form textarea {
+.checkout-form textarea,
+.checkout-form select {
   width: 100%;
   border: 1px solid #bcbcbc;
   border-radius: 0;
@@ -1642,9 +1643,34 @@ h3, h4 {
 }
 
 .checkout-form input:focus,
-.checkout-form textarea:focus {
+.checkout-form textarea:focus,
+.checkout-form select:focus {
   outline: 2px solid var(--v2-orange);
   outline-offset: 1px;
+}
+
+.return-kind-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  border: 1px solid #bcbcbc;
+  padding: 10px 12px;
+}
+
+.return-kind-options legend {
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+.checkout-form .return-kind-options label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+}
+
+.checkout-form .return-kind-options input {
+  width: auto;
 }
 
 .checkout-message {

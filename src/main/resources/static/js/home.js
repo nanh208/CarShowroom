@@ -225,6 +225,147 @@ const cartCountDisplay = document.getElementById('cartCountDisplay');
 let sandboxOrderCode = null;
 let sandboxOrderToken = null;
 let sandboxTransactionRef = null;
+let returnOrder = null;
+
+function openReturnsModal() {
+  const modal = document.getElementById('returnsModal');
+  if (!modal) return;
+  resetReturnLookup();
+  document.getElementById('returnTrackMessage').textContent = '';
+  modal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReturnsModal() {
+  document.getElementById('returnsModal')?.classList.remove('active');
+  document.body.style.overflow = 'auto';
+}
+
+function resetReturnLookup() {
+  returnOrder = null;
+  const lookup = document.getElementById('returnLookupForm');
+  const request = document.getElementById('returnRequestForm');
+  const success = document.getElementById('returnSuccess');
+  lookup.reset();
+  request.reset();
+  lookup.hidden = false;
+  request.hidden = true;
+  success.hidden = true;
+  document.getElementById('returnMessage').textContent = '';
+  document.getElementById('returnMessage').classList.remove('is-error');
+  document.getElementById('returnOrderItems').replaceChildren();
+}
+
+async function handleReturnLookup(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const message = document.getElementById('returnMessage');
+  const button = form.querySelector('button[type="submit"]');
+  const orderCode = form.elements.orderCode.value.trim();
+  const phone = form.elements.phone.value.trim();
+  button.disabled = true;
+  message.textContent = 'Đang xác minh đơn hàng…';
+  message.classList.remove('is-error');
+  try {
+    const query = new URLSearchParams({ phone });
+    const response = await fetch(`/api/returns/orders/${encodeURIComponent(orderCode)}?${query}`, { headers: { Accept: 'application/json' } });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data) throw new Error(result.message || 'Không tra cứu được đơn hàng.');
+    returnOrder = { ...result.data, phone };
+    renderReturnItems(returnOrder);
+    form.hidden = true;
+    const requestForm = document.getElementById('returnRequestForm');
+    requestForm.hidden = returnOrder.hasOpenRequest;
+    if (returnOrder.hasOpenRequest) {
+      message.textContent = 'Đơn hàng đã có yêu cầu đổi trả đang chờ xử lý.';
+      form.hidden = false;
+    }
+  } catch (error) {
+    message.textContent = error.message || 'Không thể kết nối để xác minh đơn hàng.';
+    message.classList.add('is-error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function renderReturnItems(order) {
+  const container = document.getElementById('returnOrderItems');
+  container.replaceChildren();
+  const deadline = document.createElement('p');
+  deadline.className = 'checkout-payment-note';
+  deadline.textContent = `Đơn ${order.orderCode} · gửi yêu cầu trước ${new Date(order.returnDeadline).toLocaleString('vi-VN')}`;
+  container.appendChild(deadline);
+  order.items.forEach((item) => {
+    const row = document.createElement('label');
+    row.className = 'checkout-summary-line';
+    const name = document.createElement('span');
+    name.textContent = `${item.productName} (đã mua ${item.purchasedQuantity}, còn có thể yêu cầu ${item.availableQuantity})`;
+    const quantity = document.createElement('select');
+    quantity.name = 'returnQuantity';
+    quantity.dataset.productCode = item.productCode;
+    for (let count = 0; count <= item.availableQuantity; count++) {
+      const option = document.createElement('option');
+      option.value = String(count);
+      option.textContent = count === 0 ? 'Không đổi trả' : `Số lượng: ${count}`;
+      quantity.appendChild(option);
+    }
+    quantity.setAttribute('aria-label', `Số lượng đổi trả ${item.productName}`);
+    row.append(name, quantity);
+    container.appendChild(row);
+  });
+}
+
+async function submitReturnRequest(event) {
+  event.preventDefault();
+  if (!returnOrder) return;
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const items = [...form.querySelectorAll('select[name="returnQuantity"]')]
+    .map(select => ({ productCode: select.dataset.productCode, quantity: Number(select.value) }))
+    .filter(item => item.quantity > 0);
+  if (!items.length) {
+    document.getElementById('returnMessage').textContent = 'Chọn ít nhất một sản phẩm cần đổi trả.';
+    document.getElementById('returnMessage').classList.add('is-error');
+    return;
+  }
+  button.disabled = true;
+  try {
+    const response = await fetch(`/api/returns/orders/${encodeURIComponent(returnOrder.orderCode)}`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ phone: returnOrder.phone, kind: form.elements.kind.value, reason: form.elements.reason.value.trim(), items })
+    });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data) throw new Error(result.message || 'Không gửi được yêu cầu đổi trả.');
+    document.getElementById('returnRequestForm').hidden = true;
+    document.getElementById('returnLookupForm').hidden = true;
+    document.getElementById('returnSuccessText').textContent = `Mã yêu cầu: ${result.data.requestCode}. Trạng thái: đang chờ cửa hàng xem xét. Giá trị hoàn tiền ước tính (nếu được duyệt): ${formatVND(result.data.estimatedRefundAmount)}. Đây chưa phải giao dịch hoàn tiền.`;
+    document.getElementById('returnSuccess').hidden = false;
+  } catch (error) {
+    const message = document.getElementById('returnMessage');
+    message.textContent = error.message || 'Không thể kết nối để gửi yêu cầu.';
+    message.classList.add('is-error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function trackReturnRequest(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const message = document.getElementById('returnTrackMessage');
+  const query = new URLSearchParams({ phone: form.elements.phone.value.trim() });
+  try {
+    const response = await fetch(`/api/returns/${encodeURIComponent(form.elements.requestCode.value.trim())}?${query}`, { headers: { Accept: 'application/json' } });
+    const result = await response.json();
+    if (!response.ok || !result.success || !result.data) throw new Error(result.message || 'Không tra cứu được yêu cầu.');
+    const statuses = { PENDING: 'Chờ cửa hàng xem xét', APPROVED: 'Đã duyệt', REJECTED: 'Không được duyệt', REFUNDED: 'Đã hoàn tiền' };
+    message.textContent = `Đơn ${result.data.orderCode}: ${statuses[result.data.status] || result.data.status}.`;
+    message.classList.remove('is-error');
+  } catch (error) {
+    message.textContent = error.message || 'Không thể kết nối để tra cứu.';
+    message.classList.add('is-error');
+  }
+}
 
 function loadCartFromStorage() {
   try {
@@ -672,7 +813,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.target === checkoutModal) closeCheckoutModal();
     });
   }
+  const returnsModal = document.getElementById('returnsModal');
+  if (returnsModal) {
+    returnsModal.addEventListener('click', (e) => {
+      if (e.target === returnsModal) closeReturnsModal();
+    });
+  }
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && checkoutModal?.classList.contains('active')) closeCheckoutModal();
+    if (e.key === 'Escape' && returnsModal?.classList.contains('active')) closeReturnsModal();
   });
 });
