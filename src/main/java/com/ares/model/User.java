@@ -1,6 +1,7 @@
 package com.ares.model;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,12 +15,17 @@ public class User {
     @Column(nullable = false, unique = true)
     private String username;
 
+    private String fullName;
+
     @Column(nullable = false)
+    @JsonIgnore
     private String password;
 
     private String email;
 
     private String phone;
+
+    private String avatarUrl;
 
     private Integer birthDay;
 
@@ -32,6 +38,19 @@ public class User {
      * "GOOGLE" (verified with Gmail), "PHONE" (verified with Phone), "STANDARD"
      */
     private String verifiedType;
+
+    @JsonIgnore
+    @Column(length = 64)
+    private String totpSecret;
+
+    @JsonIgnore
+    private Boolean totpEnabled = false;
+
+    @JsonIgnore
+    private Integer totpFailedAttempts = 0;
+
+    @JsonIgnore
+    private LocalDateTime totpLockedUntil;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -60,6 +79,14 @@ public class User {
         this.username = username;
     }
 
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
     public String getPassword() {
         return password;
     }
@@ -82,6 +109,14 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 
     public Integer getBirthDay() {
@@ -115,6 +150,15 @@ public class User {
     public void setVerifiedType(String verifiedType) {
         this.verifiedType = verifiedType;
     }
+
+    public String getTotpSecret() { return totpSecret; }
+    public void setTotpSecret(String totpSecret) { this.totpSecret = totpSecret; }
+    public boolean isTotpEnabled() { return Boolean.TRUE.equals(totpEnabled); }
+    public void setTotpEnabled(boolean totpEnabled) { this.totpEnabled = totpEnabled; }
+    public int getTotpFailedAttempts() { return totpFailedAttempts == null ? 0 : totpFailedAttempts; }
+    public void setTotpFailedAttempts(int totpFailedAttempts) { this.totpFailedAttempts = totpFailedAttempts; }
+    public LocalDateTime getTotpLockedUntil() { return totpLockedUntil; }
+    public void setTotpLockedUntil(LocalDateTime totpLockedUntil) { this.totpLockedUntil = totpLockedUntil; }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

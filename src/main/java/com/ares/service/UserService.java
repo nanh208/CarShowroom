@@ -57,7 +57,7 @@ public class UserService {
 
         User user = new User();
         user.setUsername(req.getUsername().trim());
-        user.setPassword(req.getPassword()); // Note: In production BCryptPasswordEncoder should be used
+        user.setPassword(PasswordHashService.encode(req.getPassword()));
         user.setBirthDay(req.getBirthDay());
         user.setBirthMonth(req.getBirthMonth());
         user.setGender(req.getGender() != null ? req.getGender() : "Nam");
@@ -75,22 +75,51 @@ public class UserService {
     }
 
     /**
-     * Authenticates user with username/email and password.
+     * Authenticates user with username, email, or phone number and password.
      */
-    public Optional<User> authenticate(String usernameOrEmail, String password) {
-        if (usernameOrEmail == null || password == null) return Optional.empty();
+    public Optional<User> authenticate(String usernameOrEmailOrPhone, String password) {
+        if (usernameOrEmailOrPhone == null || password == null) return Optional.empty();
 
-        String trimmed = usernameOrEmail.trim();
+        String trimmed = usernameOrEmailOrPhone.trim();
         Optional<User> userOpt = userRepository.findByUsername(trimmed);
         if (userOpt.isEmpty() && trimmed.contains("@")) {
             userOpt = userRepository.findByEmail(trimmed.toLowerCase());
         }
+        if (userOpt.isEmpty()) {
+            userOpt = userRepository.findByPhone(trimmed);
+        }
 
-        if (userOpt.isPresent() && userOpt.get().getPassword().equals(password)) {
-            return userOpt;
+        if (userOpt.isPresent() && PasswordHashService.matches(password, userOpt.get().getPassword())) {
+            User user = userOpt.get();
+            if (PasswordHashService.needsUpgrade(user.getPassword())) {
+                user.setPassword(PasswordHashService.encode(password));
+                userRepository.save(user);
+            }
+            return Optional.of(user);
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Authenticates or creates user via Phone OTP login matching car-copy behavior.
+     */
+    @Transactional
+    public User authenticateOrRegisterByPhoneOtp(String phone) {
+        String cleanPhone = phone.trim();
+        return userRepository.findByPhone(cleanPhone).orElseGet(() -> {
+            User newUser = new User();
+            newUser.setPhone(cleanPhone);
+            String suffix = cleanPhone.length() >= 4 ? cleanPhone.substring(cleanPhone.length() - 4) : cleanPhone;
+            String generatedUsername = "user_" + suffix + "_" + (System.currentTimeMillis() % 1000);
+            if (userRepository.existsByUsername(generatedUsername)) {
+                generatedUsername += "_" + (System.currentTimeMillis() % 100);
+            }
+            newUser.setUsername(generatedUsername);
+            newUser.setPassword(PasswordHashService.encode("PHONE_AUTH_" + System.currentTimeMillis()));
+            newUser.setVerifiedType("PHONE");
+            return userRepository.save(newUser);
+        });
     }
 
     /**
@@ -131,7 +160,7 @@ public class UserService {
         }
 
         User user = userOpt.get();
-        user.setPassword(req.getNewPassword());
+        user.setPassword(PasswordHashService.encode(req.getNewPassword()));
         userRepository.save(user);
 
         return ApiResponse.ok("Đặt lại mật khẩu thành công!");
@@ -152,13 +181,46 @@ public class UserService {
                 generatedUsername += "_" + System.currentTimeMillis() % 1000;
             }
             newUser.setUsername(generatedUsername);
-            newUser.setPassword("OAUTH_" + System.currentTimeMillis());
+            newUser.setPassword(PasswordHashService.encode("OAUTH_" + System.currentTimeMillis()));
             newUser.setVerifiedType("GOOGLE");
+            return userRepository.save(newUser);
+        });
+    }
+
+    /**
+     * OAuth Facebook simulation: System creates or links account to Facebook identity.
+     */
+    @Transactional
+    public User processFacebookOAuth(String emailOrId, String displayName) {
+        String identifier = emailOrId.toLowerCase().trim();
+        Optional<User> userOpt = identifier.contains("@") 
+                ? userRepository.findByEmail(identifier) 
+                : userRepository.findByUsername("fb_" + identifier);
+        return userOpt.orElseGet(() -> {
+            User newUser = new User();
+            if (identifier.contains("@")) {
+                newUser.setEmail(identifier);
+            }
+            String baseUsername = displayName != null && !displayName.isBlank()
+                    ? displayName.toLowerCase().replaceAll("[^a-z0-9]", "")
+                    : "fb_user";
+            if (baseUsername.isBlank()) baseUsername = "fb_user";
+            String gen = baseUsername;
+            if (userRepository.existsByUsername(gen)) {
+                gen += "_" + (System.currentTimeMillis() % 1000);
+            }
+            newUser.setUsername(gen);
+            newUser.setPassword(PasswordHashService.encode("FB_OAUTH_" + System.currentTimeMillis()));
+            newUser.setVerifiedType("FACEBOOK");
             return userRepository.save(newUser);
         });
     }
 
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
     }
 }
