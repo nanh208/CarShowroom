@@ -395,6 +395,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const clientErrorAlert = document.getElementById('clientErrorAlert');
   const clientErrorMessage = document.getElementById('clientErrorMessage');
   const loginForm = document.getElementById('loginForm');
+  let phoneTotpPending = false;
+  let emailTotpPending = false;
 
   function showClientError(msg) {
     if (clientErrorAlert && clientErrorMessage) {
@@ -548,12 +550,13 @@ document.addEventListener('DOMContentLoaded', () => {
     clearClientError();
     const phone = plPhoneInput ? plPhoneInput.value.trim() : '';
     const code = plCodeInput ? plCodeInput.value.trim() : '';
+    const totpCode = document.getElementById('plTotpCode')?.value.trim() || '';
 
-    if (!phone) {
+    if (!phoneTotpPending && !phone) {
       showClientError('Thiếu số điện thoại!');
       return;
     }
-    if (!code || code.length !== 6) {
+    if (!phoneTotpPending && (!code || code.length !== 6)) {
       showClientError('Vui lòng nhập đủ 6 chữ số mã OTP!');
       if (plCodeInput) plCodeInput.focus();
       return;
@@ -565,14 +568,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     try {
-      const res = await fetch('/api/auth/phone-login', {
+      const res = await fetch(phoneTotpPending ? '/api/auth/verify-2fa' : '/api/auth/phone-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: phone, code: code })
+        body: JSON.stringify(phoneTotpPending ? { code: totpCode } : { phone: phone, code: code })
       });
       const data = await res.json();
 
       if (res.ok && data.success) {
+        if (data.data && data.data.totpRequired) {
+          phoneTotpPending = true;
+          showClientError('Mã OTP đúng. Nhập mã xác thực hai bước rồi bấm tiếp tục.');
+          document.getElementById('plTotpCode')?.focus();
+          return;
+        }
         showToast({
           title: 'Đăng nhập thành công',
           message: 'Chào mừng bạn đến với Ares Store!',
@@ -582,8 +591,12 @@ document.addEventListener('DOMContentLoaded', () => {
           window.location.href = '/home';
         }, 500);
       } else {
+        if (phoneTotpPending && data.message && data.message.includes('Quá nhiều lần')) phoneTotpPending = false;
         showClientError(data.message || 'Mã OTP không đúng hoặc đã hết hạn!');
-        if (plCodeInput) {
+        if (phoneTotpPending) {
+          document.getElementById('plTotpCode')?.select();
+          document.getElementById('plTotpCode')?.focus();
+        } else if (plCodeInput) {
           plCodeInput.select();
           plCodeInput.focus();
         }
@@ -594,7 +607,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } finally {
       if (btnVerifyPhoneOtp) {
         btnVerifyPhoneOtp.disabled = false;
-        btnVerifyPhoneOtp.textContent = 'Xác nhận & đăng nhập';
+        btnVerifyPhoneOtp.textContent = phoneTotpPending ? 'Xác nhận mã hai bước' : 'Xác nhận & đăng nhập';
       }
     }
   }
@@ -631,8 +644,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const username = usernameInput ? usernameInput.value.trim() : '';
       const password = passwordInput ? passwordInput.value : '';
+      const totpCode = document.getElementById('totpCode')?.value.trim() || '';
 
-      if (!username || !password) return; // browser validation handles this
+      if (!emailTotpPending && (!username || !password)) return; // browser validation handles this
+      if (emailTotpPending && !totpCode) {
+        showClientError('Vui lòng nhập mã 6 số từ ứng dụng xác thực.');
+        return;
+      }
 
       e.preventDefault();
       if (btnEmailLogin) {
@@ -641,14 +659,20 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       try {
-        const res = await fetch('/api/auth/login', {
+        const res = await fetch(emailTotpPending ? '/api/auth/verify-2fa' : '/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: username, password: password })
+          body: JSON.stringify(emailTotpPending ? { code: totpCode } : { username: username, password: password })
         });
         const data = await res.json();
 
         if (res.ok && data.success) {
+          if (data.data && data.data.totpRequired) {
+            emailTotpPending = true;
+            showClientError('Mật khẩu đúng. Nhập mã xác thực hai bước rồi bấm tiếp tục.');
+            document.getElementById('totpCode')?.focus();
+            return;
+          }
           showToast({
             title: 'Đăng nhập thành công',
             message: 'Đang chuyển hướng về trang chủ...',
@@ -658,10 +682,11 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = '/home';
           }, 400);
         } else {
+          if (emailTotpPending && data.message && data.message.includes('Quá nhiều lần')) emailTotpPending = false;
           showClientError(data.message || 'Tên đăng nhập hoặc mật khẩu không chính xác!');
           if (btnEmailLogin) {
             btnEmailLogin.disabled = false;
-            btnEmailLogin.textContent = 'Đăng nhập';
+        btnEmailLogin.textContent = emailTotpPending ? 'Xác nhận mã hai bước' : 'Đăng nhập';
           }
         }
       } catch (err) {

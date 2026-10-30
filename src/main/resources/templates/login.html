@@ -22,12 +22,24 @@
     <!-- Glassmorphic Card -->
     <div class="auth-card">
 
+      <form th:if="${totpPending}" th:action="@{/login/verify-2fa}" method="post" class="mode-pane active">
+        <div class="form-group">
+          <label class="form-label" for="oauthTotpCode">Mã xác thực hai bước</label>
+          <input type="text" id="oauthTotpCode" name="code" class="form-control otp-input-large"
+                 maxlength="6" inputmode="numeric" autocomplete="one-time-code" required>
+        </div>
+        <button type="submit" class="btn-primary">Xác nhận đăng nhập</button>
+      </form>
+
       <!-- Server Feedback Alerts -->
       <div th:if="${param.error}" class="alert alert-danger">
         <span>Tên đăng nhập hoặc mật khẩu không chính xác!</span>
       </div>
       <div th:if="${errorMsg}" class="alert alert-danger">
         <span th:text="${errorMsg}"></span>
+      </div>
+      <div th:if="${param.totpRequired}" class="alert alert-info">
+        <span>Nhập mã 6 số từ ứng dụng xác thực để hoàn tất đăng nhập.</span>
       </div>
       <div th:if="${param.registered}" class="alert alert-success">
         <span>Đăng ký thành công! Hãy đăng nhập ngay.</span>
@@ -45,7 +57,7 @@
       </div>
 
       <!-- MODE 1: Email / Username Login Form -->
-      <div id="emailLoginPane" class="mode-pane active">
+      <div id="emailLoginPane" class="mode-pane active" th:style="${totpPending ? 'display:none' : ''}">
         <form th:action="@{/login}" method="post" id="loginForm">
           <!-- Username / Email -->
           <div class="form-group">
@@ -71,6 +83,12 @@
                 </svg>
               </button>
             </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="totpCode">Mã xác thực hai bước (nếu đã bật)</label>
+            <input type="text" id="totpCode" name="totpCode" class="form-control" maxlength="6"
+                   inputmode="numeric" autocomplete="one-time-code" placeholder="Nhập mã 6 số nếu được yêu cầu">
           </div>
 
           <!-- Links Row: Forgot password? & Register -->
@@ -113,7 +131,7 @@
       </div>
 
       <!-- MODE 2: Phone OTP Login Pane (matching car-copy PhoneLogin.vue) -->
-      <div id="phoneLoginPane" class="mode-pane">
+      <div id="phoneLoginPane" class="mode-pane" th:style="${totpPending ? 'display:none' : ''}">
         <form id="phoneLoginForm" onsubmit="return false;">
           <!-- Step 1: Input Phone Number -->
           <div id="phoneStep1">
@@ -132,6 +150,10 @@
             <div class="form-group">
               <label class="form-label" for="plCode">Mã OTP</label>
               <input type="text" id="plCode" name="code" class="form-control otp-input-large" maxlength="6" inputmode="numeric" placeholder="••••••" autocomplete="one-time-code">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="plTotpCode">Mã xác thực hai bước (nếu đã bật)</label>
+              <input type="text" id="plTotpCode" class="form-control" maxlength="6" inputmode="numeric" autocomplete="one-time-code" placeholder="Nhập mã 6 số nếu được yêu cầu">
             </div>
             <button type="button" class="btn-primary" id="btnVerifyPhoneOtp">Xác nhận & đăng nhập</button>
             <div class="phone-actions-row">
