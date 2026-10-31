@@ -43,6 +43,7 @@ async function loadCurrentUserApi() {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
             <span>${json.data.username}</span>
+            <a href="/account/security" class="user-logout-link">Bảo mật</a>
             <a href="javascript:void(0)" class="user-logout-link" onclick="logoutUserApi()">(Thoát)</a>
           </div>
         `;

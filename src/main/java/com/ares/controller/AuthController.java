@@ -230,6 +230,12 @@ public class AuthController {
         return "home";
     }
 
+    @GetMapping("/account/security")
+    public String accountSecurity(HttpSession session) {
+        if (session.getAttribute("currentUser") == null) return "redirect:/login";
+        return "account-security";
+    }
+
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
