@@ -35,7 +35,8 @@
       <label>Danh mục<select name="category"><option value="">Tất cả danh mục</option><option th:each="option : ${categories}" th:value="${option}" th:text="${option}" th:selected="${category == option}"></option></select></label>
       <label>Tình trạng<select name="availability"><option value="">Tất cả</option><option value="AVAILABLE" th:selected="${availability == 'AVAILABLE'}">Còn hàng</option><option value="OUT" th:selected="${availability == 'OUT'}">Hết hàng</option></select></label>
       <button type="submit">Lọc danh mục</button>
-      <a class="button" th:href="@{/reports/catalog/csv(keyword=${keyword},category=${category},availability=${availability})}">Tải CSV</a>
+      <a class="button" th:href="@{/reports/catalog/csv(keyword=${keyword},category=${category},availability=${availability})}">Tải CSV danh mục</a>
+      <a class="button" th:href="@{/reports/orders/csv}">Tải CSV đơn hàng</a>
     </form>
   </section>
   <section class="panel">
