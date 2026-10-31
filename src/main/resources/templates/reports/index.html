@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo cáo - Ares Store</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+  <style>
+    body{justify-content:flex-start}.page{width:min(1120px,100%);margin:0 auto;padding:24px 16px}
+    .top,.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:22px;backdrop-filter:blur(16px)}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}.top h1{font-size:25px;margin:0 0 6px}.muted{color:#94a3b8;font-size:13px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}.card{display:flex;flex-direction:column;align-items:flex-start;gap:10px}.icon{font-size:28px}.card h2{font-size:17px;margin:0}.card p{color:#94a3b8;font-size:13px;line-height:1.5;margin:0;flex:1}.action{display:inline-block;border-radius:9px;padding:9px 13px;background:#2563eb;color:white;text-decoration:none;font-size:13px;font-weight:600}.action.secondary{background:rgba(148,163,184,.15);color:#cbd5e1}
+    a{color:#7dd3fc;text-decoration:none}.top nav{display:flex;gap:14px;flex-wrap:wrap;font-size:13px}@media(max-width:600px){.page{padding:14px 10px}.top,.card{padding:16px}.top h1{font-size:21px}}
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="top">
+    <div><h1>📊 Báo cáo &amp; dữ liệu</h1><p class="muted">Truy cập nhanh báo cáo bán hàng, kho và kế hoạch nhập.</p></div>
+    <nav><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span><a th:href="@{/home}">Trang chủ</a></nav>
+  </header>
+  <section class="grid" aria-label="Danh sách báo cáo">
+    <article class="card"><span class="icon">🚘</span><h2>Báo cáo danh mục</h2><p>Tìm, lọc và xuất danh sách xe cùng giá bán, tình trạng tồn và đánh giá.</p><a class="action" th:href="@{/reports/catalog}">Mở báo cáo</a></article>
+    <article class="card"><span class="icon">🧾</span><h2>Đơn hàng</h2><p>Tải CSV tổng hợp đơn, thông tin giao hàng, trạng thái thanh toán và giá trị đơn.</p><a class="action" th:href="@{/reports/orders/csv}">Tải CSV</a></article>
+    <article class="card"><span class="icon">📦</span><h2>Biến động kho</h2><p>Xem nhập, xuất và điều chuyển hàng theo khoảng thời gian; tải dữ liệu CSV.</p><a class="action" th:href="@{/inventory/warehouses/movements}">Mở báo cáo kho</a></article>
+    <article class="card"><span class="icon">🛒</span><h2>Đơn nhập hàng</h2><p>Xuất danh sách đơn nhà cung cấp kèm mặt hàng, số lượng, chi phí và trạng thái nhận.</p><a class="action" th:href="@{/inventory/purchase-orders/export.csv}">Tải CSV</a></article>
+    <article class="card"><span class="icon">📈</span><h2>Dự báo nhập hàng</h2><p>Ước lượng nhu cầu, tồn an toàn, ngày hết hàng và số lượng đề xuất đặt.</p><a class="action" th:href="@{/inventory/warehouses/forecast}">Mở dự báo</a></article>
+    <article class="card"><span class="icon">🏬</span><h2>Tổng quan kho</h2><p>Quản lý tồn theo kho, điều chỉnh số lượng và chuyển hàng giữa các điểm lưu trữ.</p><a class="action secondary" th:href="@{/inventory/warehouses}">Quản lý kho</a></article>
+  </section>
+</main>
+</body>
+</html>

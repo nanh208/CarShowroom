@@ -21,7 +21,7 @@
 <main class="page">
   <header class="top">
     <div><h1>🧾 Đơn nhập hàng</h1><p>Tạo đơn nhà cung cấp, đặt hàng và ghi nhận hàng về kho.</p></div>
-    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/purchase-orders/export.csv}">Tải CSV đơn nhập</a> &nbsp; <a th:href="@{/inventory/warehouses/forecast}">Kế hoạch nhập</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/reports}">Trung tâm báo cáo</a> &nbsp; <a th:href="@{/inventory/purchase-orders/export.csv}">Tải CSV đơn nhập</a> &nbsp; <a th:href="@{/inventory/warehouses/forecast}">Kế hoạch nhập</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
   </header>
   <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
   <div th:if="${errorMessage}" class="notice err" th:text="${errorMessage}"></div>

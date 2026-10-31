@@ -22,7 +22,7 @@
 <main class="page">
   <header class="top">
     <div><h1>🚘 Báo cáo danh mục sản phẩm</h1><p>Tìm kiếm, lọc tồn và xuất dữ liệu catalog hiện có.</p></div>
-    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/reports}">Trung tâm báo cáo</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
   </header>
   <section class="metrics" aria-label="Tổng quan danh mục">
     <article class="metric"><span class="muted">Tổng sản phẩm</span><strong th:text="${catalogCount}">0</strong></article>
