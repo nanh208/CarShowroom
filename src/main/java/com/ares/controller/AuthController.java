@@ -236,6 +236,12 @@ public class AuthController {
         return "account-security";
     }
 
+    @GetMapping("/account/profile")
+    public String accountProfile(HttpSession session) {
+        if (session.getAttribute("currentUser") == null) return "redirect:/login";
+        return "account-profile";
+    }
+
     @GetMapping("/logout")
     public String logout(HttpSession session) {
         session.invalidate();
