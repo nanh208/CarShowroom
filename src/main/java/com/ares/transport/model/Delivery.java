@@ -18,6 +18,9 @@ public class Delivery {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "order_id")
+    private Long orderId;
+
     @Column(nullable = false, length = 80)
     private String orderCode;
 
@@ -52,6 +55,12 @@ public class Delivery {
 
     public Delivery(String orderCode, String recipientName, String phone, String address, String city,
                     String carrier, String trackingNumber) {
+        this(null, orderCode, recipientName, phone, address, city, carrier, trackingNumber);
+    }
+
+    public Delivery(Long orderId, String orderCode, String recipientName, String phone, String address,
+                    String city, String carrier, String trackingNumber) {
+        this.orderId = orderId;
         this.orderCode = orderCode;
         this.recipientName = recipientName;
         this.phone = phone;
@@ -69,6 +78,7 @@ public class Delivery {
 
     public void markUpdated() { updatedAt = LocalDateTime.now(); }
     public Long getId() { return id; }
+    public Long getOrderId() { return orderId; }
     public String getOrderCode() { return orderCode; }
     public String getRecipientName() { return recipientName; }
     public String getPhone() { return phone; }

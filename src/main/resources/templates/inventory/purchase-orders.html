@@ -21,7 +21,7 @@
 <main class="page">
   <header class="top">
     <div><h1>🧾 Đơn nhập hàng</h1><p>Tạo đơn nhà cung cấp, đặt hàng và ghi nhận hàng về kho.</p></div>
-    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/warehouses/forecast}">Kế hoạch nhập</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/reports}">Trung tâm báo cáo</a> &nbsp; <a th:href="@{/inventory/purchase-orders/export.csv}">Tải CSV đơn nhập</a> &nbsp; <a th:href="@{/inventory/warehouses/forecast}">Kế hoạch nhập</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
   </header>
   <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
   <div th:if="${errorMessage}" class="notice err" th:text="${errorMessage}"></div>
@@ -36,7 +36,7 @@
       <div class="line-row">
         <div><label>Mặt hàng</label><select name="itemIds" required><option value="" disabled selected>Chọn SKU</option><option th:each="item : ${items}" th:value="${item.id}" th:text="|${item.sku} · ${item.name}|"></option></select></div>
         <div><label>Số lượng</label><input name="quantities" type="number" min="1" max="1000000" value="1" required></div>
-        <div><label>Đơn giá nhập (₫)</label><input name="unitCosts" type="number" min="0" max="1000000000000" value="0" required></div>
+        <div><label>Đơn giá nhập (₫)</label><input name="unitCosts" type="number" min="1" max="1000000000000" value="1" required></div>
         <button type="button" class="secondary remove-line" aria-label="Xóa dòng hàng">Xóa dòng</button>
       </div>
     </div>
@@ -44,7 +44,7 @@
       <div class="line-row">
         <div><label>Mặt hàng</label><select name="itemIds" required><option value="" disabled selected>Chọn SKU</option><option th:each="item : ${items}" th:value="${item.id}" th:text="|${item.sku} · ${item.name}|"></option></select></div>
         <div><label>Số lượng</label><input name="quantities" type="number" min="1" max="1000000" value="1" required></div>
-        <div><label>Đơn giá nhập (₫)</label><input name="unitCosts" type="number" min="0" max="1000000000000" value="0" required></div>
+        <div><label>Đơn giá nhập (₫)</label><input name="unitCosts" type="number" min="1" max="1000000000000" value="1" required></div>
         <button type="button" class="secondary remove-line" aria-label="Xóa dòng hàng">Xóa dòng</button>
       </div>
     </template>

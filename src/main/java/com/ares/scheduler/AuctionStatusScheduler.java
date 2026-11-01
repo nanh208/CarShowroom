@@ -1,4 +1,4 @@
-﻿package com.ares.scheduler;
+package com.ares.scheduler;
 
 import com.ares.model.Auction;
 import com.ares.model.AuctionStatus;

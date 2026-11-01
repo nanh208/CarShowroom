@@ -13,25 +13,83 @@
     .table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:850px}th,td{text-align:left;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:middle}th{color:#94a3b8;font-weight:600}
     input{width:100px;height:36px;border-radius:8px;border:1px solid #475569;padding:0 9px;color:#0f172a;background:#f1f5f9;font:inherit}
     button,.button{border:0;border-radius:8px;padding:9px 12px;background:#0284c7;color:white;font-weight:700;cursor:pointer;display:inline-block}
-    .needs{color:#fbbf24;font-weight:700}.ok{color:#a7f3d0}.note{line-height:1.6}
-    @media(max-width:600px){body{padding:14px 10px}.top,.panel{padding:16px}.top h1{font-size:20px}}
+    .needs{color:#fbbf24;font-weight:700}.ok{color:#a7f3d0}.note{line-height:1.6}.filters,.metrics{display:flex;gap:12px;flex-wrap:wrap;align-items:end}.filters label{display:grid;gap:5px;color:#cbd5e1;font-size:12px}.metrics{align-items:stretch}.metric{flex:1 1 150px;padding:12px;background:rgba(15,23,42,.45);border-radius:9px}.metric strong{display:block;font-size:20px;color:#bae6fd}.wide{min-width:1180px}.risk{font-weight:700}.risk-OUT,.risk-HIGH{color:#fca5a5}.risk-MEDIUM{color:#fbbf24}.risk-LOW{color:#86efac}.risk-NONE{color:#94a3b8}.purchase-lines{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;align-items:end}.purchase-lines input,.purchase-lines select{min-width:100px}
+    @media(max-width:700px){body{padding:14px 10px}.top,.panel{padding:16px}.top h1{font-size:20px}.purchase-lines{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
 <main class="page">
   <header class="top">
-    <div><h1>📊 Báo cáo &amp; kế hoạch nhập hàng</h1><p>Đề xuất bổ sung theo ngưỡng tồn tối thiểu của từng mặt hàng.</p></div>
+    <div><h1>📊 Báo cáo &amp; dự báo nhập hàng</h1><p>Dự báo nhu cầu từ các đơn đã bán, kết hợp tồn và ngưỡng nhập từng SKU.</p></div>
     <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/purchase-orders}">Đơn nhập hàng</a> &nbsp; <a th:href="@{/reports/catalog}">Báo cáo danh mục</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/inventory/warehouses/movements}">Báo cáo biến động kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
   </header>
   <section class="panel note">
     <div th:if="${successMessage}" class="ok" th:text="${successMessage}"></div>
     <div th:if="${errorMessage}" class="needs" th:text="${errorMessage}"></div>
-    <h2>Cách tính</h2>
-    <p class="muted">Số lượng đề xuất = ngưỡng tồn tối thiểu − tồn cộng gộp ở các kho, tối thiểu là 0. Đây là kế hoạch bổ sung theo ngưỡng; hệ thống hiện chưa có lịch sử bán theo đơn để tính dự báo nhu cầu.</p>
-    <a class="button" th:href="@{/inventory/warehouses/forecast.csv}">Tải báo cáo CSV</a>
+    <h2>Dự báo từ lịch sử đơn hàng</h2>
+    <p class="muted" th:text="${report.method}">Phương pháp dự báo</p>
+    <p class="muted">Chỉ ghép dòng bán với mặt hàng kho khi mã SKU khớp mã sản phẩm trong catalog. Đơn hủy/hoàn được loại khỏi lịch sử; số lượng đề xuất là giá trị lớn hơn giữa nhu cầu dự báo và ngưỡng tồn thủ công.</p>
+    <div class="metrics">
+      <div class="metric"><span class="muted">Đơn trong kỳ</span><strong th:text="${report.consideredOrders}">0</strong></div>
+      <div class="metric"><span class="muted">Dòng đơn ghép được SKU</span><strong th:text="${report.matchedOrderLines}">0</strong></div>
+      <div class="metric"><span class="muted">Dòng đơn chưa ghép SKU</span><strong th:text="${report.unmatchedOrderLines}">0</strong></div>
+    </div>
+    <p class="needs" th:if="${report.unmatchedOrderLines > 0}">Một số dòng bán không có SKU kho trùng mã xe nên chưa được tính vào dự báo. Hãy dùng cùng mã sản phẩm làm SKU kho.</p>
   </section>
   <section class="panel">
-    <h2>Đề xuất theo SKU</h2>
+    <form class="filters" method="get" th:action="@{/inventory/warehouses/forecast}">
+      <label>Lịch sử<select name="days"><option value="30" th:selected="${report.days == 30}">30 ngày</option><option value="60" th:selected="${report.days == 60}">60 ngày</option><option value="90" th:selected="${report.days == 90}">90 ngày</option><option value="180" th:selected="${report.days == 180}">180 ngày</option><option value="365" th:selected="${report.days == 365}">365 ngày</option></select></label>
+      <label>Kỳ dự báo<select name="horizon"><option value="14" th:selected="${report.horizon == 14}">14 ngày</option><option value="30" th:selected="${report.horizon == 30}">30 ngày</option><option value="60" th:selected="${report.horizon == 60}">60 ngày</option><option value="120" th:selected="${report.horizon == 120}">120 ngày</option></select></label>
+      <label>Chờ hàng (ngày)<input name="lead" type="number" min="1" max="60" th:value="${report.leadTime}" required></label>
+      <label>Mức phục vụ<select name="serviceLevel"><option value="0.9" th:selected="${report.serviceLevel == 0.9}">90%</option><option value="0.95" th:selected="${report.serviceLevel == 0.95}">95%</option><option value="0.99" th:selected="${report.serviceLevel == 0.99}">99%</option></select></label>
+      <button type="submit">Cập nhật dự báo</button>
+      <a class="button" th:href="@{/inventory/warehouses/forecast.csv(days=${report.days},horizon=${report.horizon},lead=${report.leadTime},serviceLevel=${report.serviceLevel})}">Tải CSV</a>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>Dự báo theo SKU</h2>
+    <div class="table-wrap"><table class="wide">
+      <thead><tr><th>SKU / mặt hàng</th><th>Tồn</th><th>Đã bán</th><th>12 tuần</th><th>Nhu cầu/ngày</th><th>Nhu cầu chờ hàng</th><th>Dự báo kỳ</th><th>Tồn an toàn</th><th>Điểm đặt nhu cầu</th><th>Đề xuất nhập</th><th>Ngày đủ bán</th><th>Rủi ro</th></tr></thead>
+      <tbody>
+        <tr th:each="row : ${report.items}">
+          <td><strong th:text="${row.sku}"></strong><br><span th:text="${row.name}"></span></td>
+          <td th:text="${row.available}"></td><td th:text="${row.soldInHistory}"></td>
+          <td><span th:each="week,iter : ${row.weeklySales}" th:text="${week} + (${iter.last} ? '' : ' · ')"></span></td>
+          <td th:text="${#numbers.formatDecimal(row.avgDailyDemand, 1, 2)}"></td><td th:text="${row.leadDemand}"></td><td th:text="${row.horizonDemand}"></td>
+          <td th:text="${row.safetyStock}"></td><td th:text="${row.demandReorderPoint}"></td>
+          <td class="needs" th:text="${row.suggestedOrder > 0 ? row.suggestedOrder : '—'}"></td>
+          <td><span th:text="${row.daysOfCover == null ? '—' : #numbers.formatDecimal(row.daysOfCover, 1, 1) + ' ngày'}"></span><br><small class="muted" th:if="${row.stockoutDate != null}" th:text="|dự kiến ${#temporals.format(row.stockoutDate, 'dd/MM/yyyy')}|"></small></td>
+          <td th:class="|risk risk-${row.risk}|" th:text="${row.risk}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(report.items)}"><td colspan="12" class="muted">Chưa có mặt hàng kho để dự báo.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+  <section class="panel" th:if="${!#lists.isEmpty(report.items.?[suggestedOrder > 0])}">
+    <h2>Tạo đơn nháp từ đề xuất</h2>
+    <p class="muted">Chọn các SKU cần nhập, xác nhận số lượng đề xuất và nhập đơn giá từ nhà cung cấp. Chỉ các dòng được chọn mới gửi lên đơn.</p>
+    <form id="restockForm" th:action="@{/inventory/purchase-orders/from-plan}" method="post">
+      <div class="purchase-lines">
+        <div><label for="supplier">Nhà cung cấp</label><input id="supplier" name="supplier" required maxlength="160" placeholder="Tên nhà cung cấp"></div>
+        <div><label for="warehouseId">Kho nhận</label><select id="warehouseId" name="warehouseId" required><option th:each="warehouse : ${warehouses}" th:value="${warehouse.id}" th:text="|${warehouse.code} · ${warehouse.name}|"></option></select></div>
+        <div></div>
+      </div>
+      <div class="table-wrap" style="margin-top:12px"><table style="min-width:800px">
+        <thead><tr><th>Chọn</th><th>SKU / mặt hàng</th><th>Đề xuất</th><th>Số lượng đặt</th><th>Đơn giá nhập (₫)</th></tr></thead>
+        <tbody><tr th:each="row : ${report.items}" th:if="${row.suggestedOrder > 0}">
+          <td><input class="include-line" type="checkbox" name="itemIds" th:value="${row.itemId}" aria-label="Chọn SKU để nhập"></td>
+          <td><strong th:text="${row.sku}"></strong><br><span th:text="${row.name}"></span></td>
+          <td th:text="${row.suggestedOrder}"></td>
+          <td><input class="line-quantity" name="quantities" type="number" min="1" max="1000000" th:value="${row.suggestedOrder}" disabled required></td>
+          <td><input class="line-cost" name="unitCosts" type="number" min="1" max="1000000000000" placeholder="Nhập đơn giá" disabled required></td>
+        </tr></tbody>
+      </table></div>
+      <label for="poNote">Ghi chú</label><input id="poNote" name="note" maxlength="500" placeholder="Ghi chú cho đơn nhà cung cấp">
+      <button type="submit">Tạo đơn nhập nháp</button>
+    </form>
+  </section>
+  <section class="panel">
+    <h2>Ngưỡng tồn thủ công theo SKU</h2>
     <div class="table-wrap"><table>
       <thead><tr><th>SKU / mặt hàng</th><th>Tồn theo kho</th><th>Tổng tồn</th><th>Ngưỡng tối thiểu</th><th>Đề xuất nhập</th><th>Cập nhật ngưỡng</th></tr></thead>
       <tbody>
@@ -47,5 +105,21 @@
     </table></div>
   </section>
 </main>
+<script>
+  (() => {
+    const form = document.getElementById('restockForm');
+    if (!form) return;
+    form.querySelectorAll('.include-line').forEach(checkbox => checkbox.addEventListener('change', () => {
+      const row = checkbox.closest('tr');
+      row.querySelector('.line-quantity').disabled = !checkbox.checked;
+      row.querySelector('.line-cost').disabled = !checkbox.checked;
+    }));
+    form.addEventListener('submit', event => {
+      if (!form.querySelector('.include-line:checked')) {
+        event.preventDefault(); window.alert('Hãy chọn ít nhất một SKU để lập đơn nhập.');
+      }
+    });
+  })();
+</script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-﻿package com.ares.dto;
+package com.ares.dto;
 
 import com.ares.model.User;
 import java.time.LocalDateTime;

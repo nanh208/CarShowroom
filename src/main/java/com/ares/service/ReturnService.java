@@ -116,7 +116,9 @@ public class ReturnService {
     }
 
     private void validateEligible(CustomerOrder order) {
-        if ("CANCELLED".equalsIgnoreCase(order.getStatus())) throw new IllegalArgumentException("Đơn hàng đã hủy không thể đổi trả");
+        if ("CANCELLED".equalsIgnoreCase(order.getStatus()) || "RETURNED".equalsIgnoreCase(order.getStatus())) {
+            throw new IllegalArgumentException("Đơn hàng đã hủy hoặc đã hoàn về cửa hàng, không thể tạo yêu cầu đổi trả.");
+        }
         LocalDateTime deadline = order.getCreatedAt().plusDays(RETURN_WINDOW_DAYS);
         if (LocalDateTime.now().isAfter(deadline)) throw new IllegalArgumentException("Đã quá thời hạn 7 ngày kể từ ngày đặt hàng");
         if (order.getItems().isEmpty()) throw new IllegalArgumentException("Đơn hàng không có sản phẩm để đổi trả");

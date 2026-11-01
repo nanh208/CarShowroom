@@ -1,4 +1,4 @@
-﻿package com.ares.model;
+package com.ares.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
@@ -90,6 +90,12 @@ public class Auction {
         this.minimumIncrement = minimumIncrement;
         this.startsAt = startsAt;
         this.endsAt = endsAt;
+    }
+
+    public Auction(String title, String vehicleName, String image, Long startingPrice,
+                   Long minimumIncrement, LocalDateTime startsAt, LocalDateTime endsAt) {
+        this(title, vehicleName, null, null, null, null, image, startingPrice,
+                minimumIncrement, startsAt, endsAt);
     }
 
     public Long getId() { return id; }

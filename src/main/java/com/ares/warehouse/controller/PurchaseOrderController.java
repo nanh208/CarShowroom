@@ -49,6 +49,25 @@ public class PurchaseOrderController {
         return "redirect:/inventory/purchase-orders";
     }
 
+    @PostMapping("/from-plan")
+    public String createFromPlan(HttpSession session, @RequestParam String supplier,
+                                 @RequestParam Long warehouseId,
+                                 @RequestParam(required = false) String note,
+                                 @RequestParam(required = false) List<Long> itemIds,
+                                 @RequestParam(required = false) List<Integer> quantities,
+                                 @RequestParam(required = false) List<Long> unitCosts,
+                                 RedirectAttributes flash) {
+        if (session.getAttribute("currentUser") == null) return "redirect:/login";
+        try {
+            PurchaseOrder order = service.create(supplier, warehouseId, note, itemIds, quantities, unitCosts);
+            flash.addFlashAttribute("successMessage", "Đã tạo đơn nhập " + order.getCode() + " từ kế hoạch dự báo.");
+            return "redirect:/inventory/purchase-orders";
+        } catch (IllegalArgumentException ex) {
+            flash.addFlashAttribute("errorMessage", ex.getMessage());
+            return "redirect:/inventory/warehouses/forecast";
+        }
+    }
+
     @PostMapping("/{id}/order")
     public String order(HttpSession session, @PathVariable Long id, RedirectAttributes flash) {
         if (session.getAttribute("currentUser") == null) return "redirect:/login";

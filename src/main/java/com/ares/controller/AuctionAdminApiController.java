@@ -1,4 +1,4 @@
-﻿package com.ares.controller;
+package com.ares.controller;
 
 import com.ares.dto.ApiResponse;
 import com.ares.dto.AuctionDto;

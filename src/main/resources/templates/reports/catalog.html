@@ -22,7 +22,7 @@
 <main class="page">
   <header class="top">
     <div><h1>🚘 Báo cáo danh mục sản phẩm</h1><p>Tìm kiếm, lọc tồn và xuất dữ liệu catalog hiện có.</p></div>
-    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/reports}">Trung tâm báo cáo</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/home}">Trang chủ</a></div>
   </header>
   <section class="metrics" aria-label="Tổng quan danh mục">
     <article class="metric"><span class="muted">Tổng sản phẩm</span><strong th:text="${catalogCount}">0</strong></article>
@@ -35,7 +35,8 @@
       <label>Danh mục<select name="category"><option value="">Tất cả danh mục</option><option th:each="option : ${categories}" th:value="${option}" th:text="${option}" th:selected="${category == option}"></option></select></label>
       <label>Tình trạng<select name="availability"><option value="">Tất cả</option><option value="AVAILABLE" th:selected="${availability == 'AVAILABLE'}">Còn hàng</option><option value="OUT" th:selected="${availability == 'OUT'}">Hết hàng</option></select></label>
       <button type="submit">Lọc danh mục</button>
-      <a class="button" th:href="@{/reports/catalog/csv(keyword=${keyword},category=${category},availability=${availability})}">Tải CSV</a>
+      <a class="button" th:href="@{/reports/catalog/csv(keyword=${keyword},category=${category},availability=${availability})}">Tải CSV danh mục</a>
+      <a class="button" th:href="@{/reports/orders/csv}">Tải CSV đơn hàng</a>
     </form>
   </section>
   <section class="panel">

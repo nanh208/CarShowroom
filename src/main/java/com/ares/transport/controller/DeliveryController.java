@@ -9,6 +9,8 @@ import com.ares.transport.service.DeliveryService;
 import com.lowagie.text.DocumentException;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.format.DateTimeFormatter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -43,9 +45,36 @@ public class DeliveryController {
         if (user == null) return "redirect:/login";
         model.addAttribute("user", user);
         model.addAttribute("deliveries", service.getDeliveries());
+        model.addAttribute("pendingOrders", service.getPendingOrders());
         return "transport/deliveries";
     }
 
+
+    @GetMapping(value = "/export.csv", produces = "text/csv;charset=UTF-8")
+    public ResponseEntity<byte[]> export(HttpSession session) {
+        if (session.getAttribute("currentUser") == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        DateTimeFormatter timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        StringBuilder csv = new StringBuilder("\uFEFFMã đơn,Mã vận đơn,Người nhận,Số điện thoại,Địa chỉ,Tỉnh/thành phố,Đơn vị vận chuyển,Trạng thái,Tạo lúc,Cập nhật lúc\r\n");
+        for (Delivery delivery : service.getDeliveries()) {
+            csv.append(cell(delivery.getOrderCode())).append(',').append(cell(delivery.getTrackingNumber()))
+                    .append(',').append(cell(delivery.getRecipientName())).append(',').append(cell(delivery.getPhone()))
+                    .append(',').append(cell(delivery.getAddress())).append(',').append(cell(delivery.getCity()))
+                    .append(',').append(cell(delivery.getCarrier())).append(',').append(cell(delivery.getStatus().getLabel()))
+                    .append(',').append(cell(delivery.getCreatedAt() == null ? "" : delivery.getCreatedAt().format(timestamp)))
+                    .append(',').append(cell(delivery.getUpdatedAt() == null ? "" : delivery.getUpdatedAt().format(timestamp)))
+                    .append("\r\n");
+        }
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv;charset=UTF-8"))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=deliveries.csv")
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(csv.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String cell(String value) {
+        if (value == null) return "\"\"";
+        if (!value.isEmpty() && "=+-@".indexOf(value.charAt(0)) >= 0) value = "'" + value;
+        return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
     @PostMapping
     public String create(HttpSession session, @RequestParam String orderCode,
                          @RequestParam String recipientName, @RequestParam String phone,
@@ -54,6 +83,15 @@ public class DeliveryController {
         if (session.getAttribute("currentUser") == null) return "redirect:/login";
         return perform(() -> service.create(orderCode, recipientName, phone, address, city, carrier),
                 "Đã tạo vận đơn.", flash);
+    }
+
+    @PostMapping("/from-order")
+    public String createFromOrder(HttpSession session, @RequestParam Long orderId,
+                                  @RequestParam String city, @RequestParam String carrier,
+                                  RedirectAttributes flash) {
+        if (session.getAttribute("currentUser") == null) return "redirect:/login";
+        return perform(() -> service.createFromOrder(orderId, city, carrier),
+                "Đã tạo vận đơn từ đơn hàng.", flash);
     }
 
     @GetMapping("/quotes")
