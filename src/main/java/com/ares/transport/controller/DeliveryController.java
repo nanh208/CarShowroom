@@ -45,6 +45,7 @@ public class DeliveryController {
         if (user == null) return "redirect:/login";
         model.addAttribute("user", user);
         model.addAttribute("deliveries", service.getDeliveries());
+        model.addAttribute("pendingOrders", service.getPendingOrders());
         return "transport/deliveries";
     }
 
@@ -82,6 +83,15 @@ public class DeliveryController {
         if (session.getAttribute("currentUser") == null) return "redirect:/login";
         return perform(() -> service.create(orderCode, recipientName, phone, address, city, carrier),
                 "Đã tạo vận đơn.", flash);
+    }
+
+    @PostMapping("/from-order")
+    public String createFromOrder(HttpSession session, @RequestParam Long orderId,
+                                  @RequestParam String city, @RequestParam String carrier,
+                                  RedirectAttributes flash) {
+        if (session.getAttribute("currentUser") == null) return "redirect:/login";
+        return perform(() -> service.createFromOrder(orderId, city, carrier),
+                "Đã tạo vận đơn từ đơn hàng.", flash);
     }
 
     @GetMapping("/quotes")

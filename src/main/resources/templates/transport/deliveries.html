@@ -31,6 +31,12 @@
     .estimate-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:8px; margin-top:10px; }
     .estimate-card { padding:10px; border-radius:8px; background:rgba(15,23,42,.45); font-size:13px; }
     .estimate-card strong { display:block; color:#bae6fd; margin-bottom:4px; }
+    .order-queue { min-width:1100px; }
+    .order-items { padding-left:18px; margin:0; color:#cbd5e1; }
+    .order-items li { margin:3px 0; }
+    .queue-form { display:grid; grid-template-columns:minmax(130px,1fr) minmax(110px,.8fr) auto; gap:7px; align-items:center; min-width:300px; }
+    .queue-form input,.queue-form select { height:36px; }
+    .payment { color:#bae6fd; font-weight:600; }
     @media(max-width:600px){ body{padding:14px 10px}.top,.panel{padding:16px}.top h1{font-size:20px} }
   </style>
 </head>
@@ -44,8 +50,33 @@
   <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
   <div th:if="${errorMessage}" class="notice err" th:text="${errorMessage}"></div>
 
+  <section class="panel">
+    <h2>Đơn hàng sẵn sàng tạo vận đơn</h2>
+    <p class="muted">Đơn COD hoặc đã thanh toán được đưa vào hàng chờ. Tạo vận đơn sẽ liên kết trực tiếp với đơn để đồng bộ trạng thái giao hàng.</p>
+    <div class="table-wrap"><table class="order-queue">
+      <thead><tr><th>Đơn hàng</th><th>Khách nhận / địa chỉ</th><th>Sản phẩm</th><th>Thanh toán</th><th>Đích giao / hãng</th></tr></thead>
+      <tbody>
+        <tr th:each="order : ${pendingOrders}">
+          <td><strong th:text="${order.code}"></strong><br><span class="muted" th:text="|${order.totalQuantity} sản phẩm · ${order.total} ₫|"></span></td>
+          <td><strong th:text="${order.customerName}"></strong><br><span class="muted" th:text="${order.phone}"></span><br><span th:text="${order.shippingAddress}"></span></td>
+          <td><ul class="order-items"><li th:each="item : ${order.items}" th:text="|${item.productCode} · ${item.carName} × ${item.quantity}|"></li></ul></td>
+          <td><span class="payment" th:text="${order.paymentMethod == 'COD' ? 'COD' : order.paymentStatus}"></span></td>
+          <td>
+            <form class="queue-form" th:action="@{/transport/deliveries/from-order}" method="post">
+              <input type="hidden" name="orderId" th:value="${order.id}">
+              <input name="city" required maxlength="100" placeholder="Tỉnh/thành phố" aria-label="Tỉnh thành giao hàng">
+              <select name="carrier" required aria-label="Đơn vị vận chuyển"><option value="GHN">GHN</option><option value="GHTK">GHTK</option></select>
+              <button type="submit">Tạo vận đơn</button>
+            </form>
+          </td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(pendingOrders)}"><td colspan="5" class="muted">Không có đơn COD hoặc đơn đã thanh toán đang chờ tạo vận đơn.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
   <form class="panel create" th:action="@{/transport/deliveries}" method="post">
-    <h2>Tạo vận đơn</h2>
+    <h2>Tạo vận đơn thủ công</h2>
     <div class="forms">
       <div><label for="orderCode">Mã đơn</label><input id="orderCode" name="orderCode" required maxlength="80" placeholder="ARES-1001"></div>
       <div><label for="recipientName">Người nhận</label><input id="recipientName" name="recipientName" required maxlength="160"></div>
@@ -72,7 +103,7 @@
       <thead><tr><th>Mã đơn / mã vận đơn</th><th>Người nhận</th><th>Địa chỉ</th><th>Đơn vị</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
       <tbody>
         <tr th:each="delivery : ${deliveries}">
-          <td><span th:text="${delivery.orderCode}"></span><br><span class="tracking" th:text="${delivery.trackingNumber}"></span></td>
+          <td><span th:text="${delivery.orderCode}"></span><br><span class="tracking" th:text="${delivery.trackingNumber}"></span><br><span th:if="${delivery.orderId != null}" class="muted">Đã liên kết đơn hàng</span></td>
           <td><span th:text="${delivery.recipientName}"></span><br><span class="muted" th:text="${delivery.phone}"></span></td>
           <td><span th:text="${delivery.address}"></span><br><span class="muted" th:text="${delivery.city}"></span></td>
           <td th:text="${delivery.carrier}"></td>

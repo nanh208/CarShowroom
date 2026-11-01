@@ -19,6 +19,9 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
     Optional<CustomerOrder> findByCode(String code);
 
     @EntityGraph(attributePaths = "items")
+    List<CustomerOrder> findAllByStatusIgnoreCaseOrderByCreatedAtDesc(String status);
+
+    @EntityGraph(attributePaths = "items")
     @Query("select distinct o from CustomerOrder o where o.createdAt >= :from and o.createdAt < :until and upper(o.status) not in :excludedStatuses")
     List<CustomerOrder> findForecastableOrders(@Param("from") LocalDateTime from,
                                                 @Param("until") LocalDateTime until,
@@ -27,4 +30,8 @@ public interface CustomerOrderRepository extends JpaRepository<CustomerOrder, Lo
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select o from CustomerOrder o where o.code = :code")
     Optional<CustomerOrder> findByCodeForUpdate(@Param("code") String code);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select o from CustomerOrder o where o.id = :id")
+    Optional<CustomerOrder> findByIdForUpdate(@Param("id") Long id);
 }
