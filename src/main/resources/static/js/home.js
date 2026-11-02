@@ -267,18 +267,24 @@ async function handleReturnLookup(event) {
   message.textContent = 'Đang xác minh đơn hàng…';
   message.classList.remove('is-error');
   try {
-    const query = new URLSearchParams({ phone });
-    const response = await fetch(`/api/returns/orders/${encodeURIComponent(orderCode)}?${query}`, { headers: { Accept: 'application/json' } });
-    const result = await response.json();
-    if (!response.ok || !result.success || !result.data) throw new Error(result.message || 'Không tra cứu được đơn hàng.');
-    returnOrder = { ...result.data, phone };
-    renderReturnItems(returnOrder);
-    form.hidden = true;
-    const requestForm = document.getElementById('returnRequestForm');
-    requestForm.hidden = returnOrder.hasOpenRequest;
-    if (returnOrder.hasOpenRequest) {
-      message.textContent = 'Đơn hàng đã có yêu cầu đổi trả đang chờ xử lý.';
-      form.hidden = false;
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data && json.data.username) {
+        container.innerHTML = `
+          <div class="user-logged-badge" title="Đã đăng nhập: ${json.data.username}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span>${json.data.username}</span>
+            <a href="/account/profile" class="user-logout-link">Tài khoản</a>
+            <a href="/account/security" class="user-logout-link">Bảo mật</a>
+            <a href="javascript:void(0)" class="user-logout-link" onclick="logoutUserApi()">(Thoát)</a>
+          </div>
+        `;
+        return;
+      }
     }
   } catch (error) {
     message.textContent = error.message || 'Không thể kết nối để xác minh đơn hàng.';

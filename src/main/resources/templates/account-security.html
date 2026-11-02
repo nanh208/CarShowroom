@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bảo mật tài khoản - Ares Store</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+  <style>
+    .security-card { width: min(100%, 620px); margin: 0 auto; padding: 28px; color: #e2e8f0; background: rgba(36,38,43,.92); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; }
+    .security-card h1 { margin-bottom: 10px; color: #fff; }
+    .security-card p { line-height: 1.6; color: #cbd5e1; }
+    .security-card .form-group { margin-top: 18px; }
+    .secret-box { margin: 16px 0; padding: 14px; overflow-wrap: anywhere; color: #fff; background: #111827; border-radius: 8px; user-select: all; }
+    .security-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+    .security-link { display: inline-block; margin-top: 20px; color: #7dd3fc; }
+    #securityMessage { margin-top: 14px; }
+    .security-card [hidden] { display: none !important; }
+    @media (max-width: 520px) { .security-card { padding: 20px; } }
+  </style>
+</head>
+<body>
+  <main class="auth-wrapper">
+    <section class="security-card">
+      <h1>Bảo mật tài khoản</h1>
+      <p>Dùng ứng dụng xác thực như Google Authenticator hoặc Authy để tạo mã 6 số khi đăng nhập.</p>
+      <div id="securityMessage" class="alert" hidden></div>
+      <p id="twoFactorStatus" aria-live="polite">Đang tải trạng thái bảo mật…</p>
+
+      <section id="setupPanel" hidden>
+        <h2>Thiết lập ứng dụng xác thực</h2>
+        <p>Thêm khóa bên dưới vào ứng dụng xác thực. Giữ khóa này riêng tư.</p>
+        <div id="totpSecret" class="secret-box" aria-label="Khóa thiết lập TOTP"></div>
+        <details>
+          <summary>Hiện chuỗi thiết lập</summary>
+          <div id="totpUri" class="secret-box"></div>
+        </details>
+        <form id="enableForm" class="form-group">
+          <label class="form-label" for="enableCode">Nhập mã 6 số để bật</label>
+          <input id="enableCode" class="form-control" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+          <button class="btn-primary" type="submit">Bật xác thực hai bước</button>
+        </form>
+      </section>
+
+      <section id="enabledPanel" hidden>
+        <form id="disableForm" class="form-group">
+          <label class="form-label" for="disableCode">Mã 6 số để tắt xác thực hai bước</label>
+          <input id="disableCode" class="form-control" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required>
+          <button class="btn-primary" type="submit">Tắt xác thực hai bước</button>
+        </form>
+      </section>
+
+      <div class="security-actions">
+        <button id="setupButton" class="btn-primary" type="button" hidden>Thiết lập xác thực hai bước</button>
+      </div>
+      <a class="security-link" th:href="@{/home}">← Quay lại trang chủ</a>
+    </section>
+  </main>
+  <script>
+    const statusText = document.getElementById('twoFactorStatus');
+    const message = document.getElementById('securityMessage');
+    const setupPanel = document.getElementById('setupPanel');
+    const enabledPanel = document.getElementById('enabledPanel');
+    const setupButton = document.getElementById('setupButton');
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        credentials: 'include',
+        ...options,
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Yêu cầu không thành công');
+      return result.data;
+    }
+
+    function showMessage(text, ok = false) {
+      message.textContent = text;
+      message.className = ok ? 'alert alert-success' : 'alert alert-danger';
+      message.hidden = false;
+    }
+
+    async function setup() {
+      try {
+        const data = await api('/api/account/security/2fa/setup', { method: 'POST' });
+        document.getElementById('totpSecret').textContent = data.secret;
+        document.getElementById('totpUri').textContent = data.otpauth;
+        setupPanel.hidden = false;
+        setupButton.hidden = true;
+        statusText.textContent = 'Chưa bật — hãy thêm khóa vào ứng dụng và xác nhận mã.';
+      } catch (error) { showMessage(error.message); }
+    }
+
+    async function refreshStatus() {
+      try {
+        const data = await api('/api/account/security/2fa');
+        if (data.enabled) {
+          statusText.textContent = 'Đang bật xác thực hai bước.';
+          enabledPanel.hidden = false;
+          setupPanel.hidden = true;
+          setupButton.hidden = true;
+        } else if (data.setupPending) {
+          await setup();
+        } else {
+          statusText.textContent = 'Chưa bật xác thực hai bước.';
+          enabledPanel.hidden = true;
+          setupPanel.hidden = true;
+          setupButton.hidden = false;
+        }
+      } catch (error) {
+        statusText.textContent = '';
+        showMessage(error.message);
+        if (error.message.includes('đăng nhập')) setTimeout(() => window.location.assign('/login'), 800);
+      }
+    }
+
+    setupButton.addEventListener('click', setup);
+    document.getElementById('enableForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try {
+        await api('/api/account/security/2fa/enable', {
+          method: 'POST', body: JSON.stringify({ code: document.getElementById('enableCode').value.trim() })
+        });
+        showMessage('Đã bật xác thực hai bước.', true);
+        document.getElementById('enableCode').value = '';
+        await refreshStatus();
+      } catch (error) { showMessage(error.message); }
+    });
+    document.getElementById('disableForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try {
+        await api('/api/account/security/2fa/disable', {
+          method: 'POST', body: JSON.stringify({ code: document.getElementById('disableCode').value.trim() })
+        });
+        showMessage('Đã tắt xác thực hai bước.', true);
+        document.getElementById('disableCode').value = '';
+        await refreshStatus();
+      } catch (error) { showMessage(error.message); }
+    });
+    refreshStatus();
+  </script>
+</body>
+</html>

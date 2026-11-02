@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông tin tài khoản - Ares Store</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+  <style>
+    .profile-card { width: min(100%, 680px); margin: 0 auto; padding: 28px; color: #e2e8f0; background: rgba(36,38,43,.92); border: 1px solid rgba(255,255,255,.1); border-radius: 16px; }
+    .profile-card h1 { margin-bottom: 10px; color: #fff; }
+    .profile-card p { line-height: 1.6; color: #cbd5e1; }
+    .profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; }
+    .profile-card .form-group { margin-top: 16px; }
+    .profile-card input:disabled { opacity: .7; }
+    .profile-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-top: 20px; }
+    .profile-link { color: #7dd3fc; }
+    #profileMessage { margin-top: 14px; }
+    @media (max-width: 520px) { .profile-card { padding: 20px; } .profile-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="auth-wrapper">
+    <section class="profile-card">
+      <h1>Thông tin tài khoản</h1>
+      <p>Cập nhật thông tin cá nhân. Tên đăng nhập và email chỉ xem được trên trang này.</p>
+      <div id="profileMessage" class="alert" role="status" aria-live="polite" hidden></div>
+      <form id="profileForm" novalidate>
+        <div class="profile-grid">
+          <div class="form-group">
+            <label class="form-label" for="username">Tên đăng nhập</label>
+            <input class="form-control" id="username" disabled>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="email">Email</label>
+            <input class="form-control" id="email" type="email" disabled>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fullName">Tên hiển thị</label>
+            <input class="form-control" id="fullName" maxlength="100" autocomplete="name" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="phone">Số điện thoại</label>
+            <input class="form-control" id="phone" maxlength="30" autocomplete="tel">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="birthDay">Ngày sinh</label>
+            <input class="form-control" id="birthDay" type="number" min="1" max="31" inputmode="numeric">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="birthMonth">Tháng sinh</label>
+            <input class="form-control" id="birthMonth" type="number" min="1" max="12" inputmode="numeric">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="gender">Giới tính</label>
+            <select class="form-control" id="gender">
+              <option value="">Không thay đổi</option>
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+              <option value="Khác">Khác</option>
+              <option value="Không xác định">Không xác định</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="avatarUrl">Đường dẫn ảnh đại diện</label>
+          <input class="form-control" id="avatarUrl" type="url" maxlength="2048" autocomplete="url">
+        </div>
+        <div class="profile-actions">
+          <button class="btn-primary" id="saveButton" type="submit">Lưu thay đổi</button>
+          <a class="profile-link" th:href="@{/account/security}">Cài đặt bảo mật</a>
+          <a class="profile-link" th:href="@{/home}">Quay lại trang chủ</a>
+        </div>
+      </form>
+    </section>
+  </main>
+  <script>
+    const form = document.getElementById('profileForm');
+    const message = document.getElementById('profileMessage');
+    const saveButton = document.getElementById('saveButton');
+    const fields = ['username', 'email', 'fullName', 'phone', 'avatarUrl', 'birthDay', 'birthMonth', 'gender'];
+
+    function showMessage(text, ok = false) {
+      message.textContent = text;
+      message.className = ok ? 'alert alert-success' : 'alert alert-danger';
+      message.hidden = false;
+    }
+
+    async function request(path, options = {}) {
+      const response = await fetch(path, {
+        credentials: 'include',
+        ...options,
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Yêu cầu không thành công');
+      return result.data;
+    }
+
+    async function loadProfile() {
+      try {
+        const user = await request('/api/account/profile');
+        fields.forEach((field) => {
+          const value = user[field];
+          document.getElementById(field).value = value == null ? '' : value;
+        });
+      } catch (error) {
+        showMessage(error.message);
+        if (error.message.includes('đăng nhập')) setTimeout(() => window.location.assign('/login'), 800);
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const fullName = document.getElementById('fullName').value.trim();
+      const dayText = document.getElementById('birthDay').value.trim();
+      const monthText = document.getElementById('birthMonth').value.trim();
+      if (!fullName || (dayText === '') !== (monthText === '')) {
+        showMessage('Nhập tên hiển thị và điền cả ngày lẫn tháng sinh, hoặc để trống cả hai.');
+        return;
+      }
+      const day = dayText === '' ? null : Number(dayText);
+      const month = monthText === '' ? null : Number(monthText);
+      if ((day != null && (!Number.isInteger(day) || day < 1 || day > 31))
+          || (month != null && (!Number.isInteger(month) || month < 1 || month > 12))) {
+        showMessage('Ngày hoặc tháng sinh không hợp lệ.');
+        return;
+      }
+      saveButton.disabled = true;
+      try {
+        await request('/api/account/profile', {
+          method: 'PUT',
+          body: JSON.stringify({
+            fullName,
+            phone: document.getElementById('phone').value.trim(),
+            avatarUrl: document.getElementById('avatarUrl').value.trim(),
+            birthDay: day,
+            birthMonth: month,
+            gender: document.getElementById('gender').value || null
+          })
+        });
+        showMessage('Đã lưu thông tin tài khoản.', true);
+      } catch (error) {
+        showMessage(error.message);
+      } finally {
+        saveButton.disabled = false;
+      }
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>
