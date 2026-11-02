@@ -39,9 +39,12 @@ public final class CatalogSearch {
             } catch (ArithmeticException error) {
                 throw new IllegalArgumentException("Mức giá trong từ khóa không hợp lệ");
             }
-            if (prices.group(1).equals("duoi") || prices.group(1).equals("toi da")) max = amount;
-            else min = amount;
+            if (prices.group(1).equals("duoi") || prices.group(1).equals("toi da"))
+                max = max == null ? amount : Math.min(max, amount);
+            else min = min == null ? amount : Math.max(min, amount);
         }
+        if (min != null && max != null && min > max)
+            throw new IllegalArgumentException("Khoảng giá trong từ khóa không hợp lệ");
         text = " " + prices.replaceAll(" ").trim() + " ";
         for (var entry : SYNONYMS.entrySet().stream()
                 .sorted(Comparator.comparingInt((Map.Entry<String, String> e) -> e.getKey().length()).reversed()).toList()) {
