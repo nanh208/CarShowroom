@@ -74,7 +74,12 @@ public class CatalogService {
 
     public List<String> scales() {
         return cars.findAll().stream().map(Car::getScale).filter(Objects::nonNull)
-            .map(CatalogSearch::scale).filter(s -> !s.isBlank()).distinct().sorted().toList();
+            .map(CatalogSearch::scale).filter(s -> !s.isBlank()).distinct()
+            .sorted(Comparator.comparingInt(CatalogService::scaleDenominator).thenComparing(Comparator.naturalOrder())).toList();
+    }
+
+    private static int scaleDenominator(String scale) {
+        return scale.matches("1:\\d{1,3}") ? Integer.parseInt(scale.substring(2)) : Integer.MAX_VALUE;
     }
 
     public Result list(Query query) {
