@@ -16,6 +16,7 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import org.springframework.stereotype.Service;
 
 /** Builds a single A6 shipping label for an existing delivery. */
@@ -31,13 +32,28 @@ public class DeliveryLabelService {
     }
 
     public byte[] render(Delivery delivery) throws IOException, DocumentException {
+        return render(List.of(delivery));
+    }
+
+    public byte[] render(List<Delivery> deliveries) throws IOException, DocumentException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         Rectangle page = PageSize.A6;
         Document document = new Document(page, MARGIN, MARGIN, MARGIN, MARGIN);
         PdfWriter writer = PdfWriter.getInstance(document, output);
-        document.addTitle("Shipping label " + delivery.getTrackingNumber());
+        document.addTitle("Shipping labels");
         document.open();
 
+        for (int index = 0; index < deliveries.size(); index++) {
+            if (index > 0) document.newPage();
+            renderPage(document, writer, page, deliveries.get(index));
+        }
+        if (deliveries.isEmpty()) document.add(new Paragraph(" "));
+        document.close();
+        return output.toByteArray();
+    }
+
+    private void renderPage(Document document, PdfWriter writer, Rectangle page, Delivery delivery)
+            throws DocumentException, IOException {
         Font heading = new Font(bold, 17, Font.BOLD, new Color(15, 23, 42));
         Paragraph shop = new Paragraph("ARES STORE", heading);
         shop.setAlignment(Element.ALIGN_CENTER);
@@ -70,8 +86,6 @@ public class DeliveryLabelService {
         document.add(new Paragraph(" "));
         document.add(new Paragraph("MÃ ĐƠN: " + delivery.getOrderCode(), new Font(bold, 10)));
         document.add(new Paragraph("Ngày tạo: " + delivery.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")), new Font(regular, 9)));
-        document.close();
-        return output.toByteArray();
     }
 
     private static BaseFont loadFont(String resource) throws IOException, DocumentException {

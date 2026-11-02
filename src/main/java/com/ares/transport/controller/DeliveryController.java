@@ -11,6 +11,9 @@ import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -122,6 +125,26 @@ public class DeliveryController {
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_PDF)
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=delivery-" + delivery.getTrackingNumber() + ".pdf")
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(pdf);
+    }
+
+    @GetMapping("/labels")
+    public ResponseEntity<byte[]> labels(HttpSession session, @RequestParam List<Long> ids)
+            throws IOException, DocumentException {
+        if (session.getAttribute("currentUser") == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        List<Long> selectedIds = new ArrayList<>(new LinkedHashSet<>(ids));
+        if (selectedIds.isEmpty() || selectedIds.size() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chọn từ 1 đến 100 vận đơn để in nhãn.");
+        }
+        List<Delivery> selected = selectedIds.stream()
+                .map(id -> service.findDelivery(id).orElseThrow(() ->
+                        new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy vận đơn " + id + ".")))
+                .toList();
+        byte[] pdf = labels.render(selected);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=delivery-labels.pdf")
                 .header(HttpHeaders.CACHE_CONTROL, "no-store")
                 .body(pdf);
     }

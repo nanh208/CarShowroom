@@ -37,6 +37,8 @@
     .queue-form { display:grid; grid-template-columns:minmax(130px,1fr) minmax(110px,.8fr) auto; gap:7px; align-items:center; min-width:300px; }
     .queue-form input,.queue-form select { height:36px; }
     .payment { color:#bae6fd; font-weight:600; }
+    .select-label { width:auto; height:auto; accent-color:#0284c7; }
+    .bulk-labels { display:flex; align-items:center; gap:12px; margin:-4px 0 14px; }
     @media(max-width:600px){ body{padding:14px 10px}.top,.panel{padding:16px}.top h1{font-size:20px} }
   </style>
 </head>
@@ -99,10 +101,15 @@
   <section class="panel">
     <h2>Danh sách vận đơn</h2>
     <p style="margin:-6px 0 12px"><a th:href="@{/transport/deliveries/export.csv}">Tải danh sách vận đơn CSV</a></p>
+    <form id="bulkLabelForm" th:action="@{/transport/deliveries/labels}" method="get" class="bulk-labels">
+      <button type="submit">In nhãn PDF A6 đã chọn</button>
+      <span class="muted">Tối đa 100 nhãn mỗi lần in.</span>
+    </form>
     <div class="table-wrap"><table>
-      <thead><tr><th>Mã đơn / mã vận đơn</th><th>Người nhận</th><th>Địa chỉ</th><th>Đơn vị</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+      <thead><tr><th><input id="selectAllLabels" class="select-label" type="checkbox" aria-label="Chọn tất cả vận đơn"></th><th>Mã đơn / mã vận đơn</th><th>Người nhận</th><th>Địa chỉ</th><th>Đơn vị</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
       <tbody>
         <tr th:each="delivery : ${deliveries}">
+          <td><input class="select-label delivery-label" type="checkbox" name="ids" form="bulkLabelForm" th:value="${delivery.id}" th:aria-label="|Chọn nhãn ${delivery.orderCode}|"></td>
           <td><span th:text="${delivery.orderCode}"></span><br><span class="tracking" th:text="${delivery.trackingNumber}"></span><br><span th:if="${delivery.orderId != null}" class="muted">Đã liên kết đơn hàng</span></td>
           <td><span th:text="${delivery.recipientName}"></span><br><span class="muted" th:text="${delivery.phone}"></span></td>
           <td><span th:text="${delivery.address}"></span><br><span class="muted" th:text="${delivery.city}"></span></td>
@@ -117,13 +124,28 @@
             <span th:if="${delivery.status.name() == 'DELIVERED' or delivery.status.name() == 'RETURNED'}" class="muted">Đã kết thúc</span>
           </td>
         </tr>
-        <tr th:if="${#lists.isEmpty(deliveries)}"><td colspan="6" class="muted">Chưa có vận đơn. Tạo vận đơn để bắt đầu theo dõi.</td></tr>
+        <tr th:if="${#lists.isEmpty(deliveries)}"><td colspan="7" class="muted">Chưa có vận đơn. Tạo vận đơn để bắt đầu theo dõi.</td></tr>
       </tbody>
     </table></div>
   </section>
 </main>
 <script>
   (() => {
+    const selectAll = document.getElementById('selectAllLabels');
+    const labelChecks = [...document.querySelectorAll('.delivery-label')];
+    const labelForm = document.getElementById('bulkLabelForm');
+    selectAll?.addEventListener('change', () => labelChecks.forEach(check => { check.checked = selectAll.checked; }));
+    labelChecks.forEach(check => check.addEventListener('change', () => {
+      if (selectAll) selectAll.checked = labelChecks.length > 0 && labelChecks.every(item => item.checked);
+    }));
+    labelForm?.addEventListener('submit', event => {
+      if (!labelChecks.some(check => check.checked)) {
+        event.preventDefault(); window.alert('Vui lòng chọn ít nhất một vận đơn để in nhãn.');
+      }
+      if (labelChecks.filter(check => check.checked).length > 100) {
+        event.preventDefault(); window.alert('Mỗi lần chỉ có thể in tối đa 100 nhãn.');
+      }
+    });
     const city = document.getElementById('city');
     const weight = document.getElementById('weightGrams');
     const cod = document.getElementById('codAmount');
