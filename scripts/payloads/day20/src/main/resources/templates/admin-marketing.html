@@ -1,0 +1,70 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Quáº£n LÃ½ Chiáº¿n Dá»‹ch Marketing & Æ¯u ÄÃ£i - Ares</title>
+    <style>
+        body { background: #090d16; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; padding: 25px; }
+        .grid-marketing { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        .card-box { background: #1e293b; padding: 20px; border-radius: 14px; border: 1px solid #334155; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #94a3b8; font-size: 0.9rem; }
+        .form-input { width: 100%; box-sizing: border-box; background: #0f172a; border: 1px solid #475569; color: #fff; padding: 10px; border-radius: 8px; }
+        .btn-broadcast { background: #0284c7; color: #fff; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: 700; }
+        .broadcast-item { padding: 12px; background: #0f172a; border-radius: 10px; margin-bottom: 10px; border: 1px solid #334155; }
+    </style>
+</head>
+<body>
+    <h2>TRUNG TÃ‚M TIáº¾P THá»Š & CHIáº¾N Dá»ŠCH KHÃCH HÃ€NG</h2>
+    <div class="grid-marketing">
+        <div class="card-box">
+            <h3 style="color:#38bdf8;margin-top:0;">PhÃ¡t thÃ´ng bÃ¡o Broadcast toÃ n há»‡ thá»‘ng</h3>
+            <div class="form-group">
+                <label>TiÃªu Ä‘á» thÃ´ng bÃ¡o</label>
+                <input type="text" id="bcTitle" class="form-input" placeholder="Æ¯u Ä‘Ã£i báº£o dÆ°á»¡ng thÃ¡ng nÃ y...">
+            </div>
+            <div class="form-group">
+                <label>Ná»™i dung chi tiáº¿t</label>
+                <textarea id="bcMsg" class="form-input" rows="4" placeholder="Giáº£m 20% phÃ­ thay dáº§u cho khÃ¡ch hÃ ng VIP..."></textarea>
+            </div>
+            <button class="btn-broadcast" onclick="sendBroadcast()">PHÃT THÃ”NG BÃO</button>
+        </div>
+
+        <div class="card-box">
+            <h3 style="color:#38bdf8;margin-top:0;">Lá»‹ch sá»­ thÃ´ng bÃ¡o gáº§n Ä‘Ã¢y</h3>
+            <div id="bcList">Äang táº£i...</div>
+        </div>
+    </div>
+
+    <script>
+        async function loadBroadcasts() {
+            const res = await fetch('/api/marketing/broadcasts');
+            const data = await res.json();
+            const list = data.data || [];
+            document.getElementById('bcList').innerHTML = list.map(b => `
+                <div class="broadcast-item">
+                    <strong style="color:#38bdf8;">${b.title}</strong>
+                    <p style="margin:5px 0 0 0;font-size:0.9rem;color:#cbd5e1;">${b.message}</p>
+                </div>
+            `).join('');
+        }
+
+        async function sendBroadcast() {
+            const title = document.getElementById('bcTitle').value;
+            const message = document.getElementById('bcMsg').value;
+            if (!title || !message) { alert('Vui lÃ²ng Ä‘iá»n Ä‘á»§ tiÃªu Ä‘á» vÃ  ná»™i dung'); return; }
+            await fetch('/api/marketing/admin/broadcast', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ title, message, target: 'ALL' })
+            });
+            alert('PhÃ¡t thÃ´ng bÃ¡o thÃ nh cÃ´ng!');
+            document.getElementById('bcTitle').value = '';
+            document.getElementById('bcMsg').value = '';
+            loadBroadcasts();
+        }
+
+        loadBroadcasts();
+    </script>
+</body>
+</html>

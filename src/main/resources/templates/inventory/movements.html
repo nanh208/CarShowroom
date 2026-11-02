@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Báo cáo biến động kho - Ares Store</title>
+  <link rel="stylesheet" th:href="@{/css/auth.css}">
+  <style>
+    body{justify-content:flex-start}.page{width:min(1180px,100%);margin:0 auto}
+    .top,.panel,.metric{background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:22px;margin-bottom:18px;backdrop-filter:blur(16px)}
+    .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.top h1{font-size:24px;margin-bottom:5px}
+    .top p,.muted{color:#94a3b8;font-size:13px}a{color:#7dd3fc;text-decoration:none}h2{font-size:17px;margin-bottom:12px}
+    .filters,.metrics{display:flex;align-items:end;gap:12px;flex-wrap:wrap}.filters label{display:grid;gap:5px;color:#cbd5e1;font-size:12px}
+    input,select{height:38px;border-radius:8px;border:1px solid #475569;padding:0 9px;color:#0f172a;background:#f1f5f9;font:inherit}
+    button,.button{border:0;border-radius:8px;padding:10px 13px;background:#0284c7;color:white;font-weight:700;cursor:pointer;display:inline-block}
+    .metrics{align-items:stretch}.metric{flex:1 1 180px;margin:0}.metric strong{display:block;font-size:24px;margin-top:7px}.table-wrap{overflow-x:auto}
+    .filter-actions{display:flex;align-items:center;gap:10px}.subtle{color:#94a3b8;font-size:12px}.clear{padding:9px 4px}
+    .section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.pagination{display:flex;align-items:center;justify-content:center;gap:12px;padding-top:16px}.pagination .disabled{opacity:.45;pointer-events:none}
+    table{width:100%;border-collapse:collapse;min-width:850px}th,td{text-align:left;padding:11px 10px;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}th{color:#94a3b8;font-weight:600}
+    .error{color:#fecaca;margin-bottom:12px}@media(max-width:600px){body{padding:14px 10px}.top,.panel{padding:16px}.top h1{font-size:20px}}
+  </style>
+</head>
+<body>
+<main class="page">
+  <header class="top">
+    <div><h1>📈 Báo cáo biến động kho</h1><p>Tổng hợp nhập, xuất và điều chuyển từ lịch sử giao dịch tồn kho.</p></div>
+    <div><span class="muted" th:text="|Xin chào, ${user.username}|">Xin chào</span> &nbsp; <a th:href="@{/inventory/purchase-orders}">Đơn nhập hàng</a> &nbsp; <a th:href="@{/reports/catalog}">Báo cáo danh mục</a> &nbsp; <a th:href="@{/inventory/warehouses}">Quản lý kho</a> &nbsp; <a th:href="@{/inventory/warehouses/forecast}">Kế hoạch nhập</a></div>
+  </header>
+  <section class="panel">
+    <div class="error" th:if="${invalidRange}">Ngày bắt đầu phải trước hoặc bằng ngày kết thúc. Đang hiển thị 30 ngày gần nhất.</div>
+    <form class="filters" method="get" th:action="@{/inventory/warehouses/movements}">
+      <label>Từ ngày<input type="date" name="from" required th:value="${from}"></label>
+      <label>Đến ngày<input type="date" name="to" required th:value="${to}"></label>
+      <label>Từ khóa<input type="search" name="keyword" placeholder="SKU, mặt hàng, ghi chú..." th:value="${keyword}"></label>
+      <label>Loại giao dịch
+        <select name="type">
+          <option value="">Tất cả loại</option>
+          <option th:each="movementType : ${movementTypes}" th:value="${movementType}"
+                  th:text="${movementType}" th:selected="${movementType == type}"></option>
+        </select>
+      </label>
+      <label>Kho
+        <select name="warehouseId">
+          <option value="">Tất cả kho</option>
+          <option th:each="warehouse : ${warehouses}" th:value="${warehouse.id}"
+                  th:text="|${warehouse.code} — ${warehouse.name}|"
+                  th:selected="${warehouse.id == warehouseId}"></option>
+        </select>
+      </label>
+      <label>Số dòng mỗi trang
+        <select name="size">
+          <option value="10" th:selected="${pageSize == 10}">10</option>
+          <option value="25" th:selected="${pageSize == 25}">25</option>
+          <option value="50" th:selected="${pageSize == 50}">50</option>
+          <option value="100" th:selected="${pageSize == 100}">100</option>
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button type="submit">Lọc báo cáo</button>
+        <a class="subtle clear" th:href="@{/inventory/warehouses/movements}">Xóa lọc</a>
+        <a class="button" th:href="@{/inventory/warehouses/movements.csv(from=${from},to=${to},keyword=${keyword},type=${type},warehouseId=${warehouseId})}">Tải CSV</a>
+      </div>
+    </form>
+  </section>
+  <section class="metrics" aria-label="Tổng hợp số lượng giao dịch">
+    <article class="metric"><span class="muted">Nhập kho</span><strong th:text="${inboundQuantity}">0</strong></article>
+    <article class="metric"><span class="muted">Xuất kho</span><strong th:text="${outboundQuantity}">0</strong></article>
+    <article class="metric"><span class="muted">Điều chuyển</span><strong th:text="${transferQuantity}">0</strong></article>
+    <article class="metric"><span class="muted">Giao dịch phù hợp</span><strong th:text="${movementCount}">0</strong></article>
+  </section>
+  <section class="panel">
+    <div class="section-heading">
+      <h2 th:text="|Giao dịch từ ${#temporals.format(from, 'dd/MM/yyyy')} đến ${#temporals.format(to, 'dd/MM/yyyy')}|">Giao dịch kho</h2>
+      <span class="subtle" th:text="|Đang xem ${firstResult}–${lastResult} trong ${movementCount} giao dịch|">Đang xem giao dịch</span>
+    </div>
+    <p class="subtle" th:if="${keyword != '' or type != '' or warehouseId != null}">Kết quả đã được lọc theo điều kiện tìm kiếm phía trên.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Thời gian</th><th>SKU / mặt hàng</th><th>Loại</th><th>Từ kho</th><th>Đến kho</th><th>Số lượng</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr th:each="movement : ${movements}">
+          <td th:text="${#temporals.format(movement.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+          <td><strong th:text="${movement.item.sku}"></strong><br><span th:text="${movement.item.name}"></span></td>
+          <td th:text="${movement.movementType}"></td>
+          <td th:text="${movement.fromWarehouse != null ? movement.fromWarehouse.code : '—'}"></td>
+          <td th:text="${movement.toWarehouse != null ? movement.toWarehouse.code : '—'}"></td>
+          <td th:text="${movement.quantity}"></td>
+          <td th:text="${movement.note != null ? movement.note : '—'}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(movements)}"><td colspan="7" class="muted">Không có giao dịch trong khoảng ngày đã chọn.</td></tr>
+      </tbody>
+    </table></div>
+    <nav class="pagination" aria-label="Phân trang giao dịch">
+      <a th:classappend="${page == 0} ? 'disabled'"
+         th:href="@{/inventory/warehouses/movements(from=${from},to=${to},keyword=${keyword},type=${type},warehouseId=${warehouseId},size=${pageSize},page=${page - 1})}">← Trang trước</a>
+      <span class="subtle" th:text="|Trang ${page + 1} / ${pageCount}|">Trang 1 / 1</span>
+      <a th:classappend="${page + 1 >= pageCount} ? 'disabled'"
+         th:href="@{/inventory/warehouses/movements(from=${from},to=${to},keyword=${keyword},type=${type},warehouseId=${warehouseId},size=${pageSize},page=${page + 1})}">Trang sau →</a>
+    </nav>
+  </section>
+  <section class="panel">
+    <div class="section-heading"><h2>Tổng hợp theo ngày</h2><span class="subtle">Tính trên toàn bộ kết quả lọc</span></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Ngày</th><th>Số giao dịch</th><th>Tổng số lượng</th><th>Nhập kho</th><th>Xuất kho</th><th>Điều chuyển</th></tr></thead>
+      <tbody>
+        <tr th:each="daily : ${dailySummaries}">
+          <td th:text="${#temporals.format(daily.date, 'dd/MM/yyyy')}"></td>
+          <td th:text="${daily.movementCount}"></td>
+          <td th:text="${daily.totalQuantity}"></td>
+          <td th:text="${daily.inboundQuantity}"></td>
+          <td th:text="${daily.outboundQuantity}"></td>
+          <td th:text="${daily.transferQuantity}"></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(dailySummaries)}"><td colspan="6" class="muted">Chưa có dữ liệu để tổng hợp.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+</main>
+</body>
+</html>

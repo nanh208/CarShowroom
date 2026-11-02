@@ -1,0 +1,88 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Há»™p ThÆ° CSKH Trá»±c Tuyáº¿n - Admin Ares</title>
+    <style>
+        body { background: #090d16; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; display: flex; height: 90vh; gap: 20px; }
+        .session-panel { width: 300px; background: #1e293b; border-radius: 14px; border: 1px solid #334155; padding: 15px; overflow-y: auto; }
+        .session-item { padding: 12px; background: #0f172a; border-radius: 10px; margin-bottom: 8px; cursor: pointer; border: 1px solid #334155; }
+        .session-item.active { border-color: #38bdf8; background: #1e293b; }
+        .chat-main { flex: 1; background: #1e293b; border-radius: 14px; border: 1px solid #334155; display: flex; flex-direction: column; }
+        .chat-log { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 15px; border-radius: 12px; max-width: 70%; font-size: 0.95rem; }
+        .msg.admin { align-self: flex-end; background: #0284c7; color: #fff; }
+        .msg.cust { align-self: flex-start; background: #334155; color: #fff; }
+        .chat-reply-bar { padding: 15px; background: #0f172a; display: flex; gap: 10px; border-top: 1px solid #334155; }
+        .reply-input { flex: 1; background: #1e293b; border: 1px solid #475569; color: #fff; padding: 10px; border-radius: 8px; }
+        .btn-reply { background: #0284c7; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="session-panel">
+        <h3 style="margin-top:0;color:#38bdf8;">Há»™i thoáº¡i khÃ¡ch hÃ ng</h3>
+        <div id="sessionList">Äang táº£i danh sÃ¡ch...</div>
+    </div>
+    <div class="chat-main">
+        <div id="chatLog" class="chat-log">
+            <p style="color:#64748b;text-align:center;">Chá»n má»™t phiÃªn chat tá»« danh sÃ¡ch bÃªn trÃ¡i Ä‘á»ƒ pháº£n há»“i.</p>
+        </div>
+        <div class="chat-reply-bar">
+            <input type="text" id="adminReplyInput" class="reply-input" placeholder="Soáº¡n tin nháº¯n tráº£ lá»i khÃ¡ch hÃ ng...">
+            <button class="btn-reply" onclick="sendAdminReply()">Gá»­i pháº£n há»“i</button>
+        </div>
+    </div>
+
+    <script>
+        let currentSession = null;
+        async function loadSessions() {
+            const res = await fetch('/api/chat/admin/sessions');
+            const data = await res.json();
+            const list = data.data || [];
+            document.getElementById('sessionList').innerHTML = list.map(s => `
+                <div class="session-item ${currentSession === s ? 'active' : ''}" onclick="selectSession('${s}')">
+                    <strong>PhiÃªn: ${s}</strong>
+                    <div style="font-size:0.8rem;color:#94a3b8;">Äang káº¿t ná»‘i</div>
+                </div>
+            `).join('');
+        }
+
+        async function selectSession(s) {
+            currentSession = s;
+            loadSessions();
+            loadMessages();
+        }
+
+        async function loadMessages() {
+            if (!currentSession) return;
+            const res = await fetch(`/api/chat/${currentSession}`);
+            const data = await res.json();
+            const list = data.data || [];
+            const log = document.getElementById('chatLog');
+            log.innerHTML = list.map(m => `
+                <div class="msg ${m.fromAdmin ? 'admin' : 'cust'}">
+                    <div style="font-size:0.75rem;opacity:0.8;margin-bottom:3px;">${m.customerName || 'KhÃ¡ch'}</div>
+                    ${m.content}
+                </div>
+            `).join('');
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function sendAdminReply() {
+            const inp = document.getElementById('adminReplyInput');
+            const text = inp.value.trim();
+            if (!text || !currentSession) return;
+            await fetch(`/api/chat/${currentSession}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ customerName: 'ChuyÃªn viÃªn Ares', content: text, fromAdmin: true })
+            });
+            inp.value = '';
+            loadMessages();
+        }
+
+        loadSessions();
+        setInterval(loadMessages, 3000);
+    </script>
+</body>
+</html>

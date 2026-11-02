@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiáº¿t PhiÃªn Äáº¥u GiÃ¡ - Ares Auto</title>
+    <style>
+        body { background: #090d16; color: #f1f5f9; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .detail-wrap { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; }
+        .car-gallery { background: #1e293b; border-radius: 16px; overflow: hidden; border: 1px solid #334155; }
+        .main-car-img { width: 100%; height: 380px; object-fit: cover; }
+        .bid-panel { background: #1e293b; border-radius: 16px; padding: 25px; border: 1px solid #334155; }
+        .price-highlight { font-size: 2.2rem; color: #38bdf8; font-weight: 800; margin: 10px 0; }
+        .input-bid { width: 100%; box-sizing: border-box; background: #0f172a; border: 1px solid #475569; color: #fff; padding: 14px; border-radius: 10px; font-size: 1.2rem; font-weight: 700; margin-bottom: 12px; }
+        .btn-quick { background: #334155; color: #94a3b8; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-right: 6px; }
+        .btn-quick:hover { background: #475569; color: #fff; }
+        .btn-submit-bid { width: 100%; background: #0284c7; color: #fff; border: none; padding: 14px; border-radius: 10px; font-size: 1.1rem; font-weight: 700; cursor: pointer; margin-top: 15px; }
+        .btn-submit-bid:hover { background: #0369a1; }
+        .history-card { margin-top: 25px; background: #0f172a; border-radius: 12px; padding: 15px; border: 1px solid #334155; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1e293b; font-size: 0.95rem; }
+    </style>
+</head>
+<body>
+    <div class="detail-wrap">
+        <div>
+            <div class="car-gallery">
+                <img id="carImg" src="" alt="Xe Ä‘áº¥u giÃ¡" class="main-car-img">
+            </div>
+            <div style="margin-top:20px;background:#1e293b;padding:20px;border-radius:16px;border:1px solid #334155;">
+                <h3 style="color:#38bdf8;margin-top:0;">MÃ´ táº£ chi tiáº¿t</h3>
+                <p id="carDesc" style="color:#cbd5e1;line-height:1.6;"></p>
+            </div>
+        </div>
+
+        <div class="bid-panel">
+            <h2 id="auctionTitle" style="margin-top:0;font-size:1.6rem;">Äang táº£i...</h2>
+            <div style="color:#94a3b8;">GiÃ¡ sÃ n hiá»‡n táº¡i:</div>
+            <div id="currentPrice" class="price-highlight">0 â‚«</div>
+            <div id="nextMinText" style="color:#38bdf8;font-size:0.95rem;margin-bottom:15px;">Má»©c giÃ¡ tá»‘i thiá»ƒu káº¿ tiáº¿p: 0 â‚«</div>
+
+            <div style="margin-bottom:12px;">
+                <span style="font-size:0.9rem;color:#94a3b8;">Cá»™ng nhanh:</span>
+                <button class="btn-quick" onclick="addQuick(5000000)">+5 Triá»‡u</button>
+                <button class="btn-quick" onclick="addQuick(10000000)">+10 Triá»‡u</button>
+                <button class="btn-quick" onclick="addQuick(20000000)">+20 Triá»‡u</button>
+            </div>
+
+            <input type="number" id="bidInput" class="input-bid" placeholder="Nháº­p má»©c giÃ¡ báº¡n muá»‘n Ä‘áº·t">
+            <button class="btn-submit-bid" onclick="placeBid()">Äáº¶T GIÃ NGAY</button>
+            <div id="bidMsg" style="margin-top:10px;font-weight:600;"></div>
+
+            <div class="history-card">
+                <h4 style="margin:0 0 10px 0;color:#94a3b8;">Lá»‹ch sá»­ tráº£ giÃ¡</h4>
+                <div id="bidHistoryList">Äang táº£i lá»‹ch sá»­...</div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const auctionId = /*[[${auctionId}]]*/ 1;
+        let nextMin = 0;
+
+        async function loadDetail() {
+            try {
+                const res = await fetch(`/api/auctions/${auctionId}`);
+                const resData = await res.json();
+                const a = resData.data;
+                document.getElementById('auctionTitle').innerText = a.title;
+                document.getElementById('currentPrice').innerText = new Intl.NumberFormat('vi-VN').format(a.currentPrice) + ' â‚«';
+                nextMin = a.currentPrice + (a.minimumIncrement || 1000000);
+                document.getElementById('nextMinText').innerText = `Má»©c giÃ¡ tá»‘i thiá»ƒu káº¿ tiáº¿p: ${new Intl.NumberFormat('vi-VN').format(nextMin)} â‚«`;
+                document.getElementById('bidInput').value = nextMin;
+                document.getElementById('carImg').src = a.image || 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=800&q=80';
+                document.getElementById('carDesc').innerText = a.description || 'Chiáº¿c xe nguyÃªn báº£n, Ä‘áº§y Ä‘á»§ sá»• báº£o hÃ nh chÃ­nh hÃ£ng, sáºµn sÃ ng giao dá»‹ch.';
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadBids() {
+            try {
+                const res = await fetch(`/api/auctions/${auctionId}/bids`);
+                const resData = await res.json();
+                const list = resData.data || [];
+                const container = document.getElementById('bidHistoryList');
+                if (list.length === 0) {
+                    container.innerHTML = '<span style="color:#64748b;">ChÆ°a cÃ³ lÆ°á»£t Ä‘áº·t giÃ¡ nÃ o.</span>';
+                    return;
+                }
+                container.innerHTML = list.map(b => `
+                    <div class="history-item">
+                        <span>${b.bidder || 'NgÆ°á»i tham gia'}</span>
+                        <strong style="color:#38bdf8;">${new Intl.NumberFormat('vi-VN').format(b.amount)} â‚«</strong>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        function addQuick(val) {
+            const inp = document.getElementById('bidInput');
+            inp.value = Number(inp.value || nextMin) + val;
+        }
+
+        async function placeBid() {
+            const amount = document.getElementById('bidInput').value;
+            const msgBox = document.getElementById('bidMsg');
+            msgBox.innerText = 'Äang gá»­i...';
+            try {
+                const res = await fetch(`/api/auctions/${auctionId}/bids`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ amount: Number(amount) })
+                });
+                const result = await res.json();
+                if (result.success) {
+                    msgBox.style.color = '#4ade80';
+                    msgBox.innerText = 'Äáº·t giÃ¡ thÃ nh cÃ´ng!';
+                    loadDetail();
+                    loadBids();
+                } else {
+                    msgBox.style.color = '#f87171';
+                    msgBox.innerText = result.message || 'Lá»—i Ä‘áº·t giÃ¡';
+                }
+            } catch(e) {
+                msgBox.style.color = '#f87171';
+                msgBox.innerText = 'Vui lÃ²ng Ä‘Äƒng nháº­p Ä‘á»ƒ tham gia Ä‘áº¥u giÃ¡';
+            }
+        }
+
+        loadDetail();
+        loadBids();
+        setInterval(loadBids, 3000);
+    </script>
+</body>
+</html>

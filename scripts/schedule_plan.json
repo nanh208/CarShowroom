@@ -1,0 +1,122 @@
+[
+  {
+    "day": 1,
+    "module": "ĐẤU GIÁ TRỰC TUYẾN",
+    "commitMessage": "feat(auction): expand auction entity with specifications, image gallery and winner linkage",
+    "description": "Nâng cấp Entity Auction với các thuộc tính hãng xe, năm sản xuất, số km, bộ sưu tập ảnh và thông số kỹ thuật chi tiết"
+  },
+  {
+    "day": 2,
+    "module": "ĐẤU GIÁ TRỰC TUYẾN",
+    "commitMessage": "feat(auction): add auction countdown and automatic status transition scheduler",
+    "description": "Thêm scheduler tự động chuyển trạng thái phiên đấu giá (UPCOMING -> LIVE -> ENDED) theo thời gian thực"
+  },
+  {
+    "day": 3,
+    "module": "ĐẤU GIÁ TRỰC TUYẾN",
+    "commitMessage": "feat(auction): enhance auction service with anti-sniping and minimum increment validation",
+    "description": "Bổ sung cơ chế chống bắn tỉa (anti-sniping) tự động gia hạn 2 phút khi có lượt đấu giá vào phút chót"
+  },
+  {
+    "day": 4,
+    "module": "ĐẤU GIÁ TRỰC TUYẾN",
+    "commitMessage": "feat(auction): implement auction finalization and winner order generation",
+    "description": "Xử lý kết thúc phiên đấu giá, xác định người thắng và tự động sinh mã đơn hàng AUC"
+  },
+  {
+    "day": 5,
+    "module": "ĐẤU GIÁ TRỰC TUYẾN",
+    "commitMessage": "feat(auction): add admin auction management APIs for creating and cancelling auctions",
+    "description": "Cung cấp các API quản trị để tạo mới phiên đấu giá, xem danh sách và hủy phiên khẩn cấp"
+  },
+  {
+    "day": 6,
+    "module": "ĐẤU GIÁ TRỰC TUYẾN",
+    "commitMessage": "feat(auction): create responsive frontend UI for auction listing and countdown cards",
+    "description": "Xây dựng giao diện trang danh sách đấu giá xe sang trọng với bộ đếm ngược và thẻ hiển thị xe"
+  },
+  {
+    "day": 7,
+    "module": "ĐẤU GIÁ TRỰC TUYẾN",
+    "commitMessage": "feat(auction): implement auction detail page with live bid stream and bid submission form",
+    "description": "Hoàn thiện trang chi tiết đấu giá xe, tích hợp bảng lịch sử đặt giá và luồng trả giá trực tiếp"
+  },
+  {
+    "day": 8,
+    "module": "ĐẤU GIÁ TRỰC TUYẾN",
+    "commitMessage": "feat(auction): add admin auction dashboard template with status controls and bid logs",
+    "description": "Giao diện quản trị đấu giá dành cho ban điều hành quản lý phiên và kiểm soát gian lận"
+  },
+  {
+    "day": 9,
+    "module": "CSKH - LIVE CHAT & CHATBOT",
+    "commitMessage": "feat(chat): create ChatMessage entity and ChatRepository for live customer support",
+    "description": "Tạo entity ChatMessage và ChatRepository lưu trữ tin nhắn giữa khách hàng và bộ phận chăm sóc khách hàng"
+  },
+  {
+    "day": 10,
+    "module": "CSKH - LIVE CHAT & CHATBOT",
+    "commitMessage": "feat(chat): implement ChatService and ChatApiController with session management and polling",
+    "description": "Xây dựng service xử lý phiên chat, tự động gửi lời chào khách hàng mới và API polling tin nhắn"
+  },
+  {
+    "day": 11,
+    "module": "CSKH - LIVE CHAT & CHATBOT",
+    "commitMessage": "feat(chatbot): introduce ChatIntent model and repository for automated keyword bot",
+    "description": "Thiết lập cấu trúc dữ liệu ChatIntent lưu kịch bản trả lời tự động theo từ khóa của chatbot"
+  },
+  {
+    "day": 12,
+    "module": "CSKH - LIVE CHAT & CHATBOT",
+    "commitMessage": "feat(chatbot): implement intelligent chatbot rule matching engine and auto-reply service",
+    "description": "Triển khai bộ máy so khớp từ khóa không dấu, tự động gợi ý nút bấm nhanh và phản hồi tức thì cho khách"
+  },
+  {
+    "day": 13,
+    "module": "MARKETING & CRM",
+    "commitMessage": "feat(crm): create CustomerTicket model and ticket lifecycle management repository",
+    "description": "Tạo model CustomerTicket và repository theo dõi yêu cầu tư vấn, lái thử xe và khiếu nại"
+  },
+  {
+    "day": 14,
+    "module": "MARKETING & CRM",
+    "commitMessage": "feat(crm): implement CRM service for customer inquiry tracking, status and priority",
+    "description": "Xây dựng service quản lý vòng đời ticket, phân loại độ ưu tiên và chuyển giao chuyên viên tư vấn"
+  },
+  {
+    "day": 15,
+    "module": "MARKETING & CRM",
+    "commitMessage": "feat(marketing): add Promotion and Voucher campaign models with discount validation",
+    "description": "Tạo entity Promotion hỗ trợ mã giảm giá phần trăm, tiền mặt và điều kiện đơn hàng tối thiểu"
+  },
+  {
+    "day": 16,
+    "module": "MARKETING & CRM",
+    "commitMessage": "feat(marketing): implement MarketingService with broadcast messaging and member rewards",
+    "description": "Triển khai MarketingService xử lý áp dụng voucher, phát thông báo broadcast và tích lũy điểm thưởng"
+  },
+  {
+    "day": 17,
+    "module": "CSKH - GIAO DIỆN",
+    "commitMessage": "feat(chat-ui): embed floating live chat and chatbot widget into customer storefront",
+    "description": "Nhúng widget chat nổi thông minh hỗ trợ tương tác trực tiếp cả bot tự động và chuyên viên tư vấn"
+  },
+  {
+    "day": 18,
+    "module": "CSKH - GIAO DIỆN",
+    "commitMessage": "feat(admin-chat): build admin live chat inbox template for customer support agents",
+    "description": "Giao diện hộp thư hỗ trợ khách hàng dành cho nhân viên tư vấn xử lý các phiên hội thoại"
+  },
+  {
+    "day": 19,
+    "module": "MARKETING & CRM - GIAO DIỆN",
+    "commitMessage": "feat(admin-crm): create admin CRM consultation and ticket management interface",
+    "description": "Giao diện quản lý CRM khách hàng tiềm năng, theo dõi tiến độ tư vấn và lịch hẹn xem xe"
+  },
+  {
+    "day": 20,
+    "module": "MARKETING & CRM - GIAO DIỆN",
+    "commitMessage": "feat(admin-marketing): build marketing campaign broadcast and coupon manager UI",
+    "description": "Giao diện quản trị chiến dịch Marketing, phát thông báo toàn hệ thống và kiểm soát mã khuyến mãi"
+  }
+]
