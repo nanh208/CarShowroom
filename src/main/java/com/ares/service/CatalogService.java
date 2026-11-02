@@ -27,7 +27,7 @@ public class CatalogService {
                 return new Query(params.get("q"), params.getOrDefault("category", params.get("type")),
                     params.get("grp"), params.get("scale"), money(params.get("minPrice")), money(params.get("maxPrice")),
                     blank(params.get("minRating")) ? null : Double.valueOf(params.get("minRating")),
-                    Boolean.valueOf(params.getOrDefault("inStock", "false")), params.get("sort"),
+                    availability(params.get("inStock")), params.get("sort"),
                     blank(params.get("page")) ? 0 : Integer.parseInt(params.get("page")),
                     blank(params.get("size")) ? 12 : Integer.parseInt(params.get("size")));
             } catch (IllegalArgumentException error) {
@@ -37,6 +37,14 @@ public class CatalogService {
         }
         private static boolean blank(String value) { return value == null || value.isBlank(); }
         private static Long money(String value) { return blank(value) ? null : Long.valueOf(value); }
+        private static boolean availability(String value) {
+            if (blank(value)) return false;
+            return switch (value.trim().toLowerCase(Locale.ROOT)) {
+                case "true", "1" -> true;
+                case "false", "0" -> false;
+                default -> throw new IllegalArgumentException("inStock phải là true/false hoặc 1/0");
+            };
+        }
         public Query {
             q = q == null ? "" : q.trim();
             category = category == null ? "" : category.trim().toUpperCase(Locale.ROOT);
