@@ -1,10 +1,12 @@
 package com.ares.service;
 
 import com.ares.dto.ReturnDtos.CreateReturnRequest;
+import com.ares.dto.ReturnDtos.AdminReturnRecord;
 import com.ares.dto.ReturnDtos.ReturnLineRequest;
 import com.ares.dto.ReturnDtos.ReturnResponse;
 import com.ares.dto.ReturnDtos.ReturnableItem;
 import com.ares.dto.ReturnDtos.ReturnableOrder;
+import com.ares.dto.ReturnDtos.UpdateReturnStatusRequest;
 import com.ares.model.CustomerOrder;
 import com.ares.model.OrderLine;
 import com.ares.model.ReturnRequest;
@@ -99,6 +101,35 @@ public class ReturnService {
         return response(request);
     }
 
+    @Transactional(readOnly = true)
+    public List<AdminReturnRecord> listForAdmin() {
+        return returns.findAllByOrderByCreatedAtDesc().stream().map(this::adminRecord).toList();
+    }
+
+    @Transactional
+    public AdminReturnRecord updateStatus(String requestCode, UpdateReturnStatusRequest update) {
+        if (update == null) throw new IllegalArgumentException("Thiếu trạng thái cần cập nhật");
+        ReturnRequest request = returns.findByRequestCodeForUpdate(requestCode)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy yêu cầu đổi trả"));
+        String next = update.status() == null ? "" : update.status().trim().toUpperCase(Locale.ROOT);
+        if (!List.of("APPROVED", "REJECTED", "COMPLETED").contains(next)) {
+            throw new IllegalArgumentException("Trạng thái xử lý không hợp lệ");
+        }
+        String current = request.getStatus();
+        boolean validTransition = "PENDING".equals(current) && ("APPROVED".equals(next) || "REJECTED".equals(next))
+                || "APPROVED".equals(current) && ("REJECTED".equals(next) || "COMPLETED".equals(next));
+        if (!validTransition) throw new IllegalArgumentException("Không thể chuyển yêu cầu từ " + current + " sang " + next);
+        String note = update.note() == null ? null : update.note().trim();
+        if (note != null && note.length() > 1000) throw new IllegalArgumentException("Ghi chú không được vượt quá 1000 ký tự");
+        if ("REJECTED".equals(next) && (note == null || note.isBlank())) {
+            throw new IllegalArgumentException("Cần ghi lý do từ chối để khách hàng biết");
+        }
+        request.setStatus(next);
+        request.setAdminNote(note == null || note.isBlank() ? null : note);
+        request.setUpdatedAt(LocalDateTime.now());
+        return adminRecord(returns.save(request));
+    }
+
     private CustomerOrder findVerifiedOrder(String orderCode, String phone) {
         if (orderCode == null || orderCode.isBlank() || phone == null || phone.isBlank()) {
             throw new IllegalArgumentException("Vui lòng nhập mã đơn hàng và số điện thoại đặt hàng");
@@ -166,6 +197,15 @@ public class ReturnService {
 
     private ReturnResponse response(ReturnRequest request) {
         return new ReturnResponse(request.getRequestCode(), request.getOrderCode(), request.getKind(), request.getStatus(),
-                request.getEstimatedRefundAmount(), request.getCreatedAt());
+                request.getEstimatedRefundAmount(), request.getAdminNote(), request.getCreatedAt(), request.getUpdatedAt());
+    }
+
+    private AdminReturnRecord adminRecord(ReturnRequest request) {
+        List<ReturnableItem> items = request.getItems().stream()
+                .map(item -> new ReturnableItem(item.getProductCode(), item.getProductName(), item.getQuantity(), 0,
+                        item.getQuantity(), item.getUnitPrice())).toList();
+        return new AdminReturnRecord(request.getRequestCode(), request.getOrderCode(), request.getOrder().getCustomerName(),
+                request.getOrder().getPhone(), request.getKind(), request.getReason(), request.getStatus(),
+                request.getEstimatedRefundAmount(), request.getAdminNote(), request.getCreatedAt(), request.getUpdatedAt(), items);
     }
 }

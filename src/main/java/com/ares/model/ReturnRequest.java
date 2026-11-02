@@ -48,6 +48,11 @@ public class ReturnRequest {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    private LocalDateTime updatedAt;
+
+    @Column(length = 1000)
+    private String adminNote;
+
     @OneToMany(mappedBy = "returnRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReturnRequestItem> items = new ArrayList<>();
 
@@ -70,5 +75,9 @@ public class ReturnRequest {
     public void setEstimatedRefundAmount(long estimatedRefundAmount) { this.estimatedRefundAmount = estimatedRefundAmount; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public String getAdminNote() { return adminNote; }
+    public void setAdminNote(String adminNote) { this.adminNote = adminNote; }
     public List<ReturnRequestItem> getItems() { return items; }
 }

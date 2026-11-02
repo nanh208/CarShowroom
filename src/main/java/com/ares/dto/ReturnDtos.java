@@ -12,5 +12,11 @@ public class ReturnDtos {
     public record ReturnableOrder(String orderCode, LocalDateTime createdAt, LocalDateTime returnDeadline,
                                   List<ReturnableItem> items, boolean hasOpenRequest) {}
     public record ReturnResponse(String requestCode, String orderCode, String kind, String status,
-                                 long estimatedRefundAmount, LocalDateTime createdAt) {}
+                                 long estimatedRefundAmount, String adminNote, LocalDateTime createdAt,
+                                 LocalDateTime updatedAt) {}
+    public record AdminReturnRecord(String requestCode, String orderCode, String customerName, String phone,
+                                    String kind, String reason, String status, long estimatedRefundAmount,
+                                    String adminNote, LocalDateTime createdAt, LocalDateTime updatedAt,
+                                    List<ReturnableItem> items) {}
+    public record UpdateReturnStatusRequest(String status, String note) {}
 }

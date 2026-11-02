@@ -365,7 +365,7 @@ async function trackReturnRequest(event) {
     const result = await response.json();
     if (!response.ok || !result.success || !result.data) throw new Error(result.message || 'Không tra cứu được yêu cầu.');
     const statuses = { PENDING: 'Chờ cửa hàng xem xét', APPROVED: 'Đã duyệt', REJECTED: 'Không được duyệt', REFUNDED: 'Đã hoàn tiền' };
-    message.textContent = `Đơn ${result.data.orderCode}: ${statuses[result.data.status] || result.data.status}.`;
+    message.textContent = `Đơn ${result.data.orderCode}: ${statuses[result.data.status] || result.data.status}.${result.data.adminNote ? ` Ghi chú cửa hàng: ${result.data.adminNote}` : ''}`;
     message.classList.remove('is-error');
   } catch (error) {
     message.textContent = error.message || 'Không thể kết nối để tra cứu.';
