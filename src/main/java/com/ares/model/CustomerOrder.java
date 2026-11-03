@@ -63,6 +63,23 @@ public class CustomerOrder {
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    @Column
+    private int fraudScore;
+
+    @Column(length = 1200)
+    private String fraudReasons;
+
+    @Column(length = 16)
+    private String fraudStatus = "NONE";
+
+    @Column(length = 64)
+    private String clientIp;
+
+    @Column(length = 100)
+    private String fraudReviewedBy;
+
+    private LocalDateTime fraudReviewedAt;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<OrderLine> items = new ArrayList<>();
 
@@ -102,5 +119,17 @@ public class CustomerOrder {
     public void setTotalQuantity(int totalQuantity) { this.totalQuantity = totalQuantity; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public int getFraudScore() { return fraudScore; }
+    public void setFraudScore(int fraudScore) { this.fraudScore = fraudScore; }
+    public String getFraudReasons() { return fraudReasons; }
+    public void setFraudReasons(String fraudReasons) { this.fraudReasons = fraudReasons; }
+    public String getFraudStatus() { return fraudStatus; }
+    public void setFraudStatus(String fraudStatus) { this.fraudStatus = fraudStatus; }
+    public String getClientIp() { return clientIp; }
+    public void setClientIp(String clientIp) { this.clientIp = clientIp; }
+    public String getFraudReviewedBy() { return fraudReviewedBy; }
+    public void setFraudReviewedBy(String fraudReviewedBy) { this.fraudReviewedBy = fraudReviewedBy; }
+    public LocalDateTime getFraudReviewedAt() { return fraudReviewedAt; }
+    public void setFraudReviewedAt(LocalDateTime fraudReviewedAt) { this.fraudReviewedAt = fraudReviewedAt; }
     public List<OrderLine> getItems() { return items; }
 }

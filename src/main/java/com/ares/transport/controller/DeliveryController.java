@@ -6,6 +6,7 @@ import com.ares.transport.model.DeliveryStatus;
 import com.ares.transport.service.DeliveryLabelService;
 import com.ares.transport.service.CarrierQuoteService;
 import com.ares.transport.service.DeliveryService;
+import com.ares.service.FraudReviewService;
 import com.lowagie.text.DocumentException;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
@@ -35,11 +36,14 @@ public class DeliveryController {
     private final DeliveryService service;
     private final DeliveryLabelService labels;
     private final CarrierQuoteService quotes;
+    private final FraudReviewService fraudReview;
 
-    public DeliveryController(DeliveryService service, DeliveryLabelService labels, CarrierQuoteService quotes) {
+    public DeliveryController(DeliveryService service, DeliveryLabelService labels, CarrierQuoteService quotes,
+                              FraudReviewService fraudReview) {
         this.service = service;
         this.labels = labels;
         this.quotes = quotes;
+        this.fraudReview = fraudReview;
     }
 
     @GetMapping
@@ -49,6 +53,7 @@ public class DeliveryController {
         model.addAttribute("user", user);
         model.addAttribute("deliveries", service.getDeliveries());
         model.addAttribute("pendingOrders", service.getPendingOrders());
+        model.addAttribute("fraudQueue", fraudReview.getQueue());
         return "transport/deliveries";
     }
 
@@ -114,6 +119,23 @@ public class DeliveryController {
                                @RequestParam DeliveryStatus status, RedirectAttributes flash) {
         if (session.getAttribute("currentUser") == null) return "redirect:/login";
         return perform(() -> service.updateStatus(id, status), "Đã cập nhật trạng thái vận đơn.", flash);
+    }
+
+    @PostMapping("/fraud/{orderId}/approve")
+    public String approveRisk(HttpSession session, @PathVariable Long orderId, RedirectAttributes flash) {
+        User user = (User) session.getAttribute("currentUser");
+        if (user == null) return "redirect:/login";
+        return perform(() -> fraudReview.approve(orderId, user.getUsername()),
+                "Đã duyệt đơn sau khi rà soát rủi ro.", flash);
+    }
+
+    @PostMapping("/fraud/{orderId}/reject")
+    public String rejectRisk(HttpSession session, @PathVariable Long orderId,
+                             @RequestParam(required = false) String note, RedirectAttributes flash) {
+        User user = (User) session.getAttribute("currentUser");
+        if (user == null) return "redirect:/login";
+        return perform(() -> fraudReview.reject(orderId, user.getUsername(), note),
+                "Đã từ chối đơn và hủy đơn chưa giao.", flash);
     }
 
     @GetMapping("/{id}/label")

@@ -36,10 +36,12 @@ public class OrderService {
 
     private final CarRepository cars;
     private final CustomerOrderRepository orders;
+    private final FraudReviewService fraudReview;
 
-    public OrderService(CarRepository cars, CustomerOrderRepository orders) {
+    public OrderService(CarRepository cars, CustomerOrderRepository orders, FraudReviewService fraudReview) {
         this.cars = cars;
         this.orders = orders;
+        this.fraudReview = fraudReview;
     }
 
     @Transactional
@@ -94,7 +96,7 @@ public class OrderService {
 
         order.setTotal(total);
         order.setTotalQuantity(totalQuantity);
-        CustomerOrder saved = orders.save(order);
+        CustomerOrder saved = fraudReview.assess(orders.save(order));
         return new CreateOrderResponse(saved.getCode(), saved.getStatus(), saved.getPaymentMethod(), saved.getPaymentStatus(), paymentToken, saved.getTotal(),
                 saved.getTotalQuantity(), saved.getCreatedAt(), List.copyOf(responseLines));
     }
