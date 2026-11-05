@@ -39,6 +39,16 @@
     .payment { color:#bae6fd; font-weight:600; }
     .select-label { width:auto; height:auto; accent-color:#0284c7; }
     .bulk-labels { display:flex; align-items:center; gap:12px; margin:-4px 0 14px; }
+    .risk-review { border-color:rgba(251,191,36,.35); }
+    .risk-review .risk-table { min-width:1000px; }
+    .risk-score { font-weight:800; color:#fbbf24; }
+    .risk-review-status { font-weight:700; }
+    .risk-REVIEW { color:#fca5a5; }
+    .risk-WATCH { color:#fbbf24; }
+    .risk-signals { padding-left:18px; margin:0; }
+    .risk-signals li { margin:3px 0; }
+    .risk-actions { display:grid; gap:6px; min-width:180px; }
+    .risk-actions input { height:34px; }
     @media(max-width:600px){ body{padding:14px 10px}.top,.panel{padding:16px}.top h1{font-size:20px} }
   </style>
 </head>
@@ -51,6 +61,27 @@
 
   <div th:if="${successMessage}" class="notice ok" th:text="${successMessage}"></div>
   <div th:if="${errorMessage}" class="notice err" th:text="${errorMessage}"></div>
+
+  <section class="panel risk-review">
+    <h2>Đơn chờ rà soát rủi ro</h2>
+    <p class="muted">Điểm rủi ro được tính theo các tín hiệu giải thích được. Đơn đạt ngưỡng cần được duyệt trước khi tạo vận đơn; điểm số chỉ hỗ trợ kiểm tra, không tự kết luận gian lận.</p>
+    <div class="table-wrap"><table class="risk-table">
+      <thead><tr><th>Đơn hàng</th><th>Khách</th><th>Điểm</th><th>Tín hiệu</th><th>Quyết định</th></tr></thead>
+      <tbody>
+        <tr th:each="order : ${fraudQueue}">
+          <td><strong th:text="${order.code}"></strong><br><span class="muted" th:text="|${order.total} ₫ · ${order.status}|"></span></td>
+          <td><strong th:text="${order.customerName}"></strong><br><span class="muted" th:text="${order.phone}"></span><br><span class="muted" th:text="${order.email != null ? order.email : 'Không có email'}"></span></td>
+          <td><span class="risk-score" th:text="${order.score}"></span><br><span th:class="|risk-review-status risk-${order.riskStatus}|" th:text="${order.riskStatus}"></span></td>
+          <td><ul class="risk-signals"><li th:each="signal : ${order.signals}" th:text="|${signal.reason} (+${signal.points})|"></li></ul></td>
+          <td><div class="risk-actions">
+            <form th:action="@{/transport/deliveries/fraud/{id}/approve(id=${order.id})}" method="post"><button type="submit">Duyệt đơn</button></form>
+            <form th:action="@{/transport/deliveries/fraud/{id}/reject(id=${order.id})}" method="post"><input name="note" maxlength="300" placeholder="Lý do từ chối (tuỳ chọn)" aria-label="Lý do từ chối"><button type="submit" style="background:#475569">Từ chối / hủy đơn</button></form>
+          </div></td>
+        </tr>
+        <tr th:if="${#lists.isEmpty(fraudQueue)}"><td colspan="5" class="muted">Không có đơn nào đang chờ rà soát.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
 
   <section class="panel">
     <h2>Đơn hàng sẵn sàng tạo vận đơn</h2>

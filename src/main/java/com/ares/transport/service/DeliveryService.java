@@ -8,6 +8,7 @@ import com.ares.transport.repository.DeliveryRepository;
 import com.ares.model.CustomerOrder;
 import com.ares.model.OrderLine;
 import com.ares.repository.CustomerOrderRepository;
+import com.ares.service.FraudReviewService;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +53,7 @@ public class DeliveryService {
         return orders.findAllByStatusIgnoreCaseOrderByCreatedAtDesc("PENDING").stream()
                 .filter(order -> !linkedOrderIds.contains(order.getId()))
                 .filter(DeliveryService::isPaymentReady)
+                .filter(order -> !"REVIEW".equalsIgnoreCase(order.getFraudStatus()))
                 .map(DeliveryService::toPendingOrder)
                 .toList();
     }
@@ -73,6 +75,7 @@ public class DeliveryService {
         if (!"PENDING".equalsIgnoreCase(order.getStatus())) {
             throw new IllegalArgumentException("Chỉ có thể tạo vận đơn cho đơn đang chờ xử lý.");
         }
+        FraudReviewService.requireCleared(order);
         if (!isPaymentReady(order)) {
             throw new IllegalArgumentException("Đơn thanh toán trực tuyến cần được thanh toán thành công trước khi giao.");
         }
@@ -100,7 +103,10 @@ public class DeliveryService {
 
         CustomerOrder order = delivery.getOrderId() == null ? null : orders.findByIdForUpdate(delivery.getOrderId())
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy đơn hàng liên kết với vận đơn."));
-        if (order != null) syncOrderStatus(order, next);
+        if (order != null) {
+            if (next == DeliveryStatus.IN_TRANSIT) FraudReviewService.requireCleared(order);
+            syncOrderStatus(order, next);
+        }
         delivery.setStatus(next);
         delivery.markUpdated();
         addEvent(delivery, next);
