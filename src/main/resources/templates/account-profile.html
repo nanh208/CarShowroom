@@ -35,6 +35,10 @@
             <input class="form-control" id="email" type="email" disabled>
           </div>
           <div class="form-group">
+            <label class="form-label" for="verifiedType">Phương thức xác minh</label>
+            <input class="form-control" id="verifiedType" disabled>
+          </div>
+          <div class="form-group">
             <label class="form-label" for="fullName">Tên hiển thị</label>
             <input class="form-control" id="fullName" maxlength="100" autocomplete="name" required>
           </div>
@@ -103,6 +107,8 @@
           const value = user[field];
           document.getElementById(field).value = value == null ? '' : value;
         });
+        const verifiedTypeLabels = { GOOGLE: 'Google', PHONE: 'Điện thoại', STANDARD: 'Tài khoản thường' };
+        document.getElementById('verifiedType').value = verifiedTypeLabels[user.verifiedType] || 'Chưa có thông tin';
       } catch (error) {
         showMessage(error.message);
         if (error.message.includes('đăng nhập')) setTimeout(() => window.location.assign('/login'), 800);
