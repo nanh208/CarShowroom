@@ -21,16 +21,20 @@ public class CarShowromApplication {
 	@Bean
 	public CommandLineRunner seedDefaultUser(UserRepository userRepository, AuctionRepository auctionRepository) {
 		return args -> {
-			if (!userRepository.existsByUsername("admin")) {
-				User admin = new User();
+			User admin = userRepository.findByUsername("admin").orElse(null);
+			if (admin == null) {
+				admin = new User();
 				admin.setUsername("admin");
 				admin.setPassword("123");
 				admin.setEmail("manhmxtp000751@gmail.com");
 				admin.setPhone("0988888888");
 				admin.setGender("Nam");
 				admin.setVerifiedType("GOOGLE");
-				userRepository.save(admin);
 				System.out.println("===> [DEMO USER SEEDED] Tài khoản mặc định: admin / 123");
+			}
+			if (admin.getRole() != com.ares.model.UserRole.ADMIN) {
+				admin.setRole(com.ares.model.UserRole.ADMIN);
+				userRepository.save(admin);
 			}
 
 			if (auctionRepository.count() == 0) {

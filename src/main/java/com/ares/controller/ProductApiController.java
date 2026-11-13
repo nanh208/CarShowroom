@@ -55,11 +55,11 @@ public class ProductApiController {
 
     @GetMapping("/{id}")
     public Map<String, Object> detail(@PathVariable Long id) {
-        Car car = cars.findById(id).orElseThrow(() ->
+        Car car = cars.findById(id).filter(Car::isActive).orElseThrow(() ->
             new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
         var related = car.getCategory() == null ? List.<Map<String, Object>>of()
             : cars.findByCategory(car.getCategory()).stream()
-                .filter(other -> !id.equals(other.getId())).limit(4)
+                .filter(Car::isActive).filter(other -> !id.equals(other.getId())).limit(4)
                 .map(ProductApiController::product).toList();
         return Map.of("product", product(car), "related", related,
             "variants", List.of(), "flash", List.of());

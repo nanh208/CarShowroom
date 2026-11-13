@@ -38,10 +38,12 @@ public class CatalogPageController {
 
     @GetMapping("/catalog/{id}")
     public String detail(@PathVariable Long id, Model model) {
-        var car = cars.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
+        var car = cars.findById(id).filter(com.ares.model.Car::isActive)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy sản phẩm"));
         model.addAttribute("car", car);
         model.addAttribute("related", car.getCategory() == null ? java.util.List.of() :
-            cars.findByCategory(car.getCategory()).stream().filter(c -> !id.equals(c.getId())).limit(4).toList());
+            cars.findByCategory(car.getCategory()).stream().filter(com.ares.model.Car::isActive)
+                .filter(c -> !id.equals(c.getId())).limit(4).toList());
         return "catalog/detail";
     }
 }

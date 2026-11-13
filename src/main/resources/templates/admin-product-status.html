@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Quản lý hiển thị sản phẩm</title>
+  <style>
+    body{font:16px system-ui,sans-serif;margin:2rem auto;padding:0 1rem;max-width:1100px;color:#172033}
+    h1{margin-bottom:.35rem}.muted{color:#667085}table{width:100%;border-collapse:collapse;margin-top:1.25rem}
+    th,td{text-align:left;padding:.8rem;border-bottom:1px solid #e5e7eb}button{padding:.5rem .8rem;cursor:pointer}
+    .status{font-weight:600}.error{color:#b42318}.success{color:#067647}
+  </style>
+</head>
+<body>
+  <p><a href="/home">← Trang chủ</a></p>
+  <h1>Bật / tắt sản phẩm</h1>
+  <p class="muted">Sản phẩm tắt sẽ không xuất hiện trong danh mục và không thể được thêm vào giỏ hàng.</p>
+  <p id="message" role="status" aria-live="polite"></p>
+  <table>
+    <thead><tr><th>Sản phẩm</th><th>Mã</th><th>Danh mục</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody id="products"><tr><td colspan="5">Đang tải…</td></tr></tbody>
+  </table>
+  <script>
+    const body = document.getElementById('products');
+    const message = document.getElementById('message');
+    async function request(url, options = {}) {
+      const response = await fetch(url, { credentials: 'same-origin', ...options,
+        headers: { 'Content-Type': 'application/json', ...(options.headers || {}) } });
+      const result = await response.json();
+      if (!response.ok || !result.success) throw new Error(result.message || 'Không thể hoàn tất thao tác');
+      return result;
+    }
+    function render(products) {
+      body.replaceChildren();
+      if (!products.length) { const row=document.createElement('tr'); const cell=document.createElement('td'); cell.colSpan=5; cell.textContent='Chưa có sản phẩm'; row.append(cell); body.append(row); return; }
+      for (const product of products) {
+        const row=document.createElement('tr');
+        for (const value of [product.name, product.code || '—', product.category || '—']) { const cell=document.createElement('td'); cell.textContent=value || '—'; row.append(cell); }
+        const status=document.createElement('td'); status.className='status'; status.textContent=product.active?'Đang bật':'Đang tắt'; row.append(status);
+        const action=document.createElement('td'); const button=document.createElement('button'); button.textContent=product.active?'Tắt':'Bật';
+        button.addEventListener('click', async () => {
+          button.disabled=true; message.className=''; message.textContent='';
+          try { await request(`/api/admin/products/status/${product.id}`, { method:'PUT', body:JSON.stringify({active:!product.active}) }); await load(); message.className='success'; message.textContent='Đã cập nhật trạng thái sản phẩm.'; }
+          catch(error) { message.className='error'; message.textContent=error.message; button.disabled=false; }
+        }); action.append(button); row.append(action); body.append(row);
+      }
+    }
+    async function load() { try { const result=await request('/api/admin/products/status'); render(result.data || []); }
+      catch(error) { body.replaceChildren(); message.className='error'; message.textContent=error.message; } }
+    load();
+  </script>
+</body>
+</html>

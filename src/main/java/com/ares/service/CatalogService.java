@@ -59,13 +59,13 @@ public class CatalogService {
 
     public List<CategoryCount> categories() {
         Map<String, Long> counts = new HashMap<>();
-        for (Car car : cars.findAll()) if (car.getCategory() != null) counts.merge(car.getCategory(), 1L, Long::sum);
+        for (Car car : cars.findAll()) if (car.isActive() && car.getCategory() != null) counts.merge(car.getCategory(), 1L, Long::sum);
         return categories.findAllByOrderBySortOrderAscCodeAsc().stream()
             .map(c -> new CategoryCount(c.code, c.name, c.grp, c.image, counts.getOrDefault(c.code, 0L))).toList();
     }
 
     public List<String> scales() {
-        return cars.findAll().stream().map(Car::getScale).filter(Objects::nonNull)
+        return cars.findAll().stream().filter(Car::isActive).map(Car::getScale).filter(Objects::nonNull)
             .map(CatalogSearch::scale).filter(s -> !s.isBlank()).distinct().sorted().toList();
     }
 
@@ -75,6 +75,7 @@ public class CatalogService {
         if (!query.grp().isEmpty()) for (Category category : categories.findAllByOrderBySortOrderAscCodeAsc())
             if (query.grp().equalsIgnoreCase(category.grp)) groupCodes.add(category.code);
         var rows = cars.findAll().stream()
+            .filter(Car::isActive)
             .filter(c -> query.category().isEmpty() || Arrays.stream(query.category().split(",")).anyMatch(code -> code.trim().equals(c.getCategory())))
             .filter(c -> query.grp().isEmpty() || groupCodes.contains(c.getCategory()))
             .filter(c -> query.scale().isEmpty() || query.scale().equals(CatalogSearch.scale(c.getScale())))

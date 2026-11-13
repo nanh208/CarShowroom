@@ -25,8 +25,11 @@ public class CartService {
         CartDto cart = (CartDto) session.getAttribute(CART_SESSION_KEY);
         if (cart == null) {
             cart = new CartDto();
-            session.setAttribute(CART_SESSION_KEY, cart);
         }
+        cart.getItems().removeIf(item -> carRepository.findById(item.getCarId())
+                .map(car -> !car.isActive()).orElse(true));
+        cart.recalculate();
+        session.setAttribute(CART_SESSION_KEY, cart);
         return cart;
     }
 
@@ -35,7 +38,7 @@ public class CartService {
         if (carId == null || quantity <= 0) return cart;
 
         Optional<Car> carOpt = carRepository.findById(carId);
-        if (carOpt.isEmpty()) return cart;
+        if (carOpt.isEmpty() || !carOpt.get().isActive()) return cart;
 
         Car car = carOpt.get();
         Optional<CartItemDto> existingItem = cart.getItems().stream()

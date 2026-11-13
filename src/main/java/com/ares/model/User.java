@@ -33,6 +33,10 @@ public class User {
 
     private String gender;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 16)
+    private UserRole role = UserRole.USER;
+
     /**
      * Type of base verification according to the activity diagram:
      * "GOOGLE" (verified with Gmail), "PHONE" (verified with Phone), "STANDARD"
@@ -142,6 +146,9 @@ public class User {
     public void setGender(String gender) {
         this.gender = gender;
     }
+
+    public UserRole getRole() { return role == null ? UserRole.USER : role; }
+    public void setRole(UserRole role) { this.role = role; }
 
     public String getVerifiedType() {
         return verifiedType;

@@ -107,19 +107,19 @@ public class CarService {
 
     public List<Car> getAllCars(String section, String category, String search) {
         if (search != null && !search.trim().isEmpty()) {
-            return carRepository.findByNameContainingIgnoreCase(search.trim());
+            return carRepository.findByNameContainingIgnoreCase(search.trim()).stream().filter(Car::isActive).toList();
         }
         if (section != null && !section.trim().isEmpty()) {
-            return carRepository.findBySection(section.trim().toUpperCase());
+            return carRepository.findBySection(section.trim().toUpperCase()).stream().filter(Car::isActive).toList();
         }
         if (category != null && !category.trim().isEmpty()) {
-            return carRepository.findByCategory(category.trim().toUpperCase());
+            return carRepository.findByCategory(category.trim().toUpperCase()).stream().filter(Car::isActive).toList();
         }
-        return carRepository.findAll();
+        return carRepository.findAll().stream().filter(Car::isActive).toList();
     }
 
     public Optional<Car> getCarById(Long id) {
-        return carRepository.findById(id);
+        return carRepository.findById(id).filter(Car::isActive);
     }
 
     public List<ReviewDto> getReviews() {

@@ -50,6 +50,9 @@ public class Car {
 
     private Boolean inStock = true;
 
+    @Column
+    private Boolean active = true;
+
     public Car() {}
 
     public Car(String name, String code, Long price, Long oldPrice, String image, 
@@ -140,4 +143,8 @@ public class Car {
 
     public Boolean getInStock() { return inStock; }
     public void setInStock(Boolean inStock) { this.inStock = inStock; }
+
+    public Boolean getActive() { return isActive(); }
+    public void setActive(Boolean active) { this.active = active; }
+    public boolean isActive() { return !Boolean.FALSE.equals(active); }
 }

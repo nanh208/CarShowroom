@@ -77,6 +77,9 @@ public class OrderService {
             if (matches.isEmpty()) throw new IllegalArgumentException("Không tìm thấy sản phẩm " + entry.getKey());
             if (matches.size() > 1) throw new IllegalArgumentException("Mã sản phẩm " + entry.getKey() + " chưa duy nhất trong dữ liệu");
             Car car = matches.get(0);
+            if (!car.isActive()) {
+                throw new IllegalArgumentException("Sản phẩm \"" + car.getName() + "\" hiện không được bán");
+            }
             if (!Boolean.TRUE.equals(car.getInStock())) {
                 throw new IllegalArgumentException("Sản phẩm \"" + car.getName() + "\" hiện đã hết hàng");
             }
