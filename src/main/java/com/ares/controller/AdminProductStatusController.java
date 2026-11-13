@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.LinkedHashSet;
 
 @Controller
 public class AdminProductStatusController {
@@ -60,6 +61,26 @@ public class AdminProductStatusController {
         return ResponseEntity.ok(ApiResponse.ok("Đã cập nhật trạng thái sản phẩm", ProductStatus.from(saved)));
     }
 
+    @ResponseBody
+    @PostMapping("/api/admin/products/status/bulk")
+    public ResponseEntity<ApiResponse> bulkUpdate(@RequestBody BulkStatusRequest request, HttpSession session) {
+        ResponseEntity<ApiResponse> denied = authorizationFailure(session);
+        if (denied != null) return denied;
+        if (request == null || request.active() == null || request.ids() == null || request.ids().isEmpty()) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Chọn ít nhất một sản phẩm và trạng thái cần áp dụng"));
+        }
+        LinkedHashSet<Long> ids = new LinkedHashSet<>(request.ids());
+        if (ids.size() > 500 || ids.contains(null)) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Danh sách sản phẩm không hợp lệ (tối đa 500 sản phẩm)"));
+        }
+        List<Car> selected = cars.findAllById(ids);
+        selected.forEach(car -> car.setActive(request.active()));
+        cars.saveAll(selected);
+        ApiResponse response = ApiResponse.ok("Đã cập nhật trạng thái hàng loạt");
+        response.setData(Map.of("updated", selected.size()));
+        return ResponseEntity.ok(response);
+    }
+
     private void requireStaff(HttpSession session) {
         ResponseEntity<ApiResponse> denied = authorizationFailure(session);
         if (denied != null) {
@@ -80,6 +101,7 @@ public class AdminProductStatusController {
     }
 
     public record StatusRequest(Boolean active) {}
+    public record BulkStatusRequest(List<Long> ids, Boolean active) {}
 
     public record ProductStatus(Long id, String name, String code, String category, String image, boolean active) {
         static ProductStatus from(Car car) {

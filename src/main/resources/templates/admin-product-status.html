@@ -17,12 +17,17 @@
   <p class="muted">Sản phẩm tắt sẽ không xuất hiện trong danh mục và không thể được thêm vào giỏ hàng.</p>
   <p id="message" role="status" aria-live="polite"></p>
   <table>
-    <thead><tr><th>Sản phẩm</th><th>Mã</th><th>Danh mục</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-    <tbody id="products"><tr><td colspan="5">Đang tải…</td></tr></tbody>
+    <thead><tr><th><input id="select-all" type="checkbox" aria-label="Chọn tất cả sản phẩm"></th><th>Sản phẩm</th><th>Mã</th><th>Danh mục</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody id="products"><tr><td colspan="6">Đang tải…</td></tr></tbody>
   </table>
+  <p>
+    <button id="bulk-on" type="button">Bật sản phẩm đã chọn</button>
+    <button id="bulk-off" type="button">Tắt sản phẩm đã chọn</button>
+  </p>
   <script>
     const body = document.getElementById('products');
     const message = document.getElementById('message');
+    const selectAll = document.getElementById('select-all');
     async function request(url, options = {}) {
       const response = await fetch(url, { credentials: 'same-origin', ...options,
         headers: { 'Content-Type': 'application/json', ...(options.headers || {}) } });
@@ -32,9 +37,10 @@
     }
     function render(products) {
       body.replaceChildren();
-      if (!products.length) { const row=document.createElement('tr'); const cell=document.createElement('td'); cell.colSpan=5; cell.textContent='Chưa có sản phẩm'; row.append(cell); body.append(row); return; }
+      if (!products.length) { const row=document.createElement('tr'); const cell=document.createElement('td'); cell.colSpan=6; cell.textContent='Chưa có sản phẩm'; row.append(cell); body.append(row); return; }
       for (const product of products) {
-        const row=document.createElement('tr');
+        const row=document.createElement('tr'); const selectCell=document.createElement('td'); const checkbox=document.createElement('input');
+        checkbox.type='checkbox'; checkbox.className='product-select'; checkbox.value=String(product.id); checkbox.setAttribute('aria-label',`Chọn ${product.name || 'sản phẩm'}`); selectCell.append(checkbox); row.append(selectCell);
         for (const value of [product.name, product.code || '—', product.category || '—']) { const cell=document.createElement('td'); cell.textContent=value || '—'; row.append(cell); }
         const status=document.createElement('td'); status.className='status'; status.textContent=product.active?'Đang bật':'Đang tắt'; row.append(status);
         const action=document.createElement('td'); const button=document.createElement('button'); button.textContent=product.active?'Tắt':'Bật';
@@ -45,6 +51,17 @@
         }); action.append(button); row.append(action); body.append(row);
       }
     }
+    async function bulkUpdate(active) {
+      const ids=[...body.querySelectorAll('.product-select:checked')].map(input=>Number(input.value)).filter(Number.isSafeInteger);
+      if (!ids.length) { message.className='error'; message.textContent='Hãy chọn ít nhất một sản phẩm.'; return; }
+      const buttons=[document.getElementById('bulk-on'),document.getElementById('bulk-off')]; buttons.forEach(button=>button.disabled=true);
+      try { const result=await request('/api/admin/products/status/bulk',{method:'POST',body:JSON.stringify({ids,active})}); await load(); message.className='success'; message.textContent=`Đã cập nhật ${result.data?.updated ?? 0} sản phẩm.`; }
+      catch(error) { message.className='error'; message.textContent=error.message; }
+      finally { buttons.forEach(button=>button.disabled=false); }
+    }
+    selectAll.addEventListener('change',()=>body.querySelectorAll('.product-select').forEach(input=>input.checked=selectAll.checked));
+    document.getElementById('bulk-on').addEventListener('click',()=>bulkUpdate(true));
+    document.getElementById('bulk-off').addEventListener('click',()=>bulkUpdate(false));
     async function load() { try { const result=await request('/api/admin/products/status'); render(result.data || []); }
       catch(error) { body.replaceChildren(); message.className='error'; message.textContent=error.message; } }
     load();
